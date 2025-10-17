@@ -4,7 +4,9 @@
       "Bash(git remote add:*)",
       "Bash(git fetch:*)",
       "Bash(git ls-tree:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(.specify/scripts/bash/create-new-feature.sh --json \"*\")",
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)"
     ],
     "deny": [],
     "ask": []
