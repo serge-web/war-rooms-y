@@ -12,7 +12,7 @@ XMPP-first multi-room wargaming chat application leveraging native XMPP protocol
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x / Node.js ≥20
-**Primary Dependencies**: React 18, OpenFire XMPP server (production), localForage (demo mode), flexlayout-react, React-Admin, RJSF
+**Primary Dependencies**: React 18, Material UI v5, OpenFire XMPP server (production), localForage (demo mode), flexlayout-react, React-Admin, RJSF
 **Storage**: OpenFire internal database (production) or browser storage via localForage (demo/training mode)
 **Testing**: Jest (unit), Playwright (e2e), Storybook v9 + Chromatic (visual)
 **Target Platform**: Web browsers (Chrome, Firefox, Safari, Edge); Static HTML for demo mode
