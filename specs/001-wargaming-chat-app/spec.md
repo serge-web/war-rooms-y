@@ -74,6 +74,25 @@ Game administrators need to configure and expose game-specific metadata includin
 4. **Given** game introductory metadata is configured, **When** an unauthenticated user accesses the login screen, **Then** they see the game logo, title, description, and theme
 5. **Given** top-level wargame metadata includes theme settings, **When** the theme is updated, **Then** all connected clients reflect the new visual theme
 
+---
+
+### User Story 5 - Standalone Demo/Training Mode (Priority: P5)
+
+Trainers and demonstrators need to run a fully functional instance of the application in a browser without any server dependencies. This standalone mode uses browser storage (localForage) to simulate the backend, allowing for training, demonstrations, and offline development.
+
+**Why this priority**: Critical for training scenarios, sales demonstrations, and development in environments where server access is not available or practical.
+
+**Independent Test**: Can be tested by loading the static HTML build, verifying all chat and admin functions work using browser storage, and confirming data persists across browser sessions.
+
+**Acceptance Scenarios**:
+
+1. **Given** the application is compiled to static HTML, **When** opened in a browser, **Then** it operates using localForage as the backend storage
+2. **Given** a user is in demo mode, **When** they send messages or join rooms, **Then** all data is stored and retrieved from browser storage
+3. **Given** an administrator uses the admin UI in demo mode, **When** they create users or rooms, **Then** changes persist in localForage
+4. **Given** the demo mode is active, **When** the browser is refreshed, **Then** all data remains available from localForage
+5. **Given** a trainer needs to reset the demo, **When** they clear browser storage, **Then** the application returns to initial state
+6. **Given** the application uses backend abstraction, **When** switching between real and mock backends, **Then** the UI code remains unchanged
+
 ### Edge Cases
 
 - What happens when network connectivity is intermittent or lost completely? (Deferred: Messages will queue locally and auto-retry when reconnected - future phase)
@@ -91,6 +110,7 @@ Game administrators need to configure and expose game-specific metadata includin
 - Q: How should the client handle unsent messages when offline? → A: Queue and retry (deferred to future phase)
 - Q: How should conflicts be resolved for simultaneous administrative edits? → A: Pessimistic locking
 - Q: When should permission changes take effect for active users? → A: Backend evicts on room loss, role changes apply immediately
+- Q: How should demo/training mode work without a server? → A: Abstract backend behind interface, provide localForage-based mock implementation that simulates OpenFire functionality in browser storage
 
 ## Requirements *(mandatory)*
 
@@ -119,6 +139,13 @@ Game administrators need to configure and expose game-specific metadata includin
 - **FR-021**: Messages MUST be retained permanently until explicitly erased by an administrator
 - **FR-022**: Administrative settings MUST use pessimistic locking to prevent concurrent modification conflicts
 - **FR-023**: System MUST immediately apply role changes received from the backend and automatically handle room evictions
+- **FR-024**: System MUST abstract all backend operations behind a configurable interface to support multiple backend implementations
+- **FR-025**: System MUST provide a localForage-based mock backend that replicates all OpenFire functionality for demo/training purposes
+- **FR-026**: The mock backend MUST persist data in browser storage across sessions using localForage
+- **FR-027**: Both chat and admin UIs MUST be compilable to static HTML that can run without a server
+- **FR-028**: The backend abstraction layer MUST support seamless switching between real (OpenFire) and mock (localForage) backends without UI code changes
+- **FR-029**: Mock backend MUST simulate XMPP messaging, presence, and PubSub functionality using browser storage and in-memory event emitters
+- **FR-030**: Demo mode MUST provide data reset capability by clearing browser storage
 
 ### Key Entities *(include if feature involves data)*
 
@@ -130,6 +157,7 @@ Game administrators need to configure and expose game-specific metadata includin
 - **Game Metadata**: Contextual information including force structures, mission parameters, scenario details, global theme settings, and introductory content (logo, title, description) available to both authenticated and unauthenticated users
 - **Theme**: Visual customization settings for rooms including colors, logos, and layout preferences
 - **Wargame State**: Versioned metadata tracking current game time and turn number with full history of state changes
+- **Backend Interface**: Abstraction layer defining contracts for all backend operations (authentication, messaging, storage, presence) with swappable implementations for OpenFire and localForage
 
 ## Success Criteria *(mandatory)*
 
@@ -148,10 +176,12 @@ Game administrators need to configure and expose game-specific metadata includin
 
 ## Assumptions
 
-- User authentication handled entirely by OpenFire server with username/password credentials
+- User authentication handled by backend implementation (OpenFire for production, mock auth for demo mode)
 - Messages are retained permanently until an administrator explicitly erases and resets the wargame
 - Form validation will provide clear, actionable error messages
 - System will gracefully degrade when optional features are unavailable
 - Administrators will have appropriate training for system configuration
-- Network infrastructure within deployment environment supports real-time communication protocols
-- OpenFire server serves as the sole backend component for all messaging, authentication, and data persistence
+- Network infrastructure within deployment environment supports real-time communication protocols (when using OpenFire)
+- OpenFire server serves as the production backend, while localForage provides demo/training backend
+- Backend abstraction layer enables seamless switching between implementations without UI changes
+- Browser storage (via localForage) sufficient for demo/training data volumes

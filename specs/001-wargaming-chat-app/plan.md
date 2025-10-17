@@ -5,19 +5,21 @@
 
 ## Summary
 
-Multi-room wargaming chat application with real-time XMPP-based messaging, administrative controls via REST API, structured form submissions, and game metadata management. The system uses OpenFire as the sole backend with React/TypeScript frontends for both chat and administration interfaces.
+XMPP-first multi-room wargaming chat application leveraging native XMPP protocol for all core functionality. The ultra-thin React/TypeScript client uses OpenFire's XMPP features directly for messaging, presence, and room management, with PubSub nodes for extended metadata. A protocol-compliant mock backend simulates exact XMPP behavior using localForage, enabling standalone demo/training mode. This architecture keeps the client minimal while OpenFire handles all heavy lifting for authentication, authorization, and real-time communication.
+
+**Development Approach**: Mock-first development recommended (see [mock-development-guide.md](mock-development-guide.md)) to enable immediate UI development without server dependencies. The mock backend's faithful XMPP simulation ensures seamless transition to real OpenFire.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x / Node.js ≥20
-**Primary Dependencies**: React 18, OpenFire XMPP server, flexlayout-react, React-Admin, RJSF
-**Storage**: OpenFire internal database (persistent message history via MAM)
+**Primary Dependencies**: React 18, OpenFire XMPP server (production), localForage (demo mode), flexlayout-react, React-Admin, RJSF
+**Storage**: OpenFire internal database (production) or browser storage via localForage (demo/training mode)
 **Testing**: Jest (unit), Playwright (e2e), Storybook v9 + Chromatic (visual)
-**Target Platform**: Web browsers (Chrome, Firefox, Safari, Edge)
-**Project Type**: Web application with separate admin interface
+**Target Platform**: Web browsers (Chrome, Firefox, Safari, Edge); Static HTML for demo mode
+**Project Type**: Web application with separate admin interface, compilable to static HTML
 **Performance Goals**: < 2s message delivery, 100-200 concurrent users per room, < 200ms UI response
-**Constraints**: Air-gapped capable, no external runtime dependencies, TypeScript-only
-**Scale/Scope**: 100-1000 concurrent users, ~20-50 rooms, permanent message retention
+**Constraints**: Air-gapped capable, no external runtime dependencies, TypeScript-only, must support serverless demo mode
+**Scale/Scope**: 100-1000 concurrent users (production), ~20-50 rooms, permanent message retention; Demo mode supports smaller scale for training
 
 ## Constitution Check
 
@@ -82,12 +84,29 @@ specs/001-wargaming-chat-app/
 
 ```
 packages/
-├── xmpp/                # XMPP connection and protocol library
+├── backend-interface/   # XMPP protocol interface
 │   ├── src/
-│   │   ├── connection.ts
-│   │   ├── muc.ts       # Multi-User Chat helpers
-│   │   ├── pubsub.ts    # PubSub node management
-│   │   └── types.ts
+│   │   ├── types.ts    # XMPP stanza types (XEP-compliant)
+│   │   ├── xmpp.ts     # Core XMPP operations interface
+│   │   ├── pubsub.ts   # PubSub operations interface
+│   │   └── index.ts
+│   └── tests/
+│
+├── backend-openfire/    # Real XMPP via Stanza.js
+│   ├── src/
+│   │   ├── client.ts   # Stanza.js wrapper
+│   │   ├── muc.ts      # MUC protocol implementation
+│   │   ├── pubsub.ts   # PubSub implementation
+│   │   └── index.ts    # XMPPBackend implementation
+│   └── tests/
+│
+├── backend-mock/        # XMPP protocol simulator
+│   ├── src/
+│   │   ├── storage.ts  # localForage for XMPP data
+│   │   ├── stanzas.ts  # XMPP stanza generation
+│   │   ├── muc.ts      # MUC protocol simulation
+│   │   ├── pubsub.ts   # PubSub simulation
+│   │   └── index.ts    # XMPPBackend implementation
 │   └── tests/
 │
 ├── state/               # Pure TypeScript state containers
@@ -98,15 +117,6 @@ packages/
 │   │   └── types.ts
 │   └── tests/
 │
-├── openfire-rest/       # Typed REST client for OpenFire
-│   ├── src/
-│   │   ├── client.ts
-│   │   ├── users.ts
-│   │   ├── groups.ts
-│   │   ├── rooms.ts
-│   │   └── types.ts
-│   └── tests/
-│
 ├── chat-ui/             # Main chat application
 │   ├── src/
 │   │   ├── components/
@@ -114,21 +124,23 @@ packages/
 │   │   ├── layouts/
 │   │   └── pages/
 │   ├── tests/
-│   └── e2e/
+│   ├── e2e/
+│   └── static/         # Static HTML build output
 │
 └── admin-ui/            # React-Admin interface
     ├── src/
     │   ├── resources/
     │   ├── providers/
     │   └── forms/      # RJSF form builder
-    └── tests/
+    ├── tests/
+    └── static/         # Static HTML build output
 
 .storybook/              # Storybook configuration
 .github/workflows/       # CI/CD pipelines
 playwright.config.ts     # E2E test configuration
 ```
 
-**Structure Decision**: Monorepo with shared packages to ensure type safety across frontend/admin UIs and promote code reuse. The three shared libraries (xmpp, state, openfire-rest) are consumed by both UIs.
+**Structure Decision**: Monorepo with XMPP-protocol-focused packages. The `backend-interface` defines standard XMPP operations that both `backend-openfire` (using Stanza.js) and `backend-mock` (simulating XMPP) must implement exactly. The mock backend must generate identical XMPP stanzas and events to ensure the thin client never knows the difference. State management simply reflects XMPP protocol state (roster, MUC occupancy, MAM history) with PubSub extensions composed only at the UI layer.
 
 ## Complexity Tracking
 

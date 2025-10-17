@@ -3,17 +3,35 @@
 **Date**: 2025-10-17
 **Feature**: Multi-Room Wargaming Chat Application
 
+## Core Architecture Decision
+
+### XMPP-First Thin Client
+
+**Decision**: Leverage XMPP protocol directly as the primary data layer
+**Rationale**:
+- XMPP handles all core messaging, presence, and room management
+- No need for custom protocols or heavy abstraction layers
+- OpenFire does the heavy lifting for authentication, authorization, and routing
+- Client remains extremely lightweight
+- PubSub provides extensibility for metadata without modifying core protocol
+
+**Architecture principles**:
+- Use native XMPP features wherever possible
+- Store extended metadata in PubSub nodes
+- Compose XMPP + PubSub data only at the UI layer
+- Mock backend must faithfully simulate XMPP protocol
+
 ## Technology Decisions
 
 ### 1. XMPP Client Library
 
 **Decision**: Stanza.js (https://github.com/legastero/stanza)
 **Rationale**:
-- JSON-native API (no XML parsing required)
+- JSON-native API aligns with XMPP-first approach
 - TypeScript-first with excellent type definitions
 - Modern async/await patterns
 - Built-in support for all required XEPs (MAM, MUC, PubSub, Stream Management)
-- Simpler developer experience than @xmpp/client
+- Thin wrapper around XMPP protocol, not heavy abstraction
 - Active maintenance by XMPP standards author
 
 **Alternatives considered**:
@@ -223,6 +241,63 @@ MSW for mocked services
 3. Deploy to isolated network
 4. OpenFire on same network (no internet)
 ```
+
+## Backend Abstraction Strategy (Added 2025-10-17)
+
+### Decision: Interface-based backend with swappable implementations
+
+**Rationale**:
+- Enables standalone demo/training mode without server
+- Supports development without OpenFire setup
+- Allows testing without network dependencies
+- Single codebase serves both production and demo
+
+### Mock Backend Architecture
+
+**Decision**: XMPP-compliant simulation with localForage + EventEmitter
+**Rationale**:
+- Must faithfully simulate XMPP protocol behavior
+- localForage stores XMPP-structured data (roster, MUC, MAM)
+- EventEmitter simulates stanza routing
+- Maintains protocol compliance for seamless switching
+
+**Implementation approach**:
+```typescript
+// Mock must simulate XMPP protocol exactly
+interface XMPPBackend {
+  // Core XMPP operations
+  connect(jid: string, password: string): Promise<void>;
+  getRoster(): Promise<XMPPUser[]>;
+  sendMessage(msg: XMPPMessage): void;
+  joinRoom(roomJid: string, nick: string): void;
+
+  // PubSub operations
+  subscribe(node: string): Promise<void>;
+  publish(node: string, item: any): Promise<void>;
+  getItems(node: string): Promise<any[]>;
+}
+
+// Both backends implement same XMPP interface
+const backend: XMPPBackend = isDemoMode
+  ? new MockXMPPBackend(localForage)  // Simulates XMPP
+  : new StanzaBackend(config);         // Real XMPP
+```
+
+**Key requirement**: Mock backend MUST generate identical XMPP stanzas and events as real OpenFire, ensuring the client code never knows the difference.
+
+### Static Build Strategy
+
+**Decision**: Vite static build with runtime config
+**Rationale**:
+- Single HTML file with embedded JS/CSS
+- Runtime backend selection via URL param or localStorage
+- No server required for demo mode
+- Can be hosted on CDN or opened locally
+
+**Build outputs**:
+- `dist/index.html` - Production build (OpenFire)
+- `dist/demo.html` - Demo build (localForage default)
+- Both use same compiled JS with runtime switch
 
 ## Deferred Decisions
 
