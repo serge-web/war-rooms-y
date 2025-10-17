@@ -147,7 +147,7 @@ Based on plan.md monorepo structure:
 - [ ] T061 [P] [US2] Create User resource component in packages/admin-ui/src/resources/users/index.tsx
 - [ ] T062 [P] [US2] Create Room resource component in packages/admin-ui/src/resources/rooms/index.tsx
 - [ ] T063 [P] [US2] Create Group resource component in packages/admin-ui/src/resources/groups/index.tsx
-- [ ] T064 [US2] Implement room theme editor in packages/admin-ui/src/resources/rooms/ThemeEditor.tsx
+- [ ] T064 [US2] Implement Material UI theme editor for rooms in packages/admin-ui/src/resources/rooms/MUIThemeEditor.tsx
 - [ ] T065 [US2] Create bulk user import feature in packages/admin-ui/src/resources/users/BulkImport.tsx
 - [ ] T066 [US2] Implement permission editor in packages/admin-ui/src/resources/groups/PermissionEditor.tsx
 - [ ] T067 [US2] Create admin dashboard in packages/admin-ui/src/pages/Dashboard.tsx
@@ -207,9 +207,9 @@ Based on plan.md monorepo structure:
 - [ ] T089 [P] [US4] Create GameMetadata component in packages/chat-ui/src/components/GameMetadata.tsx
 - [ ] T090 [P] [US4] Create ForceDisplay component in packages/chat-ui/src/components/ForceDisplay.tsx
 - [ ] T091 [P] [US4] Create MissionTracker component in packages/chat-ui/src/components/MissionTracker.tsx
-- [ ] T092 [US4] Implement theme provider in packages/chat-ui/src/providers/ThemeProvider.tsx
+- [ ] T092 [US4] Implement Material UI ThemeProvider with hierarchical theme merging in packages/chat-ui/src/providers/ThemeProvider.tsx
 - [ ] T093 [US4] Create login screen with public metadata in packages/chat-ui/src/pages/LoginPage.tsx
-- [ ] T094 [US4] Create metadata editor in admin in packages/admin-ui/src/resources/metadata/index.tsx
+- [ ] T094 [US4] Create metadata editor with global MUI theme editor in packages/admin-ui/src/resources/metadata/index.tsx
 - [ ] T095 [US4] Implement game state tracker in packages/state/src/stores/gameState.ts
 - [ ] T096 [US4] Add PubSub subscription for metadata in packages/chat-ui/src/hooks/useMetadata.ts
 - [ ] T097 [P] [US4] Create metadata fixtures in packages/backend-mock/src/fixtures/metadata.ts
