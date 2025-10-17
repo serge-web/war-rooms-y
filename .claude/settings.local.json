@@ -7,7 +7,9 @@
       "Bash(git merge:*)",
       "Bash(.specify/scripts/bash/create-new-feature.sh --json \"*\")",
       "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
-      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)"
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
