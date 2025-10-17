@@ -33,4 +33,8 @@
 
 - All validation checks passed ✓
 - Clarification resolved: Room capacity set to 50 users (standard rooms) and 200 users (All Hands rooms)
+- Additional requirements added (2025-10-17):
+  - FR-017: Top-level wargame metadata with global theme settings
+  - FR-018: Anonymous access to introductory game metadata at login screen
+  - Updated User Story 4 with new acceptance scenarios
 - Specification is ready to proceed to `/speckit.plan`

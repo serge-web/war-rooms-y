@@ -60,17 +60,19 @@ Wargame participants need to submit structured reports and updates using predefi
 
 ### User Story 4 - Game Metadata Management (Priority: P4)
 
-Game administrators need to configure and expose game-specific metadata including force structures, mission objectives, and scenario parameters. This metadata provides context for participants and can be referenced during gameplay.
+Game administrators need to configure and expose game-specific metadata including force structures, mission objectives, scenario parameters, and visual theming. This metadata provides context for participants and can be referenced during gameplay. Additionally, introductory information should be available before login to provide game context.
 
 **Why this priority**: Metadata enriches the wargaming experience but is not required for basic communication and coordination functionality.
 
-**Independent Test**: Can be tested by configuring game metadata and verifying participants can view relevant information for their assigned forces and current game phase.
+**Independent Test**: Can be tested by configuring game metadata and verifying both anonymous users see introductory content at login and authenticated participants view relevant information for their assigned forces.
 
 **Acceptance Scenarios**:
 
 1. **Given** game metadata is configured, **When** a participant views room information, **Then** they see relevant force and mission data
 2. **Given** metadata is updated during gameplay, **When** changes are published, **Then** all participants receive notifications
 3. **Given** different forces have different metadata, **When** users from different forces access the system, **Then** they see only their authorized information
+4. **Given** game introductory metadata is configured, **When** an unauthenticated user accesses the login screen, **Then** they see the game logo, title, description, and theme
+5. **Given** top-level wargame metadata includes theme settings, **When** the theme is updated, **Then** all connected clients reflect the new visual theme
 
 ### Edge Cases
 
@@ -100,6 +102,8 @@ Game administrators need to configure and expose game-specific metadata includin
 - **FR-014**: System MUST provide unread message indicators for inactive rooms
 - **FR-015**: System MUST handle up to 50 concurrent users per room for standard rooms, with special "All Hands" rooms supporting up to 200 concurrent users
 - **FR-016**: System MUST operate reliably in air-gapped environments without external network dependencies
+- **FR-017**: System MUST provide a top-level wargame metadata repository that includes global theme settings applicable to all rooms and interfaces
+- **FR-018**: System MUST expose introductory game metadata (logo, title, description, theme) to unauthenticated users at the login screen
 
 ### Key Entities *(include if feature involves data)*
 
@@ -108,7 +112,7 @@ Game administrators need to configure and expose game-specific metadata includin
 - **Room**: Communication channel with message history, participant list, theme, and optional form schemas
 - **Message**: Communication unit containing sender, timestamp, content (text or structured data), and room association
 - **Form Schema**: Template defining structured data fields, validation rules, and display format
-- **Game Metadata**: Contextual information including force structures, mission parameters, and scenario details
+- **Game Metadata**: Contextual information including force structures, mission parameters, scenario details, global theme settings, and introductory content (logo, title, description) available to both authenticated and unauthenticated users
 - **Theme**: Visual customization settings for rooms including colors, logos, and layout preferences
 
 ## Success Criteria *(mandatory)*
