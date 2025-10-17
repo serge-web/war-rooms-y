@@ -76,18 +76,28 @@ Game administrators need to configure and expose game-specific metadata includin
 
 ### Edge Cases
 
-- What happens when network connectivity is intermittent or lost completely?
-- How does the system handle simultaneous edits to the same administrative settings?
-- What occurs when a user's permissions change while they're actively using the system?
+- What happens when network connectivity is intermittent or lost completely? (Deferred: Messages will queue locally and auto-retry when reconnected - future phase)
+- How does the system handle simultaneous edits to the same administrative settings? (Resolved: Use pessimistic locking - administrators must acquire a lock before editing)
+- What occurs when a user's permissions change while they're actively using the system? (Resolved: OpenFire backend handles room eviction automatically; role changes pushed as messages and applied immediately)
 - How does the system manage message history when storage limits are reached?
 - What happens when structured form schemas are modified while users are mid-submission?
+
+## Clarifications
+
+### Session 2025-10-17
+
+- Q: What should be the actual message retention period? → A: Permanent until reset
+- Q: What authentication method should the system use? → A: Username/password via OpenFire
+- Q: How should the client handle unsent messages when offline? → A: Queue and retry (deferred to future phase)
+- Q: How should conflicts be resolved for simultaneous administrative edits? → A: Pessimistic locking
+- Q: When should permission changes take effect for active users? → A: Backend evicts on room loss, role changes apply immediately
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: System MUST support multiple concurrent chat rooms with independent message streams
-- **FR-002**: System MUST authenticate users and enforce room access based on group membership
+- **FR-002**: System MUST authenticate users via OpenFire's built-in authentication and enforce room access based on group membership
 - **FR-003**: Users MUST be able to participate in multiple rooms simultaneously
 - **FR-004**: System MUST deliver messages to all room participants within 2 seconds under normal network conditions
 - **FR-005**: System MUST display user presence (online/offline status) for each room
@@ -104,6 +114,11 @@ Game administrators need to configure and expose game-specific metadata includin
 - **FR-016**: System MUST operate reliably in air-gapped environments without external network dependencies
 - **FR-017**: System MUST provide a top-level wargame metadata repository that includes global theme settings applicable to all rooms and interfaces
 - **FR-018**: System MUST expose introductory game metadata (logo, title, description, theme) to unauthenticated users at the login screen
+- **FR-019**: Administrators MUST be able to erase all existing messages and reset the wargame
+- **FR-020**: System MUST maintain wargame state metadata (game time and turn number) with version history
+- **FR-021**: Messages MUST be retained permanently until explicitly erased by an administrator
+- **FR-022**: Administrative settings MUST use pessimistic locking to prevent concurrent modification conflicts
+- **FR-023**: System MUST immediately apply role changes received from the backend and automatically handle room evictions
 
 ### Key Entities *(include if feature involves data)*
 
@@ -114,6 +129,7 @@ Game administrators need to configure and expose game-specific metadata includin
 - **Form Schema**: Template defining structured data fields, validation rules, and display format
 - **Game Metadata**: Contextual information including force structures, mission parameters, scenario details, global theme settings, and introductory content (logo, title, description) available to both authenticated and unauthenticated users
 - **Theme**: Visual customization settings for rooms including colors, logos, and layout preferences
+- **Wargame State**: Versioned metadata tracking current game time and turn number with full history of state changes
 
 ## Success Criteria *(mandatory)*
 
@@ -124,7 +140,7 @@ Game administrators need to configure and expose game-specific metadata includin
 - **SC-003**: 95% of messages are delivered to all room participants within 2 seconds
 - **SC-004**: Administrators can provision a complete wargame setup (users, groups, rooms) for 50 participants in under 15 minutes
 - **SC-005**: System maintains 99.9% uptime during active wargame exercises
-- **SC-006**: Users can access and search through at least 30 days of message history
+- **SC-006**: Users can access and search through all historical messages (permanent retention)
 - **SC-007**: 90% of users successfully submit structured forms without validation errors on first attempt
 - **SC-008**: System continues operating normally when disconnected from external networks
 - **SC-009**: User interface responds to all interactions within 200ms under normal load
@@ -132,9 +148,10 @@ Game administrators need to configure and expose game-specific metadata includin
 
 ## Assumptions
 
-- User authentication will follow industry-standard practices for secure systems
-- Message retention period will align with typical military exercise requirements (90 days minimum)
+- User authentication handled entirely by OpenFire server with username/password credentials
+- Messages are retained permanently until an administrator explicitly erases and resets the wargame
 - Form validation will provide clear, actionable error messages
 - System will gracefully degrade when optional features are unavailable
 - Administrators will have appropriate training for system configuration
 - Network infrastructure within deployment environment supports real-time communication protocols
+- OpenFire server serves as the sole backend component for all messaging, authentication, and data persistence
