@@ -191,20 +191,15 @@ interface Permission {
 
 ### PubSubRoomExtension
 ```typescript
+import { Theme } from '@mui/material/styles';
+
 // Room metadata from PubSub node /war-rooms/rooms/{roomJid}
 interface PubSubRoomExtension {
   roomJid: string;                // room@conference.domain
   type: 'standard' | 'all-hands' | 'private' | 'command';
 
-  // Visual theming
-  theme?: {
-    primaryColor?: string;
-    secondaryColor?: string;
-    backgroundColor?: string;
-    logoUrl?: string;
-    bannerUrl?: string;
-    customCss?: string;
-  };
+  // Visual theming - Material UI Theme (partial, merged with defaults)
+  theme?: Partial<Theme>;         // MUI Theme object (stored as JSON)
 
   // Form associations
   formSchemaIds?: string[];       // Available forms for this room
@@ -275,6 +270,8 @@ interface PubSubFormSchema {
 
 ### PubSubGameMetadata
 ```typescript
+import { Theme } from '@mui/material/styles';
+
 // Game metadata from PubSub nodes under /war-rooms/game/
 interface PubSubGameMetadata {
   // From /war-rooms/game/metadata
@@ -284,13 +281,8 @@ interface PubSubGameMetadata {
   logoUrl?: string;
 
   // From /war-rooms/game/theme
-  theme: {
-    primaryColor: string;
-    secondaryColor: string;
-    backgroundColor: string;
-    fontFamily?: string;
-    logoPosition?: 'left' | 'center' | 'right';
-  };
+  // Global Material UI theme applied to all interfaces
+  theme: Partial<Theme>;          // MUI Theme object (stored as JSON)
 
   // From /war-rooms/game/state
   state: {
@@ -314,6 +306,7 @@ interface PubSubGameMetadata {
     description?: string;
     logoUrl?: string;
     status?: string;
+    theme?: Partial<Theme>;       // Public subset of theme for login screen
   };
 }
 
@@ -396,6 +389,8 @@ function composeUser(xmpp: XMPPUser, pubsub?: PubSubUserExtension): User {
 
 ### Room (Composite)
 ```typescript
+import { Theme } from '@mui/material/styles';
+
 // Combines XMPP MUC with PubSub extensions
 interface Room {
   // From XMPP
@@ -410,7 +405,7 @@ interface Room {
 
   // From PubSub extension
   type: 'standard' | 'all-hands' | 'private' | 'command';
-  theme?: RoomTheme;
+  theme?: Partial<Theme>;         // MUI Theme (merged with global theme)
   formSchemaIds?: string[];
   forceRestrictions?: string[];
 
@@ -660,6 +655,55 @@ Browser-based simulation of XMPP:
 - **BroadcastChannel**: Cross-tab synchronization
 - **LocalForage watchers**: Detect external changes
 - **Mock stanza routing**: Mimics XMPP message flow
+
+## Theming Strategy
+
+### Material UI Theme Hierarchy
+
+Themes are Material UI `Theme` objects stored as JSON in PubSub:
+
+```typescript
+import { createTheme, Theme } from '@mui/material/styles';
+
+// 1. Default base theme (built-in MUI defaults)
+const baseTheme = createTheme();
+
+// 2. Global game theme from PubSub /war-rooms/game/theme
+const globalTheme = await getPubSubNode('/war-rooms/game/theme');
+const gameTheme = createTheme(baseTheme, globalTheme);
+
+// 3. Room-specific theme from PubSub /war-rooms/rooms/{jid}
+const roomExtension = await getPubSubNode(`/war-rooms/rooms/${roomJid}`);
+const roomTheme = roomExtension.theme
+  ? createTheme(gameTheme, roomExtension.theme)
+  : gameTheme;
+
+// Apply to ThemeProvider
+<ThemeProvider theme={roomTheme}>
+  <ChatRoom />
+</ThemeProvider>
+```
+
+### Theme Composition Order
+
+1. **MUI defaults** (base colors, typography, spacing)
+2. **Global game theme** (wargame-wide branding)
+3. **Room theme** (per-room customization)
+
+Room themes override global, global overrides defaults. This allows:
+- Game designer sets overall look/feel
+- Individual rooms can have force-specific colors
+- Login screen uses public subset from `/war-rooms/game/public`
+
+### Admin UI Theme Editor
+
+The admin interface provides a custom UI for game designers to configure MUI themes:
+- Visual color pickers for palette
+- Typography selectors
+- Component overrides
+- Live preview
+- Export/import theme JSON
+- Validation against MUI schema
 
 ## Implementation Notes
 
