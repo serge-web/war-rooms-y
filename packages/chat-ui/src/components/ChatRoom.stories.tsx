@@ -4,13 +4,13 @@ import { useEffect } from 'react';
 import { ChatRoom } from './ChatRoom';
 import { BackendProvider } from '../providers/BackendProvider';
 import { ThemeProvider } from '../providers/ThemeProvider';
-import { useRoomsStore, setRoomMessagesAtom } from '@war-rooms/state';
+import { useRoomsStore, setRoomMessagesAtom, type RoomsStore } from '@war-rooms/state';
 import type { XMPPMessage } from '@war-rooms/backend-interface';
 
 // Mock room data setup component
 function MockRoomSetup({ roomJid, children }: { roomJid: string; children: React.ReactNode }) {
   const setMessages = useSetAtom(setRoomMessagesAtom);
-  const loadMyRooms = useRoomsStore((state) => state.loadMyRooms);
+  const loadMyRooms = useRoomsStore((state: RoomsStore) => state.loadMyRooms);
 
   useEffect(() => {
     // Set up mock room

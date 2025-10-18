@@ -22,7 +22,8 @@ import {
   sortMessages,
   getMessageSender,
 } from '@war-rooms/state';
-import { useRoomsStore, selectRoom } from '@war-rooms/state';
+import { useRoomsStore, selectRoom, type RoomsStore } from '@war-rooms/state';
+import type { XMPPMessage } from '@war-rooms/backend-interface';
 
 interface ChatRoomProps {
   roomJid: string;
@@ -42,7 +43,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
   const loadArchived = useSetAtom(loadArchivedMessagesAtom);
 
   // Send message action from rooms store
-  const sendMessage = useRoomsStore((state) => state.sendMessage);
+  const sendMessage = useRoomsStore((state: RoomsStore) => state.sendMessage);
 
   // Load archived messages on mount
   useEffect(() => {
@@ -111,7 +112,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
         }}
       >
         <List>
-          {sortedMessages.map((message, index) => (
+          {sortedMessages.map((message: XMPPMessage, index: number) => (
             <React.Fragment key={message.id}>
               <ListItem sx={{ alignItems: 'flex-start', px: 0 }}>
                 <Box sx={{ width: '100%' }}>

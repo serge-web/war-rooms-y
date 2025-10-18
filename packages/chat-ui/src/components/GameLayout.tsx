@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { Layout, Model, TabNode, IJsonModel } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import { useRoomsStore, selectAllRooms } from '@war-rooms/state';
+import { useRoomsStore, selectAllRooms, type RoomState } from '@war-rooms/state';
 import { ChatRoom } from './ChatRoom';
 
 export function GameLayout() {
@@ -26,11 +26,11 @@ export function GameLayout() {
         type: 'row',
         weight: 100,
         children: allRooms
-          .filter((room) => {
+          .filter((room: RoomState) => {
             // Exclude all-hands from game area (it's in OutOfGamePanel)
             return !room.info.jid.startsWith('all-hands@');
           })
-          .map((room) => ({
+          .map((room: RoomState) => ({
             type: 'tabset',
             weight: 50,
             children: [
