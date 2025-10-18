@@ -1,28 +1,26 @@
-// Add custom jest matchers from jest-dom
+// Jest setup file
 require('@testing-library/jest-dom');
 
-// Mock localForage for tests
-jest.mock('localforage', () => ({
-  createInstance: jest.fn(() => ({
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
-    keys: jest.fn(),
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
   })),
+});
+
+// Mock localStorage
+const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
-  keys: jest.fn(),
-}));
-
-// Mock BroadcastChannel for cross-tab tests
-global.BroadcastChannel = class BroadcastChannel {
-  constructor(name) {
-    this.name = name;
-    this.onmessage = null;
-  }
-  postMessage() {}
-  close() {}
 };
+global.localStorage = localStorageMock;

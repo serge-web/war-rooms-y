@@ -12,7 +12,8 @@
       "WebSearch",
       "SlashCommand(/speckit.tasks)",
       "Bash(npm install)",
-      "Bash(npm:*)"
+      "Bash(npm:*)",
+      "Bash(npx storybook@latest init:*)"
     ],
     "deny": [],
     "ask": []
