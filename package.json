@@ -64,5 +64,10 @@
     "collaboration"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@types/react": "^18.3.26",
+    "jotai": "^2.15.0",
+    "zustand": "^5.0.8"
+  }
 }
