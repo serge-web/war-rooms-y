@@ -7,7 +7,7 @@ import { seedMockData } from './utils/seedMockData';
 // Seed mock data on first load
 const hasSeeded = localStorage.getItem('war-rooms-mock-seeded');
 if (!hasSeeded) {
-  seedMockData().then(() => {
+  void seedMockData().then(() => {
     localStorage.setItem('war-rooms-mock-seeded', 'true');
   });
 }
