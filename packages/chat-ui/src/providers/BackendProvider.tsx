@@ -57,7 +57,6 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   // Create backend instance
   const backend = useMemo(() => {
     const config = getBackendConfig();
-    console.info('[BackendProvider] Initializing backend', { config });
     return new MockXMPPBackend(config);
   }, []);
 
@@ -71,13 +70,11 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
     setPubSub(pubsub);
     setMessageBackend({ backend });
 
-    console.info('[BackendProvider] Backend initialized');
-
     // Cleanup on unmount
     return () => {
       backend.disconnect().catch(console.error);
     };
-  }, [backend, pubsub, setBackend, setRoomsBackend, setPubSub]);
+  }, [backend, pubsub, setBackend, setRoomsBackend, setPubSub, setMessageBackend]);
 
   return <>{children}</>;
 }

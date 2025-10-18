@@ -43,6 +43,13 @@ module.exports = {
       },
     },
     {
+      // Allow console in mock backend for debugging
+      files: ['packages/backend-mock/**/*.ts', 'packages/chat-ui/src/utils/seedMockData.ts'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+    {
       // Apply type-checking rules only to source files (not tests)
       files: ['packages/*/src/**/*.ts', 'packages/*/src/**/*.tsx'],
       excludedFiles: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx', '**/__tests__/**'],

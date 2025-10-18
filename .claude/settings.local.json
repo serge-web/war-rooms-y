@@ -13,7 +13,8 @@
       "SlashCommand(/speckit.tasks)",
       "Bash(npm install)",
       "Bash(npm:*)",
-      "Bash(npx storybook@latest init:*)"
+      "Bash(npx storybook@latest init:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []
