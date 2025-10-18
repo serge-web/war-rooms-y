@@ -14,7 +14,9 @@
       "Bash(npm install)",
       "Bash(npm:*)",
       "Bash(npx storybook@latest init:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run watch:*)"
     ],
     "deny": [],
     "ask": []
