@@ -163,6 +163,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
               void handleSend();
             }}
             disabled={!messageText.trim()}
+            aria-label="Send"
           >
             <SendIcon />
           </IconButton>
