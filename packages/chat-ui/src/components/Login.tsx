@@ -69,7 +69,7 @@ export function Login() {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => { void handleSubmit(e); }}>
             <TextField
               label="Username"
               fullWidth
