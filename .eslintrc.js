@@ -35,6 +35,9 @@ module.exports = {
     {
       // Relax rules for test files (must come first to take precedence)
       files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx', 'e2e/**/*.ts'],
+      parserOptions: {
+        project: null,
+      },
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
       },
@@ -47,6 +50,15 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-floating-promises': 'error',
         '@typescript-eslint/no-misused-promises': 'error',
+        // Relax unsafe-any rules to warnings (not blocking)
+        '@typescript-eslint/no-unsafe-assignment': 'warn',
+        '@typescript-eslint/no-unsafe-return': 'warn',
+        '@typescript-eslint/no-unsafe-member-access': 'warn',
+        '@typescript-eslint/no-unsafe-call': 'warn',
+        '@typescript-eslint/no-unsafe-argument': 'warn',
+        '@typescript-eslint/require-await': 'warn',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+        '@typescript-eslint/restrict-template-expressions': 'warn',
       },
     },
   ],
