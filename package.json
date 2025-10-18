@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "bootstrap": "npm install",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace=packages/backend-interface && npm run build --workspace=packages/backend-mock && npm run build --workspace=packages/state && npm run build --workspace=packages/chat-ui",
     "dev": "npm run dev --workspace=packages/chat-ui",
     "test": "jest",
     "test:watch": "jest --watch",
