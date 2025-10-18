@@ -9,12 +9,12 @@ test.describe('Chat Functionality', () => {
   });
 
   test('should display assigned rooms', async ({ page }) => {
-    // Commander.red should see Red Command and All Hands
-    await expect(page.getByText('Red Force Command')).toBeVisible();
-    await expect(page.getByText('All Hands')).toBeVisible();
+    // Commander.red should see Red Command and All Hands (check headings in room panels)
+    await expect(page.getByRole('heading', { name: 'Red Force Command' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'All Hands' })).toBeVisible();
 
     // Should NOT see Blue Command
-    await expect(page.getByText('Blue Force Command')).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Blue Force Command' })).not.toBeVisible();
   });
 
   test('should display messages in All Hands room', async ({ page }) => {
