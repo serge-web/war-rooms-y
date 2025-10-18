@@ -47,7 +47,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
 
   // Load archived messages on mount
   useEffect(() => {
-    loadArchived({ roomJid, limit: 50 });
+    void loadArchived({ roomJid, limit: 50 });
   }, [roomJid, loadArchived]);
 
   // Auto-scroll to bottom when new messages arrive
@@ -76,7 +76,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   };
 
@@ -161,7 +161,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
           />
           <IconButton
             color="primary"
-            onClick={handleSend}
+            onClick={() => { void handleSend(); }}
             disabled={!messageText.trim()}
           >
             <SendIcon />
