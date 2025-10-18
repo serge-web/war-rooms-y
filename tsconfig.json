@@ -25,19 +25,15 @@
     "paths": {
       "@war-rooms/backend-interface": ["./packages/backend-interface/src"],
       "@war-rooms/backend-mock": ["./packages/backend-mock/src"],
-      "@war-rooms/backend-openfire": ["./packages/backend-openfire/src"],
       "@war-rooms/state": ["./packages/state/src"],
-      "@war-rooms/chat-ui": ["./packages/chat-ui/src"],
-      "@war-rooms/admin-ui": ["./packages/admin-ui/src"]
+      "@war-rooms/chat-ui": ["./packages/chat-ui/src"]
     }
   },
   "include": [],
   "references": [
     { "path": "./packages/backend-interface" },
     { "path": "./packages/backend-mock" },
-    { "path": "./packages/backend-openfire" },
     { "path": "./packages/state" },
-    { "path": "./packages/chat-ui" },
-    { "path": "./packages/admin-ui" }
+    { "path": "./packages/chat-ui" }
   ]
 }
