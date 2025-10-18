@@ -38,6 +38,7 @@ export interface RoomsStore {
 
   // Actions
   setBackend: (backend: XMPPBackend) => void;
+  loadMyRooms: () => Promise<void>;
   joinRoom: (roomJid: string, nickname: string, password?: string) => Promise<void>;
   leaveRoom: (roomJid: string) => Promise<void>;
   loadRoomInfo: (roomJid: string) => Promise<void>;
@@ -69,6 +70,33 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
     });
 
     set({ backend });
+  },
+
+  loadMyRooms: async () => {
+    const { backend, rooms } = get();
+
+    if (!backend) {
+      throw new Error('Backend not initialized');
+    }
+
+    try {
+      const myRooms = await backend.getMyRooms();
+
+      // Add all assigned rooms to state (not joined, just discovered)
+      for (const xmppRoom of myRooms) {
+        rooms.set(xmppRoom.jid, {
+          info: xmppRoom,
+          occupants: xmppRoom.occupants || [],
+          joined: false,
+          loading: false,
+        });
+      }
+
+      set({ rooms: new Map(rooms) });
+    } catch (error) {
+      console.error('[RoomsStore] Load my rooms failed:', error);
+      throw error;
+    }
   },
 
   joinRoom: async (roomJid: string, nickname: string, password?: string) => {

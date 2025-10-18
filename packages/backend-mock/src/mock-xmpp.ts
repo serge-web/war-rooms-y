@@ -440,8 +440,9 @@ export class MockXMPPBackend implements XMPPBackend {
     }
 
     // Get forces and room extensions from PubSub for membership checking
-    const forces = await this.storage.getAll<{ members: string[]; id: string }>('pubsub/nodes//war-rooms/forces/items/');
-    const roomExtensions = await this.storage.getAll<{ roomJid: string; forceRestrictions?: string[] }>('pubsub/nodes//war-rooms/rooms/items/');
+    type PubSubItem<T> = { id: string; payload: T };
+    const forces = await this.storage.getAll<PubSubItem<{ members: string[]; id: string }>>('pubsub/nodes//war-rooms/forces/items/');
+    const roomExtensions = await this.storage.getAll<PubSubItem<{ roomJid: string; forceRestrictions?: string[] }>>('pubsub/nodes//war-rooms/rooms/items/');
 
     const myRooms: XMPPRoom[] = [];
 
@@ -466,15 +467,15 @@ export class MockXMPPBackend implements XMPPBackend {
 
       // Check 3: User's force has access
       if (!hasAccess) {
-        const extension = Object.values(roomExtensions).find((ext) => ext.payload && (ext.payload as any).roomJid === roomJid);
-        if (extension?.payload && (extension.payload as any).forceRestrictions) {
-          const forceRestrictions = (extension.payload as any).forceRestrictions as string[];
+        const extension = Object.values(roomExtensions).find((ext) => ext.payload?.roomJid === roomJid);
+        if (extension?.payload?.forceRestrictions) {
+          const forceRestrictions = extension.payload.forceRestrictions;
 
           // Check if user is member of any restricted force
           for (const forceId of forceRestrictions) {
-            const force = Object.values(forces).find((f) => f.payload && (f.payload as any).id === forceId);
-            if (force?.payload && (force.payload as any).members) {
-              const forceMembers = (force.payload as any).members as string[];
+            const force = Object.values(forces).find((f) => f.payload?.id === forceId);
+            if (force?.payload?.members) {
+              const forceMembers = force.payload.members;
               if (forceMembers.includes(bareJid)) {
                 hasAccess = true;
                 break;
