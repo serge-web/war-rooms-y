@@ -10,7 +10,9 @@
       "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
       "Bash(.specify/scripts/bash/setup-plan.sh:*)",
       "WebSearch",
-      "SlashCommand(/speckit.tasks)"
+      "SlashCommand(/speckit.tasks)",
+      "Bash(npm install)",
+      "Bash(npm:*)"
     ],
     "deny": [],
     "ask": []

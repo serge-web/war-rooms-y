@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+.storybook-static/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+packages/*/dist/
+packages/*/build/
+*.min.js
+*.d.ts

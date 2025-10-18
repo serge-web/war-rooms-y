@@ -1,0 +1,564 @@
+/**
+ * Mock Fixtures
+ * Realistic XMPP-compliant seed data for development
+ */
+
+import type {
+  XMPPUser,
+  XMPPRoom,
+  XMPPMessage,
+  GameMetadata,
+  GameTheme,
+  ForceMetadata,
+  RoomExtension,
+  FormSchema,
+} from '@war-rooms/backend-interface';
+
+import { buildJid, generateMessageId } from './helpers';
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+export const MOCK_DOMAIN = 'wargame.local';
+export const MOCK_CONFERENCE = `conference.${MOCK_DOMAIN}`;
+export const MOCK_PUBSUB = `pubsub.${MOCK_DOMAIN}`;
+
+// ============================================================================
+// Users (Roster)
+// ============================================================================
+
+export const MOCK_USERS: XMPPUser[] = [
+  {
+    jid: buildJid('commander.red', MOCK_DOMAIN),
+    bare_jid: buildJid('commander.red', MOCK_DOMAIN),
+    name: 'Red Force Commander',
+    subscription: 'both',
+    groups: ['Red Force', 'Commanders'],
+    vcard: {
+      fn: 'Commander Red',
+      nickname: 'RedCmd',
+      org: 'Red Force',
+      title: 'Force Commander',
+    },
+  },
+  {
+    jid: buildJid('commander.blue', MOCK_DOMAIN),
+    bare_jid: buildJid('commander.blue', MOCK_DOMAIN),
+    name: 'Blue Force Commander',
+    subscription: 'both',
+    groups: ['Blue Force', 'Commanders'],
+    vcard: {
+      fn: 'Commander Blue',
+      nickname: 'BlueCmd',
+      org: 'Blue Force',
+      title: 'Force Commander',
+    },
+  },
+  {
+    jid: buildJid('analyst.red1', MOCK_DOMAIN),
+    bare_jid: buildJid('analyst.red1', MOCK_DOMAIN),
+    name: 'Red Analyst 1',
+    subscription: 'both',
+    groups: ['Red Force', 'Analysts'],
+    vcard: {
+      fn: 'Analyst Red 1',
+      nickname: 'RedA1',
+      org: 'Red Force',
+      title: 'Intelligence Analyst',
+    },
+  },
+  {
+    jid: buildJid('analyst.blue1', MOCK_DOMAIN),
+    bare_jid: buildJid('analyst.blue1', MOCK_DOMAIN),
+    name: 'Blue Analyst 1',
+    subscription: 'both',
+    groups: ['Blue Force', 'Analysts'],
+    vcard: {
+      fn: 'Analyst Blue 1',
+      nickname: 'BlueA1',
+      org: 'Blue Force',
+      title: 'Intelligence Analyst',
+    },
+  },
+  {
+    jid: buildJid('gamemaster', MOCK_DOMAIN),
+    bare_jid: buildJid('gamemaster', MOCK_DOMAIN),
+    name: 'Game Master',
+    subscription: 'both',
+    groups: ['Control', 'Game Masters'],
+    vcard: {
+      fn: 'Game Master',
+      nickname: 'GM',
+      org: 'Control',
+      title: 'Senior Game Master',
+    },
+  },
+];
+
+// ============================================================================
+// Forces
+// ============================================================================
+
+export const MOCK_FORCES: ForceMetadata[] = [
+  {
+    id: 'force-red',
+    name: 'Red Force',
+    description: 'Opposing force conducting offensive operations',
+    color: '#D32F2F',
+    members: [
+      buildJid('commander.red', MOCK_DOMAIN),
+      buildJid('analyst.red1', MOCK_DOMAIN),
+    ],
+    commander: buildJid('commander.red', MOCK_DOMAIN),
+    metadata: {
+      designation: 'OPFOR',
+      strength: '2 members',
+    },
+    createdAt: '2025-01-15T08:00:00.000Z',
+    createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+  },
+  {
+    id: 'force-blue',
+    name: 'Blue Force',
+    description: 'Friendly force conducting defensive operations',
+    color: '#1976D2',
+    members: [
+      buildJid('commander.blue', MOCK_DOMAIN),
+      buildJid('analyst.blue1', MOCK_DOMAIN),
+    ],
+    commander: buildJid('commander.blue', MOCK_DOMAIN),
+    metadata: {
+      designation: 'BLUFOR',
+      strength: '2 members',
+    },
+    createdAt: '2025-01-15T08:00:00.000Z',
+    createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+  },
+];
+
+// ============================================================================
+// Game Metadata
+// ============================================================================
+
+export const MOCK_GAME: GameMetadata = {
+  id: 'game-2025-winter-exercise',
+  title: 'Winter Exercise 2025',
+  description: 'Multi-domain wargaming exercise focusing on defensive operations',
+  startTime: '2025-01-20T09:00:00.000Z',
+  endTime: '2025-01-22T17:00:00.000Z',
+  status: 'active',
+  gameMasters: [buildJid('gamemaster', MOCK_DOMAIN)],
+  metadata: {
+    scenario: 'Defensive Operations',
+    classification: 'UNCLASSIFIED',
+    participants: 5,
+  },
+  createdAt: '2025-01-15T08:00:00.000Z',
+  createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+  updatedAt: '2025-01-20T09:00:00.000Z',
+};
+
+// ============================================================================
+// Game Theme (Material UI)
+// ============================================================================
+
+export const MOCK_GAME_THEME: GameTheme = {
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90CAF9',
+    },
+    secondary: {
+      main: '#F48FB1',
+    },
+    background: {
+      default: '#1A1A1A',
+      paper: '#242424',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto Mono", "Courier New", monospace',
+  },
+} as GameTheme;
+
+// ============================================================================
+// Rooms
+// ============================================================================
+
+export const MOCK_ROOMS: Array<{
+  info: XMPPRoom['info'];
+  jid: string;
+  extension?: RoomExtension;
+}> = [
+  {
+    jid: buildJid('all-hands', MOCK_CONFERENCE),
+    info: {
+      identity: {
+        category: 'conference',
+        type: 'text',
+        name: 'All Hands',
+      },
+      features: [
+        'http://jabber.org/protocol/muc',
+        'muc_public',
+        'muc_persistent',
+        'muc_open',
+      ],
+      x: {
+        description: 'Main coordination room for all participants',
+        'muc#roomconfig_roomname': 'All Hands',
+        'muc#roomconfig_roomdesc': 'Main coordination room',
+        'muc#roomconfig_persistentroom': true,
+        'muc#roomconfig_publicroom': true,
+        'muc#roomconfig_membersonly': false,
+        'muc#roomconfig_moderatedroom': false,
+      },
+    },
+    extension: {
+      roomJid: buildJid('all-hands', MOCK_CONFERENCE),
+      type: 'all-hands',
+      formSchemaIds: ['sitrep', 'intsum'],
+      createdAt: '2025-01-15T08:00:00.000Z',
+      createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+    },
+  },
+  {
+    jid: buildJid('red-command', MOCK_CONFERENCE),
+    info: {
+      identity: {
+        category: 'conference',
+        type: 'text',
+        name: 'Red Force Command',
+      },
+      features: [
+        'http://jabber.org/protocol/muc',
+        'muc_persistent',
+        'muc_membersonly',
+      ],
+      x: {
+        description: 'Red Force command and control room',
+        'muc#roomconfig_roomname': 'Red Force Command',
+        'muc#roomconfig_roomdesc': 'Red Force C2',
+        'muc#roomconfig_persistentroom': true,
+        'muc#roomconfig_publicroom': false,
+        'muc#roomconfig_membersonly': true,
+        'muc#roomconfig_moderatedroom': false,
+      },
+    },
+    extension: {
+      roomJid: buildJid('red-command', MOCK_CONFERENCE),
+      type: 'command',
+      forceRestrictions: ['force-red'],
+      formSchemaIds: ['sitrep', 'oporder'],
+      theme: {
+        palette: {
+          primary: {
+            main: '#D32F2F',
+          },
+        },
+      } as Partial<import('@mui/material/styles').Theme>,
+      createdAt: '2025-01-15T08:00:00.000Z',
+      createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+    },
+  },
+  {
+    jid: buildJid('blue-command', MOCK_CONFERENCE),
+    info: {
+      identity: {
+        category: 'conference',
+        type: 'text',
+        name: 'Blue Force Command',
+      },
+      features: [
+        'http://jabber.org/protocol/muc',
+        'muc_persistent',
+        'muc_membersonly',
+      ],
+      x: {
+        description: 'Blue Force command and control room',
+        'muc#roomconfig_roomname': 'Blue Force Command',
+        'muc#roomconfig_roomdesc': 'Blue Force C2',
+        'muc#roomconfig_persistentroom': true,
+        'muc#roomconfig_publicroom': false,
+        'muc#roomconfig_membersonly': true,
+        'muc#roomconfig_moderatedroom': false,
+      },
+    },
+    extension: {
+      roomJid: buildJid('blue-command', MOCK_CONFERENCE),
+      type: 'command',
+      forceRestrictions: ['force-blue'],
+      formSchemaIds: ['sitrep', 'oporder'],
+      theme: {
+        palette: {
+          primary: {
+            main: '#1976D2',
+          },
+        },
+      } as Partial<import('@mui/material/styles').Theme>,
+      createdAt: '2025-01-15T08:00:00.000Z',
+      createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+    },
+  },
+];
+
+// ============================================================================
+// Sample Messages
+// ============================================================================
+
+export const MOCK_MESSAGES: XMPPMessage[] = [
+  {
+    id: generateMessageId(),
+    from: `${buildJid('all-hands', MOCK_CONFERENCE)}/GM`,
+    to: buildJid('all-hands', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Welcome to Winter Exercise 2025. Exercise start time is 0900Z.',
+    delay: {
+      stamp: '2025-01-20T08:55:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('all-hands', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('all-hands', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Red Force standing by.',
+    delay: {
+      stamp: '2025-01-20T08:56:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('all-hands', MOCK_CONFERENCE)}/BlueCmd`,
+    to: buildJid('all-hands', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Blue Force ready.',
+    delay: {
+      stamp: '2025-01-20T08:57:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-command', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('red-command', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'RedA1, prepare initial SITREP for T+30 minutes.',
+    delay: {
+      stamp: '2025-01-20T09:05:00.000Z',
+    },
+  },
+];
+
+// ============================================================================
+// Form Schemas (RJSF)
+// ============================================================================
+
+export const MOCK_FORM_SCHEMAS: FormSchema[] = [
+  {
+    id: 'sitrep',
+    title: 'Situation Report (SITREP)',
+    description: 'Standard situation report format',
+    schema: {
+      type: 'object',
+      required: ['datetime', 'location', 'situation'],
+      properties: {
+        datetime: {
+          type: 'string',
+          format: 'date-time',
+          title: 'Date/Time',
+        },
+        location: {
+          type: 'string',
+          title: 'Location',
+        },
+        situation: {
+          type: 'string',
+          title: 'Situation',
+        },
+        ownForces: {
+          type: 'string',
+          title: 'Own Forces',
+        },
+        enemyForces: {
+          type: 'string',
+          title: 'Enemy Forces',
+        },
+        assessment: {
+          type: 'string',
+          title: 'Assessment',
+        },
+      },
+    },
+    uiSchema: {
+      datetime: {
+        'ui:widget': 'datetime',
+      },
+      situation: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 5,
+        },
+      },
+      ownForces: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+      enemyForces: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+      assessment: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+    },
+    icon: 'description',
+    tags: ['report', 'tactical'],
+    createdAt: '2025-01-15T08:00:00.000Z',
+    createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+  },
+  {
+    id: 'intsum',
+    title: 'Intelligence Summary (INTSUM)',
+    description: 'Intelligence summary report',
+    schema: {
+      type: 'object',
+      required: ['datetime', 'summary'],
+      properties: {
+        datetime: {
+          type: 'string',
+          format: 'date-time',
+          title: 'Date/Time',
+        },
+        summary: {
+          type: 'string',
+          title: 'Summary',
+        },
+        enemyActivity: {
+          type: 'string',
+          title: 'Enemy Activity',
+        },
+        intelligence: {
+          type: 'string',
+          title: 'Key Intelligence',
+        },
+        threats: {
+          type: 'array',
+          title: 'Identified Threats',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+    },
+    uiSchema: {
+      datetime: {
+        'ui:widget': 'datetime',
+      },
+      summary: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 5,
+        },
+      },
+      enemyActivity: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+      intelligence: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+    },
+    icon: 'analytics',
+    tags: ['intelligence', 'report'],
+    createdAt: '2025-01-15T08:00:00.000Z',
+    createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+  },
+  {
+    id: 'oporder',
+    title: 'Operations Order (OPORD)',
+    description: 'Standard five-paragraph operations order',
+    schema: {
+      type: 'object',
+      required: ['datetime', 'situation', 'mission', 'execution'],
+      properties: {
+        datetime: {
+          type: 'string',
+          format: 'date-time',
+          title: 'Date/Time',
+        },
+        situation: {
+          type: 'string',
+          title: '1. Situation',
+        },
+        mission: {
+          type: 'string',
+          title: '2. Mission',
+        },
+        execution: {
+          type: 'string',
+          title: '3. Execution',
+        },
+        sustainment: {
+          type: 'string',
+          title: '4. Sustainment',
+        },
+        commandAndSignal: {
+          type: 'string',
+          title: '5. Command and Signal',
+        },
+      },
+    },
+    uiSchema: {
+      datetime: {
+        'ui:widget': 'datetime',
+      },
+      situation: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 4,
+        },
+      },
+      mission: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+      execution: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 5,
+        },
+      },
+      sustainment: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+      commandAndSignal: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 3,
+        },
+      },
+    },
+    icon: 'assignment',
+    tags: ['order', 'tactical'],
+    createdAt: '2025-01-15T08:00:00.000Z',
+    createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+  },
+];

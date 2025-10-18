@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+coverage/
+.storybook-static/
+*.min.js
+*.d.ts
+packages/*/dist/
+packages/*/build/
+.eslintrc.js
+jest.config.js
+playwright.config.ts
+vite.config.ts
