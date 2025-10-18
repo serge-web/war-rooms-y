@@ -174,6 +174,15 @@ export interface XMPPBackend {
   getRoomOccupants(roomJid: string): Promise<XMPPOccupant[]>;
 
   /**
+   * Get all rooms the current user is a member of
+   * Returns rooms where:
+   * - Room is public (all-hands), OR
+   * - User JID is in room member list, OR
+   * - User's roster groups overlap with room's assigned groups
+   */
+  getMyRooms(): Promise<XMPPRoom[]>;
+
+  /**
    * Change room subject
    */
   setRoomSubject(roomJid: string, subject: string): Promise<void>;
