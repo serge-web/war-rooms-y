@@ -4,12 +4,14 @@
  */
 
 import React, { useEffect, useMemo } from 'react';
+import { useSetAtom } from 'jotai';
 import type { XMPPConfig } from '@war-rooms/backend-interface';
 import { MockXMPPBackend, MockPubSubMetadata } from '@war-rooms/backend-mock';
 import {
   useConnectionStore,
   useRoomsStore,
   useMetadataStore,
+  messageBackendAtom,
 } from '@war-rooms/state';
 
 // ============================================================================
@@ -47,6 +49,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   const setBackend = useConnectionStore((state) => state.setBackend);
   const setRoomsBackend = useRoomsStore((state) => state.setBackend);
   const setPubSub = useMetadataStore((state) => state.setPubSub);
+  const setMessageBackend = useSetAtom(messageBackendAtom);
 
   // Create backend instance
   const backend = useMemo(() => {
@@ -63,6 +66,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
     setBackend(backend);
     setRoomsBackend(backend);
     setPubSub(pubsub);
+    setMessageBackend({ backend });
 
     console.info('[BackendProvider] Backend initialized');
 

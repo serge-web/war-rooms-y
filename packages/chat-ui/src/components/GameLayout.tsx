@@ -3,7 +3,7 @@
  * Multi-column layout for room columns using flexlayout-react
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout, Model, TabNode, IJsonModel } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import { useRoomsStore, selectAllRooms } from '@war-rooms/state';
@@ -11,9 +11,9 @@ import { ChatRoom } from './ChatRoom';
 
 export function GameLayout() {
   const allRooms = useRoomsStore(selectAllRooms);
-  const modelRef = useRef<Model | null>(null);
+  const [model, setModel] = useState<Model | null>(null);
 
-  // Initialize flexlayout model
+  // Re-create flexlayout model when rooms change
   useEffect(() => {
     const json: IJsonModel = {
       global: {
@@ -66,7 +66,7 @@ export function GameLayout() {
       };
     }
 
-    modelRef.current = Model.fromJson(json);
+    setModel(Model.fromJson(json));
   }, [allRooms]);
 
   const factory = (node: TabNode) => {
@@ -88,13 +88,13 @@ export function GameLayout() {
     return <div>Unknown component: {component}</div>;
   };
 
-  if (!modelRef.current) {
+  if (!model) {
     return <div>Loading...</div>;
   }
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <Layout model={modelRef.current} factory={factory} />
+      <Layout model={model} factory={factory} />
     </div>
   );
 }
