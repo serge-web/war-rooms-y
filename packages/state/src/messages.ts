@@ -14,16 +14,12 @@ import type { XMPPMessage, XMPPBackend } from '@war-rooms/backend-interface';
 /**
  * Messages atom family - one atom per room JID
  */
-export const messagesAtomFamily = atomFamily((_roomJid: string) =>
-  atom<XMPPMessage[]>([])
-);
+export const messagesAtomFamily = atomFamily((_roomJid: string) => atom<XMPPMessage[]>([]));
 
 /**
  * Loading state atom family - one per room JID
  */
-export const messagesLoadingAtomFamily = atomFamily((_roomJid: string) =>
-  atom<boolean>(false)
-);
+export const messagesLoadingAtomFamily = atomFamily((_roomJid: string) => atom<boolean>(false));
 
 // ============================================================================
 // Global Message Handler Atom
@@ -86,13 +82,10 @@ export const setRoomMessagesAtom = atom(
 /**
  * Clear messages for a room
  */
-export const clearRoomMessagesAtom = atom(
-  null,
-  (_get, set, roomJid: string) => {
-    const messagesAtom = messagesAtomFamily(roomJid);
-    set(messagesAtom, []);
-  }
-);
+export const clearRoomMessagesAtom = atom(null, (_get, set, roomJid: string) => {
+  const messagesAtom = messagesAtomFamily(roomJid);
+  set(messagesAtom, []);
+});
 
 /**
  * Load archived messages for a room
@@ -110,7 +103,10 @@ export const loadArchivedMessagesAtom = atom(
     set(loadingAtom, true);
 
     try {
-      const result = await backendRef.backend.queryArchive(roomJid, limit !== undefined ? { limit } : {});
+      const result = await backendRef.backend.queryArchive(
+        roomJid,
+        limit !== undefined ? { limit } : {}
+      );
       const messagesAtom = messagesAtomFamily(roomJid);
       set(messagesAtom, result.messages);
     } catch (error) {

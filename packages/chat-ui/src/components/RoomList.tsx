@@ -12,9 +12,7 @@ import {
   ListItemIcon,
   Typography,
 } from '@mui/material';
-import {
-  MeetingRoom as RoomIcon,
-} from '@mui/icons-material';
+import { MeetingRoom as RoomIcon } from '@mui/icons-material';
 import { useRoomsStore, selectAllRooms, type RoomState } from '@war-rooms/state';
 
 interface RoomListProps {
@@ -36,9 +34,7 @@ export function RoomList({ onRoomSelect }: RoomListProps) {
 
           return (
             <ListItem key={room.info.jid} disablePadding>
-              <ListItemButton
-                onClick={() => onRoomSelect?.(room.info.jid)}
-              >
+              <ListItemButton onClick={() => onRoomSelect?.(room.info.jid)}>
                 <ListItemIcon>
                   <RoomIcon />
                 </ListItemIcon>

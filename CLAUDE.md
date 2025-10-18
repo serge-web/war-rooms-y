@@ -11,6 +11,7 @@ This is a **Speckit** repository - a specification-driven development workflow t
 All workflow commands are namespaced under `/speckit.`:
 
 ### Feature Specification
+
 - `/speckit.specify <feature-description>` - Create feature spec from natural language description
   - Creates feature branch and `specs/<feature>/spec.md`
   - Generates spec using `.specify/templates/spec-template.md`
@@ -18,6 +19,7 @@ All workflow commands are namespaced under `/speckit.`:
   - Limits clarifications to max 3 critical questions
 
 ### Implementation Planning
+
 - `/speckit.plan` - Generate implementation plan with tech stack and architecture
   - **Phase 0**: Research unknowns, resolve NEEDS CLARIFICATION markers
   - **Phase 1**: Generate `data-model.md`, `contracts/`, `quickstart.md`
@@ -25,6 +27,7 @@ All workflow commands are namespaced under `/speckit.`:
   - Validates against constitution rules
 
 ### Task Generation
+
 - `/speckit.tasks` - Generate dependency-ordered task list from design artifacts
   - Organizes tasks by user story priority (P1, P2, P3)
   - Each story is independently testable and deployable
@@ -32,6 +35,7 @@ All workflow commands are namespaced under `/speckit.`:
   - Creates parallel execution opportunities
 
 ### Implementation Execution
+
 - `/speckit.implement` - Execute all tasks from `tasks.md`
   - Validates checklists before proceeding
   - Follows TDD approach (tests before implementation)
@@ -39,6 +43,7 @@ All workflow commands are namespaced under `/speckit.`:
   - Updates ignore files (`.gitignore`, `.dockerignore`, etc.)
 
 ### Quality & Refinement
+
 - `/speckit.clarify` - Identify underspecified areas and gather targeted clarifications
 - `/speckit.analyze` - Cross-artifact consistency and quality analysis
 - `/speckit.checklist` - Generate custom checklist for current feature
@@ -82,6 +87,7 @@ specs/<feature-id>/             # Generated per feature
 ## Critical Workflow Rules
 
 ### Specification Phase
+
 - **Technology-agnostic**: No frameworks, languages, or implementation details in spec.md
 - **User-focused**: Written for business stakeholders, not developers
 - **Testable requirements**: Every requirement must be measurable and unambiguous
@@ -89,17 +95,20 @@ specs/<feature-id>/             # Generated per feature
 - **Success criteria**: Must be measurable, technology-agnostic outcomes
 
 ### Planning Phase
+
 - **Constitution compliance**: All designs must pass constitution gates
 - **Research first**: Resolve all unknowns in Phase 0 before design in Phase 1
 - **Agent context updates**: Automatically keep AI context in sync with tech decisions
 
 ### Task Generation
+
 - **User story organization**: Tasks grouped by priority (P1, P2, P3)
 - **Independent testability**: Each story is self-contained and deployable
 - **Strict checklist format**: `- [ ] [T###] [P?] [US#?] Description with file/path`
 - **Parallel markers [P]**: Indicate tasks that can run concurrently
 
 ### Implementation Phase
+
 - **TDD approach**: Tests written before implementation (if requested)
 - **Checklist validation**: All checklists must pass before implementation
 - **Sequential by default**: Only parallel-marked tasks run concurrently
@@ -116,6 +125,7 @@ specs/<feature-id>/             # Generated per feature
 ## Common Patterns
 
 ### Starting a new feature
+
 ```bash
 /speckit.specify Build a user authentication system with email/password login
 # → Creates branch, spec.md, validates quality
@@ -128,11 +138,13 @@ specs/<feature-id>/             # Generated per feature
 ```
 
 ### Handling unclear requirements
+
 - Speckit makes informed guesses based on industry standards
 - Only marks critical decisions as [NEEDS CLARIFICATION]
 - Clarifications limited to: scope > security > UX > technical details
 
 ### Working with checklists
+
 - Auto-generated during `/speckit.specify` for requirements validation
 - Can create custom checklists with `/speckit.checklist`
 - Implementation halts if checklists incomplete (unless user overrides)
@@ -146,12 +158,14 @@ specs/<feature-id>/             # Generated per feature
 ## Quality Gates
 
 ### Specification Quality
+
 - No implementation details leak into spec.md
 - All requirements testable and unambiguous
 - Success criteria are measurable outcomes
 - Maximum 3 unresolved clarifications
 
 ### Implementation Readiness
+
 - All checklists complete (or explicitly bypassed)
 - Constitution rules validated
 - Task dependencies clearly defined

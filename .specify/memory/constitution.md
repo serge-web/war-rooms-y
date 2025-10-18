@@ -17,6 +17,7 @@ Follow-up TODOs: None
 ### I. Code Quality First
 
 All code MUST meet professional quality standards before merging. This includes:
+
 - Clear, self-documenting code with meaningful variable and function names
 - Comprehensive inline documentation for complex logic
 - Consistent code formatting enforced by automated tools
@@ -30,6 +31,7 @@ and accelerates feature development velocity over time.
 ### II. Test-Driven Development (NON-NEGOTIABLE)
 
 Test-First approach is mandatory for all new functionality:
+
 - Write failing tests BEFORE implementation
 - Tests MUST cover happy path, edge cases, and error conditions
 - Minimum 80% code coverage for unit tests
@@ -43,6 +45,7 @@ and serves as living documentation of system behavior.
 ### III. User Experience Consistency
 
 Every user-facing element MUST maintain consistency:
+
 - Uniform interaction patterns across all interfaces
 - Response times under 200ms for UI interactions
 - Consistent error messaging and recovery flows
@@ -56,6 +59,7 @@ and minimizes training requirements.
 ### IV. Performance by Design
 
 Performance requirements are first-class constraints:
+
 - Define performance budgets before implementation
 - Measure and monitor all critical paths
 - Optimize for the 95th percentile, not average case
@@ -69,6 +73,7 @@ Retrofitting performance is exponentially more expensive than designing for it.
 ### V. Security in Depth
 
 Security MUST be embedded at every layer:
+
 - Input validation at all boundaries
 - Principle of least privilege for all access
 - Secure by default configurations
@@ -82,6 +87,7 @@ less costly than remediation.
 ### VI. Observability and Debugging
 
 All systems MUST be observable and debuggable:
+
 - Structured logging with correlation IDs
 - Metrics for all key operations
 - Distributed tracing for multi-component flows
@@ -95,6 +101,7 @@ diagnosis and resolution of production issues.
 ## Performance Standards
 
 ### Response Time Requirements
+
 - UI interactions: < 200ms (p95)
 - API responses: < 500ms (p95)
 - Message delivery: < 2 seconds (p95)
@@ -102,6 +109,7 @@ diagnosis and resolution of production issues.
 - Background jobs: < 30 seconds (p95)
 
 ### Scalability Targets
+
 - Support 100 concurrent users minimum
 - Linear scaling up to 1000 concurrent users
 - Message throughput: 1000 messages/second
@@ -109,6 +117,7 @@ diagnosis and resolution of production issues.
 - Memory usage: < 500MB per user session
 
 ### Reliability Goals
+
 - 99.9% uptime during active exercises
 - Zero data loss for committed transactions
 - Graceful degradation for non-critical features
@@ -118,6 +127,7 @@ diagnosis and resolution of production issues.
 ## Quality Gates
 
 ### Code Review Requirements
+
 - All code MUST be peer-reviewed before merge
 - Reviews check for: correctness, clarity, tests, documentation, performance
 - Security-sensitive changes require security team review
@@ -125,6 +135,7 @@ diagnosis and resolution of production issues.
 - No self-approval of pull requests
 
 ### Testing Gates
+
 - All tests MUST pass before merge
 - No decrease in code coverage allowed
 - Performance tests must stay within budgets
@@ -132,6 +143,7 @@ diagnosis and resolution of production issues.
 - Integration tests run on every PR
 
 ### Documentation Requirements
+
 - API changes require updated documentation
 - New features require user documentation
 - Architecture decisions documented in ADRs
@@ -141,7 +153,9 @@ diagnosis and resolution of production issues.
 ## Governance
 
 ### Amendment Process
+
 Constitution changes require:
+
 1. Documented proposal with rationale
 2. Team discussion and feedback period (minimum 3 days)
 3. Consensus or majority approval from technical leads
@@ -149,6 +163,7 @@ Constitution changes require:
 5. Update all affected templates and documentation
 
 ### Compliance Verification
+
 - All pull requests MUST include constitution compliance checklist
 - Automated checks enforce measurable standards
 - Regular audits ensure ongoing compliance
@@ -156,11 +171,13 @@ Constitution changes require:
 - Technical debt tracked for future remediation
 
 ### Versioning Policy
+
 - MAJOR version: Removing or fundamentally changing principles
 - MINOR version: Adding new principles or sections
 - PATCH version: Clarifications and minor updates
 
 ### Enforcement
+
 - Constitution supersedes all other development practices
 - Exceptions require explicit approval and documentation
 - Teams accountable for compliance in their domains

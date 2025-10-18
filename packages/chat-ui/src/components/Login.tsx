@@ -14,7 +14,13 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useConnectionStore, selectIsConnecting, useRoomsStore, type ConnectionStore, type RoomsStore } from '@war-rooms/state';
+import {
+  useConnectionStore,
+  selectIsConnecting,
+  useRoomsStore,
+  type ConnectionStore,
+  type RoomsStore,
+} from '@war-rooms/state';
 
 export function Login() {
   const [username, setUsername] = useState('commander.red');
@@ -59,7 +65,13 @@ export function Login() {
             War Rooms Y
           </Typography>
 
-          <Typography variant="body2" color="text.secondary" gutterBottom align="center" sx={{ mb: 3 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            gutterBottom
+            align="center"
+            sx={{ mb: 3 }}
+          >
             Multi-Room Wargaming Chat
           </Typography>
 
@@ -69,7 +81,11 @@ export function Login() {
             </Alert>
           )}
 
-          <form onSubmit={(e) => { void handleSubmit(e); }}>
+          <form
+            onSubmit={(e) => {
+              void handleSubmit(e);
+            }}
+          >
             <TextField
               label="Username"
               fullWidth

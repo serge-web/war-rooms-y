@@ -94,9 +94,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
           borderColor: 'divider',
         }}
       >
-        <Typography variant="h6">
-          {roomName}
-        </Typography>
+        <Typography variant="h6">{roomName}</Typography>
         <Typography variant="caption" color="text.secondary">
           {room?.occupants.length || 0} participant{room?.occupants.length !== 1 ? 's' : ''}
         </Typography>
@@ -161,7 +159,9 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
           />
           <IconButton
             color="primary"
-            onClick={() => { void handleSend(); }}
+            onClick={() => {
+              void handleSend();
+            }}
             disabled={!messageText.trim()}
           >
             <SendIcon />

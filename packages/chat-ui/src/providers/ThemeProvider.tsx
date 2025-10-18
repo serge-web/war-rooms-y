@@ -4,11 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
-import {
-  ThemeProvider as MuiThemeProvider,
-  createTheme,
-  Theme,
-} from '@mui/material/styles';
+import { ThemeProvider as MuiThemeProvider, createTheme, Theme } from '@mui/material/styles';
 import { useMetadataStore, selectGameTheme, type MetadataStore } from '@war-rooms/state';
 
 // ============================================================================

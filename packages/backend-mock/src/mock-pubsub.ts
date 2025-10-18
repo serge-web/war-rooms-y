@@ -69,7 +69,10 @@ export class MockPubSubMetadata implements PubSubMetadata {
 
   async subscribeGameTheme(callback: (update: PubSubUpdate<GameTheme>) => void): Promise<void> {
     await this.backend.subscribePubSub('/war-rooms/game/theme');
-    this.subscriptions.set('/war-rooms/game/theme', callback as (update: PubSubUpdate<unknown>) => void);
+    this.subscriptions.set(
+      '/war-rooms/game/theme',
+      callback as (update: PubSubUpdate<unknown>) => void
+    );
 
     // Register handler with backend
     this.backend.on({
@@ -109,7 +112,10 @@ export class MockPubSubMetadata implements PubSubMetadata {
 
   async subscribeForces(callback: (update: PubSubUpdate<ForceMetadata>) => void): Promise<void> {
     await this.backend.subscribePubSub('/war-rooms/forces');
-    this.subscriptions.set('/war-rooms/forces', callback as (update: PubSubUpdate<unknown>) => void);
+    this.subscriptions.set(
+      '/war-rooms/forces',
+      callback as (update: PubSubUpdate<unknown>) => void
+    );
 
     // Register handler with backend
     this.backend.on({
@@ -131,9 +137,7 @@ export class MockPubSubMetadata implements PubSubMetadata {
 
   async getRoomExtensions(): Promise<RoomExtension[]> {
     const items = await this.backend.retrievePubSub('/war-rooms/rooms');
-    return items
-      .map((item) => item.payload as RoomExtension)
-      .filter((ext) => !ext.archivedAt); // Exclude archived
+    return items.map((item) => item.payload as RoomExtension).filter((ext) => !ext.archivedAt); // Exclude archived
   }
 
   async getRoomExtension(roomJid: string): Promise<RoomExtension | null> {
@@ -172,7 +176,9 @@ export class MockPubSubMetadata implements PubSubMetadata {
     await this.setRoomExtension(archived);
   }
 
-  async subscribeRoomExtensions(callback: (update: PubSubUpdate<RoomExtension>) => void): Promise<void> {
+  async subscribeRoomExtensions(
+    callback: (update: PubSubUpdate<RoomExtension>) => void
+  ): Promise<void> {
     await this.backend.subscribePubSub('/war-rooms/rooms');
     this.subscriptions.set('/war-rooms/rooms', callback as (update: PubSubUpdate<unknown>) => void);
 

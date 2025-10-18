@@ -4,7 +4,12 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import type { XMPPMessage, XMPPPresence, XMPPUser, XMPPOccupant } from '@war-rooms/backend-interface';
+import type {
+  XMPPMessage,
+  XMPPPresence,
+  XMPPUser,
+  XMPPOccupant,
+} from '@war-rooms/backend-interface';
 
 // ============================================================================
 // JID Utilities
@@ -63,12 +68,15 @@ export function getISOTimestamp(): string {
 // Stanza Factories
 // ============================================================================
 
-export function createPresenceStanza(from: string, options?: {
-  type?: XMPPPresence['type'];
-  show?: XMPPPresence['show'];
-  status?: string;
-  priority?: number;
-}): XMPPPresence {
+export function createPresenceStanza(
+  from: string,
+  options?: {
+    type?: XMPPPresence['type'];
+    show?: XMPPPresence['show'];
+    status?: string;
+    priority?: number;
+  }
+): XMPPPresence {
   const presence: XMPPPresence = { from };
 
   if (options?.type !== undefined) presence.type = options.type;
@@ -102,11 +110,14 @@ export function createMessageStanza(options: {
   return message;
 }
 
-export function createRosterItem(jid: string, options?: {
-  name?: string;
-  subscription?: XMPPUser['subscription'];
-  groups?: string[];
-}): XMPPUser {
+export function createRosterItem(
+  jid: string,
+  options?: {
+    name?: string;
+    subscription?: XMPPUser['subscription'];
+    groups?: string[];
+  }
+): XMPPUser {
   const bareJid = getBareJid(jid);
 
   const item: XMPPUser = {
@@ -121,13 +132,16 @@ export function createRosterItem(jid: string, options?: {
   return item;
 }
 
-export function createOccupant(nick: string, options?: {
-  jid?: string;
-  affiliation?: XMPPOccupant['affiliation'];
-  role?: XMPPOccupant['role'];
-  show?: XMPPOccupant['presence']['show'];
-  status?: string;
-}): XMPPOccupant {
+export function createOccupant(
+  nick: string,
+  options?: {
+    jid?: string;
+    affiliation?: XMPPOccupant['affiliation'];
+    role?: XMPPOccupant['role'];
+    show?: XMPPOccupant['presence']['show'];
+    status?: string;
+  }
+): XMPPOccupant {
   const occupant: XMPPOccupant = {
     nick,
     affiliation: options?.affiliation || 'none',

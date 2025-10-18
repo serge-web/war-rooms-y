@@ -347,11 +347,9 @@ export const useMetadataStore = create<MetadataStore>((set, get) => ({
 export const selectGame = (state: MetadataStore) => state.game;
 export const selectGameTheme = (state: MetadataStore) => state.gameTheme;
 
-export const selectForces = (state: MetadataStore) =>
-  Array.from(state.forces.values());
+export const selectForces = (state: MetadataStore) => Array.from(state.forces.values());
 
-export const selectForce = (forceId: string) => (state: MetadataStore) =>
-  state.forces.get(forceId);
+export const selectForce = (forceId: string) => (state: MetadataStore) => state.forces.get(forceId);
 
 export const selectRoomExtensions = (state: MetadataStore) =>
   Array.from(state.roomExtensions.values());
@@ -359,8 +357,7 @@ export const selectRoomExtensions = (state: MetadataStore) =>
 export const selectRoomExtension = (roomJid: string) => (state: MetadataStore) =>
   state.roomExtensions.get(roomJid);
 
-export const selectFormSchemas = (state: MetadataStore) =>
-  Array.from(state.formSchemas.values());
+export const selectFormSchemas = (state: MetadataStore) => Array.from(state.formSchemas.values());
 
 export const selectFormSchema = (schemaId: string) => (state: MetadataStore) =>
   state.formSchemas.get(schemaId);

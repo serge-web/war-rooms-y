@@ -41,11 +41,11 @@ PubSub nodes store and distribute game metadata using XEP-0060 (PubSub) and XEP-
 
 ```typescript
 enum AccessModel {
-  OPEN = 'open',               // Anyone can subscribe
-  PRESENCE = 'presence',       // Must be online to subscribe
-  ROSTER = 'roster',           // Must be in roster
-  AUTHORIZE = 'authorize',     // Requires approval
-  WHITELIST = 'whitelist'      // Explicit whitelist
+  OPEN = 'open', // Anyone can subscribe
+  PRESENCE = 'presence', // Must be online to subscribe
+  ROSTER = 'roster', // Must be in roster
+  AUTHORIZE = 'authorize', // Requires approval
+  WHITELIST = 'whitelist', // Explicit whitelist
 }
 ```
 
@@ -57,17 +57,18 @@ interface NodeConfig {
   description?: string;
   access_model: AccessModel;
   publish_model: 'publishers' | 'subscribers' | 'open';
-  max_items?: number;          // 0 for infinite
+  max_items?: number; // 0 for infinite
   persist_items: boolean;
   notify_retract: boolean;
   deliver_payloads: boolean;
-  dataform_xslt?: string;      // XSLT for data transformation
+  dataform_xslt?: string; // XSLT for data transformation
 }
 ```
 
 ## Node Definitions
 
 ### Game Metadata Node
+
 **Path**: `/war-rooms/game/metadata`
 **Access**: All authenticated users can subscribe, admins can publish
 
@@ -78,19 +79,21 @@ interface GameMetadataPayload {
   description?: string;
   scenario?: string;
   logoUrl?: string;
-  realTimeStart?: string;      // ISO 8601
-  realTimeEnd?: string;        // ISO 8601
+  realTimeStart?: string; // ISO 8601
+  realTimeEnd?: string; // ISO 8601
   version: number;
-  updatedAt: string;           // ISO 8601
-  updatedBy: string;           // User ID
+  updatedAt: string; // ISO 8601
+  updatedBy: string; // User ID
 }
 ```
 
 **Events**:
+
 - `update`: Metadata changed
 - `reset`: Game reset to initial state
 
 ### Game State Node
+
 **Path**: `/war-rooms/game/state`
 **Access**: All authenticated users can subscribe, game masters can publish
 
@@ -100,41 +103,44 @@ interface GameStatePayload {
   currentTurn: number;
   currentPhase?: string;
   gameTime?: {
-    current: string;           // Current game world time
-    ratio: number;             // Game time to real time
+    current: string; // Current game world time
+    ratio: number; // Game time to real time
   };
   lastUpdate: {
-    timestamp: string;         // ISO 8601
-    changedBy: string;         // User ID
+    timestamp: string; // ISO 8601
+    changedBy: string; // User ID
     description?: string;
   };
 }
 ```
 
 **Events**:
+
 - `turn.advance`: Turn number increased
 - `phase.change`: Phase within turn changed
 - `status.change`: Game status changed
 - `time.update`: Game time advanced
 
 ### Global Theme Node
+
 **Path**: `/war-rooms/game/theme`
 **Access**: All users (including anonymous) can subscribe
 
 ```typescript
 interface GlobalThemePayload {
-  primaryColor: string;        // Hex color
-  secondaryColor: string;      // Hex color
-  backgroundColor: string;     // Hex color
+  primaryColor: string; // Hex color
+  secondaryColor: string; // Hex color
+  backgroundColor: string; // Hex color
   fontFamily?: string;
   logoUrl?: string;
   logoPosition?: 'left' | 'center' | 'right';
   customCss?: string;
-  updatedAt: string;          // ISO 8601
+  updatedAt: string; // ISO 8601
 }
 ```
 
 ### Public Game Info Node
+
 **Path**: `/war-rooms/game/public`
 **Access**: Open (no authentication required)
 
@@ -150,6 +156,7 @@ interface PublicInfoPayload {
 ```
 
 ### Force Information Nodes
+
 **Path**: `/war-rooms/forces/{forceId}/info`
 **Access**: Force members and admins
 
@@ -157,8 +164,8 @@ interface PublicInfoPayload {
 interface ForceInfoPayload {
   id: string;
   name: string;
-  color: string;               // Hex color
-  commander?: string;          // User ID
+  color: string; // Hex color
+  commander?: string; // User ID
   description?: string;
   memberCount: number;
   status: 'active' | 'eliminated' | 'victorious';
@@ -167,6 +174,7 @@ interface ForceInfoPayload {
 ```
 
 ### Force Objectives Node
+
 **Path**: `/war-rooms/forces/{forceId}/objectives`
 **Access**: Force members and admins
 
@@ -188,6 +196,7 @@ interface ObjectivesPayload {
 ```
 
 ### Room Configuration Node
+
 **Path**: `/war-rooms/rooms/{roomId}/config`
 **Access**: Room members can subscribe
 
@@ -204,12 +213,13 @@ interface RoomConfigPayload {
     moderated: boolean;
     allowForms: boolean;
   };
-  moderators: string[];        // User IDs
+  moderators: string[]; // User IDs
   updatedAt: string;
 }
 ```
 
 ### Room Theme Node
+
 **Path**: `/war-rooms/rooms/{roomId}/theme`
 **Access**: Room members can subscribe
 
@@ -226,6 +236,7 @@ interface RoomThemePayload {
 ```
 
 ### Room Forms Node
+
 **Path**: `/war-rooms/rooms/{roomId}/forms`
 **Access**: Room members can subscribe
 
@@ -243,6 +254,7 @@ interface RoomFormsPayload {
 ```
 
 ### Form Schemas Node
+
 **Path**: `/war-rooms/forms/schemas`
 **Access**: All authenticated users
 
@@ -263,6 +275,7 @@ interface FormSchemaPayload {
 ```
 
 ### System Announcements Node
+
 **Path**: `/war-rooms/system/announcements`
 **Access**: All authenticated users
 
@@ -272,9 +285,9 @@ interface AnnouncementPayload {
   title: string;
   message: string;
   type: 'info' | 'warning' | 'critical' | 'success';
-  sticky?: boolean;            // Requires dismissal
-  expiresAt?: string;          // ISO 8601
-  targetGroups?: string[];     // Specific groups, or all if empty
+  sticky?: boolean; // Requires dismissal
+  expiresAt?: string; // ISO 8601
+  targetGroups?: string[]; // Specific groups, or all if empty
   createdAt: string;
   createdBy: string;
 }
@@ -283,6 +296,7 @@ interface AnnouncementPayload {
 ## Subscription Management
 
 ### Subscribe to Node
+
 ```xml
 <iq type='set' to='pubsub.domain' id='sub1'>
   <pubsub xmlns='http://jabber.org/protocol/pubsub'>
@@ -292,6 +306,7 @@ interface AnnouncementPayload {
 ```
 
 ### Retrieve Latest Item
+
 ```xml
 <iq type='get' to='pubsub.domain' id='get1'>
   <pubsub xmlns='http://jabber.org/protocol/pubsub'>
@@ -301,6 +316,7 @@ interface AnnouncementPayload {
 ```
 
 ### Publish to Node
+
 ```xml
 <iq type='set' to='pubsub.domain' id='pub1'>
   <pubsub xmlns='http://jabber.org/protocol/pubsub'>
@@ -355,7 +371,7 @@ class MockPubSub {
     await this.storage.setItem(`pubsub:${node}`, {
       payload,
       timestamp: new Date().toISOString(),
-      id: generateId()
+      id: generateId(),
     });
 
     // Notify local subscribers
@@ -365,7 +381,7 @@ class MockPubSub {
     this.broadcast.postMessage({
       type: 'pubsub.publish',
       node,
-      payload
+      payload,
     });
   }
 
@@ -387,7 +403,7 @@ class MockPubSub {
   }
 
   private notifySubscribers(node: string, payload: any): void {
-    this.subscriptions.get(node)?.forEach(callback => {
+    this.subscriptions.get(node)?.forEach((callback) => {
       callback({ node, payload, timestamp: new Date().toISOString() });
     });
   }
@@ -397,12 +413,14 @@ class MockPubSub {
 ## Caching Strategy
 
 ### Client-Side Caching
+
 - Cache latest item from each subscribed node
 - Invalidate on notification receipt
 - Persist cache in sessionStorage
 - TTL: 5 minutes for metadata, 30 seconds for state
 
 ### Server-Side Caching (OpenFire)
+
 - Use OpenFire's built-in PubSub caching
 - Configure max_items per node based on data type
 - Enable last-published-item for quick reconnection
@@ -410,32 +428,38 @@ class MockPubSub {
 ## Security Considerations
 
 ### Access Control
+
 - Node access enforced by OpenFire affiliations
 - Mock backend simulates with role checks
 - Sensitive data nodes require explicit whitelist
 
 ### Data Validation
+
 - JSON schema validation before publish
 - Size limits per payload (default 64KB)
 - Rate limiting on publish operations
 
 ### Encryption
+
 - TLS for all XMPP connections
 - Consider OMEMO for sensitive payloads (future)
 
 ## Performance Optimization
 
 ### Batching
+
 - Group related updates in single publish
 - Debounce rapid state changes (500ms window)
 - Aggregate theme updates across nodes
 
 ### Selective Subscriptions
+
 - Subscribe only to relevant force nodes
 - Unsubscribe from inactive rooms
 - Use filtered subscriptions where supported
 
 ### Payload Optimization
+
 - Send deltas for large payloads when possible
 - Compress large JSON payloads
 - Reference external resources vs embedding
@@ -443,6 +467,7 @@ class MockPubSub {
 ## Monitoring
 
 Track for each node:
+
 - Subscription count
 - Publish frequency
 - Payload size distribution
@@ -452,6 +477,7 @@ Track for each node:
 ## Migration Support
 
 When schema changes:
+
 1. Publish with new version field
 2. Clients handle both old and new formats
 3. Deprecation notice in old format

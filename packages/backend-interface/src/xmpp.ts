@@ -127,7 +127,11 @@ export interface XMPPBackend {
   /**
    * Send presence broadcast
    */
-  sendPresence(show?: 'away' | 'chat' | 'dnd' | 'xa', status?: string, priority?: number): Promise<void>;
+  sendPresence(
+    show?: 'away' | 'chat' | 'dnd' | 'xa',
+    status?: string,
+    priority?: number
+  ): Promise<void>;
 
   /**
    * Send unavailable presence (go offline)

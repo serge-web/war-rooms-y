@@ -4,11 +4,7 @@
  */
 
 import { create } from 'zustand';
-import type {
-  XMPPBackend,
-  XMPPRoom,
-  XMPPOccupant,
-} from '@war-rooms/backend-interface';
+import type { XMPPBackend, XMPPRoom, XMPPOccupant } from '@war-rooms/backend-interface';
 
 // ============================================================================
 // Store State
@@ -268,8 +264,7 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
 // Selectors
 // ============================================================================
 
-export const selectRoom = (roomJid: string) => (state: RoomsStore) =>
-  state.rooms.get(roomJid);
+export const selectRoom = (roomJid: string) => (state: RoomsStore) => state.rooms.get(roomJid);
 
 export const selectRoomOccupants = (roomJid: string) => (state: RoomsStore) =>
   state.rooms.get(roomJid)?.occupants || [];
@@ -280,5 +275,4 @@ export const selectIsJoined = (roomJid: string) => (state: RoomsStore) =>
 export const selectJoinedRooms = (state: RoomsStore) =>
   Array.from(state.rooms.values()).filter((room) => room.joined);
 
-export const selectAllRooms = (state: RoomsStore) =>
-  Array.from(state.rooms.values());
+export const selectAllRooms = (state: RoomsStore) => Array.from(state.rooms.values());

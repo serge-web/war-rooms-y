@@ -4,11 +4,7 @@
  */
 
 import { create } from 'zustand';
-import type {
-  XMPPBackend,
-  ConnectionInfo,
-  ConnectionState,
-} from '@war-rooms/backend-interface';
+import type { XMPPBackend, ConnectionInfo, ConnectionState } from '@war-rooms/backend-interface';
 
 // ============================================================================
 // Store State
@@ -97,8 +93,7 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
 export const selectConnectionState = (state: ConnectionStore): ConnectionState =>
   state.connectionInfo.state;
 
-export const selectJid = (state: ConnectionStore): string | undefined =>
-  state.connectionInfo.jid;
+export const selectJid = (state: ConnectionStore): string | undefined => state.connectionInfo.jid;
 
 export const selectBareJid = (state: ConnectionStore): string | undefined =>
   state.connectionInfo.bareJid;
@@ -107,5 +102,4 @@ export const selectIsConnected = (state: ConnectionStore): boolean =>
   state.connectionInfo.state === 'authenticated';
 
 export const selectIsConnecting = (state: ConnectionStore): boolean =>
-  state.connectionInfo.state === 'connecting' ||
-  state.connectionInfo.state === 'authenticating';
+  state.connectionInfo.state === 'connecting' || state.connectionInfo.state === 'authenticating';

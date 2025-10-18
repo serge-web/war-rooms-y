@@ -7,6 +7,7 @@
 ## Architecture Principle
 
 The client remains thin by leveraging XMPP protocol features directly. Data comes from two sources:
+
 1. **XMPP Protocol**: Core entities (users, rooms, messages) use native XMPP structures
 2. **PubSub Nodes**: Extended metadata stored as JSON in PubSub
 
@@ -17,23 +18,24 @@ Composite entities combine both sources only when needed for the UI.
 These types directly mirror XMPP protocol specifications.
 
 ### XMPPUser (from XMPP Roster & vCard)
+
 ```typescript
 // Core XMPP user representation - RFC 6121
 interface XMPPUser {
-  jid: string;                    // user@domain/resource
-  bare_jid: string;               // user@domain (no resource)
+  jid: string; // user@domain/resource
+  bare_jid: string; // user@domain (no resource)
 
   // From roster (XEP-0054)
-  name?: string;                  // Roster nickname
+  name?: string; // Roster nickname
   subscription: 'both' | 'from' | 'to' | 'none';
-  groups: string[];               // Roster groups
+  groups: string[]; // Roster groups
 
   // From vCard (XEP-0054)
   vcard?: {
-    fn?: string;                 // Full name
+    fn?: string; // Full name
     nickname?: string;
     email?: string;
-    photo?: string;              // Base64 or URL
+    photo?: string; // Base64 or URL
     org?: string;
     title?: string;
   };
@@ -41,11 +43,11 @@ interface XMPPUser {
 
 // Presence stanza - RFC 6121
 interface XMPPPresence {
-  from: string;                   // Full JID
+  from: string; // Full JID
   type?: 'unavailable' | 'subscribe' | 'subscribed' | 'unsubscribe' | 'unsubscribed' | 'error';
-  show?: 'away' | 'chat' | 'dnd' | 'xa';  // Extended away, do not disturb, etc.
-  status?: string;                // Status message
-  priority?: number;              // Resource priority (-128 to 127)
+  show?: 'away' | 'chat' | 'dnd' | 'xa'; // Extended away, do not disturb, etc.
+  status?: string; // Status message
+  priority?: number; // Resource priority (-128 to 127)
 
   // Capabilities (XEP-0115)
   caps?: {
@@ -56,25 +58,26 @@ interface XMPPPresence {
 
   // Last activity (XEP-0012)
   idle?: {
-    since: string;               // ISO 8601
+    since: string; // ISO 8601
   };
 }
 ```
 
 ### XMPPRoom (MUC - XEP-0045)
+
 ```typescript
 // Multi-User Chat room - XEP-0045
 interface XMPPRoom {
-  jid: string;                    // room@conference.domain
+  jid: string; // room@conference.domain
 
   // Room info from disco#info
   info: {
     identity: {
       category: 'conference';
       type: 'text';
-      name: string;              // Natural room name
+      name: string; // Natural room name
     };
-    features: string[];          // MUC features supported
+    features: string[]; // MUC features supported
 
     // Form fields from room info
     x?: {
@@ -105,8 +108,8 @@ interface XMPPRoom {
 
 // MUC Occupant - XEP-0045
 interface XMPPOccupant {
-  nick: string;                   // Room nickname
-  jid?: string;                   // Real JID (if visible)
+  nick: string; // Room nickname
+  jid?: string; // Real JID (if visible)
   affiliation: 'owner' | 'admin' | 'member' | 'none' | 'outcast';
   role: 'moderator' | 'participant' | 'visitor' | 'none';
 
@@ -119,16 +122,16 @@ interface XMPPOccupant {
 
 // MUC Message - XEP-0045
 interface XMPPMessage {
-  id: string;                     // Stanza ID
-  from: string;                   // room@conference.domain/nickname
-  to: string;                     // recipient JID
+  id: string; // Stanza ID
+  from: string; // room@conference.domain/nickname
+  to: string; // recipient JID
   type: 'groupchat' | 'chat' | 'error' | 'headline' | 'normal';
-  body?: string;                  // Message text
-  subject?: string;               // Room subject change
+  body?: string; // Message text
+  subject?: string; // Room subject change
 
   // Timestamps (XEP-0203)
   delay?: {
-    stamp: string;               // ISO 8601
+    stamp: string; // ISO 8601
     from?: string;
   };
 
@@ -147,11 +150,11 @@ interface XMPPMessage {
   // Receipts (XEP-0184)
   receipt?: {
     request?: boolean;
-    received?: string;           // ID of received message
+    received?: string; // ID of received message
   };
 
   // Custom extensions
-  x?: any;                       // Data forms or custom namespaces
+  x?: any; // Data forms or custom namespaces
 }
 ```
 
@@ -160,26 +163,27 @@ interface XMPPMessage {
 These types represent metadata stored in PubSub nodes as JSON (XEP-0335).
 
 ### PubSubUserExtension
+
 ```typescript
 // User metadata from PubSub node /war-rooms/users/{jid}
 interface PubSubUserExtension {
-  jid: string;                    // Matches XMPP user
+  jid: string; // Matches XMPP user
   role: 'admin' | 'participant' | 'observer';
-  forceId?: string;               // Force affiliation
+  forceId?: string; // Force affiliation
   customFields?: Record<string, any>;
-  createdAt: string;              // ISO 8601
-  updatedAt: string;              // ISO 8601
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
 }
 
 // Groups are roster groups in XMPP, but we extend with metadata
 interface PubSubGroupExtension {
-  name: string;                   // Matches XMPP roster group name
+  name: string; // Matches XMPP roster group name
   type: 'force' | 'role' | 'custom';
   description?: string;
-  permissions?: Permission[];     // Additional permissions beyond room access
+  permissions?: Permission[]; // Additional permissions beyond room access
   createdAt: string;
   updatedAt: string;
-  createdBy: string;              // JID of creator
+  createdBy: string; // JID of creator
 }
 
 interface Permission {
@@ -190,36 +194,38 @@ interface Permission {
 ```
 
 ### PubSubRoomExtension
+
 ```typescript
 import { Theme } from '@mui/material/styles';
 
 // Room metadata from PubSub node /war-rooms/rooms/{roomJid}
 interface PubSubRoomExtension {
-  roomJid: string;                // room@conference.domain
+  roomJid: string; // room@conference.domain
   type: 'standard' | 'all-hands' | 'private' | 'command';
 
   // Visual theming - Material UI Theme (partial, merged with defaults)
-  theme?: Partial<Theme>;         // MUI Theme object (stored as JSON)
+  theme?: Partial<Theme>; // MUI Theme object (stored as JSON)
 
   // Form associations
-  formSchemaIds?: string[];       // Available forms for this room
+  formSchemaIds?: string[]; // Available forms for this room
 
   // Additional metadata
-  forceRestrictions?: string[];   // Force IDs allowed
+  forceRestrictions?: string[]; // Force IDs allowed
   createdAt: string;
-  createdBy: string;              // JID of creator
+  createdBy: string; // JID of creator
   archivedAt?: string;
 }
 ```
 
 ### PubSubMessageExtension
+
 ```typescript
 // Extended message data from PubSub node /war-rooms/messages/{messageId}
 interface PubSubMessageExtension {
-  messageId: string;              // Stanza ID from XMPP
+  messageId: string; // Stanza ID from XMPP
   formData?: {
     schemaId: string;
-    data: Record<string, any>;   // Form submission data
+    data: Record<string, any>; // Form submission data
     validation?: {
       valid: boolean;
       errors?: string[];
@@ -228,8 +234,8 @@ interface PubSubMessageExtension {
 
   // Delivery tracking beyond XMPP receipts
   analytics?: {
-    deliveredTo: string[];        // JIDs
-    readBy: string[];             // JIDs with timestamps
+    deliveredTo: string[]; // JIDs
+    readBy: string[]; // JIDs with timestamps
     reactions?: Record<string, string[]>; // emoji -> JIDs
   };
 
@@ -237,12 +243,13 @@ interface PubSubMessageExtension {
   edits?: Array<{
     timestamp: string;
     previousBody: string;
-    editedBy: string;             // JID
+    editedBy: string; // JID
   }>;
 }
 ```
 
 ### PubSubFormSchema
+
 ```typescript
 // Form schema from PubSub node /war-rooms/forms/schemas
 interface PubSubFormSchema {
@@ -257,18 +264,19 @@ interface PubSubFormSchema {
 
   // Access control
   requiredRole?: string;
-  allowedRooms?: string[];       // Room JIDs
+  allowedRooms?: string[]; // Room JIDs
   allowedForces?: string[];
 
   // Metadata
   createdAt: string;
-  createdBy: string;              // JID
+  createdBy: string; // JID
   updatedAt: string;
   deprecated?: boolean;
 }
 ```
 
 ### PubSubGameMetadata
+
 ```typescript
 import { Theme } from '@mui/material/styles';
 
@@ -282,7 +290,7 @@ interface PubSubGameMetadata {
 
   // From /war-rooms/game/theme
   // Global Material UI theme applied to all interfaces
-  theme: Partial<Theme>;          // MUI Theme object (stored as JSON)
+  theme: Partial<Theme>; // MUI Theme object (stored as JSON)
 
   // From /war-rooms/game/state
   state: {
@@ -295,7 +303,7 @@ interface PubSubGameMetadata {
     };
     lastUpdate: {
       timestamp: string;
-      changedBy: string;          // JID
+      changedBy: string; // JID
       description?: string;
     };
   };
@@ -306,7 +314,7 @@ interface PubSubGameMetadata {
     description?: string;
     logoUrl?: string;
     status?: string;
-    theme?: Partial<Theme>;       // Public subset of theme for login screen
+    theme?: Partial<Theme>; // Public subset of theme for login screen
   };
 }
 
@@ -315,7 +323,7 @@ interface PubSubForce {
   id: string;
   name: string;
   color: string;
-  commander?: string;             // JID
+  commander?: string; // JID
   description?: string;
 
   // From /info node
@@ -345,25 +353,26 @@ interface Objective {
 These combine XMPP and PubSub data for the UI.
 
 ### User (Composite)
+
 ```typescript
 // Combines XMPP user with PubSub extensions
 interface User {
   // From XMPP
   jid: string;
-  username: string;               // Local part of JID
-  displayName: string;            // From vCard or roster
+  username: string; // Local part of JID
+  displayName: string; // From vCard or roster
   presence?: XMPPPresence;
-  groups: string[];               // Roster groups
+  groups: string[]; // Roster groups
 
   // From PubSub extension
   role: 'admin' | 'participant' | 'observer';
   forceId?: string;
-  email?: string;                 // From vCard or extension
-  avatar?: string;                // From vCard or extension
+  email?: string; // From vCard or extension
+  avatar?: string; // From vCard or extension
 
   // Computed
   isOnline: boolean;
-  currentRooms: string[];         // From MUC presence
+  currentRooms: string[]; // From MUC presence
 }
 
 // Helper to compose user
@@ -381,13 +390,14 @@ function composeUser(xmpp: XMPPUser, pubsub?: PubSubUserExtension): User {
     avatar: xmpp.vcard?.photo,
 
     // Runtime state
-    isOnline: false,  // Set from presence
-    currentRooms: []  // Set from MUC occupancy
+    isOnline: false, // Set from presence
+    currentRooms: [], // Set from MUC occupancy
   };
 }
 ```
 
 ### Room (Composite)
+
 ```typescript
 import { Theme } from '@mui/material/styles';
 
@@ -395,7 +405,7 @@ import { Theme } from '@mui/material/styles';
 interface Room {
   // From XMPP
   jid: string;
-  name: string;                   // Natural name
+  name: string; // Natural name
   description?: string;
   occupants: XMPPOccupant[];
   maxUsers: number;
@@ -405,13 +415,13 @@ interface Room {
 
   // From PubSub extension
   type: 'standard' | 'all-hands' | 'private' | 'command';
-  theme?: Partial<Theme>;         // MUI Theme (merged with global theme)
+  theme?: Partial<Theme>; // MUI Theme (merged with global theme)
   formSchemaIds?: string[];
   forceRestrictions?: string[];
 
   // Computed
   occupantCount: number;
-  hasUnread: boolean;             // Client-side state
+  hasUnread: boolean; // Client-side state
 }
 
 // Helper to compose room
@@ -436,18 +446,19 @@ function composeRoom(xmpp: XMPPRoom, pubsub?: PubSubRoomExtension): Room {
 
     // Computed
     occupantCount: xmpp.occupants?.length || 0,
-    hasUnread: false  // Client tracks this
+    hasUnread: false, // Client tracks this
   };
 }
 ```
 
 ### Message (Composite)
+
 ```typescript
 // Combines XMPP message with PubSub extensions
 interface Message {
   // From XMPP
   id: string;
-  from: string;                   // Full JID or room/nick
+  from: string; // Full JID or room/nick
   body: string;
   timestamp: string;
   thread?: string;
@@ -467,7 +478,7 @@ interface Message {
 
   // Computed
   isSystemMessage: boolean;
-  isOwnMessage: boolean;          // Client determines
+  isOwnMessage: boolean; // Client determines
 }
 
 // Helper to compose message
@@ -494,7 +505,7 @@ function composeMessage(
     reactions: pubsub?.analytics?.reactions,
 
     isSystemMessage: !xmpp.body && !!xmpp.subject,
-    isOwnMessage: xmpp.from.startsWith(currentUserJid || '')
+    isOwnMessage: xmpp.from.startsWith(currentUserJid || ''),
   };
 }
 ```
@@ -507,7 +518,7 @@ The thin client architecture follows this pattern:
 // 1. Connect to XMPP (native or mock)
 const client = await backend.connect({
   jid: 'user@domain',
-  password: 'pass'
+  password: 'pass',
 });
 
 // 2. Get roster (XMPP native)
@@ -517,7 +528,7 @@ const roster = await client.getRoster();
 await client.subscribe('war-rooms/users/user@domain');
 
 // 4. Compose data for UI
-const users = roster.items.map(xmppUser => {
+const users = roster.items.map((xmppUser) => {
   const pubsubExt = await getPubSubExtension(xmppUser.jid);
   return composeUser(xmppUser, pubsubExt);
 });
@@ -541,10 +552,10 @@ interface BackendConfig {
 
   // OpenFire configuration
   openfire?: {
-    websocketUrl: string;         // WSS endpoint
-    domain: string;               // XMPP domain
-    conference: string;           // MUC service (usually 'conference')
-    pubsub: string;              // PubSub service (usually 'pubsub')
+    websocketUrl: string; // WSS endpoint
+    domain: string; // XMPP domain
+    conference: string; // MUC service (usually 'conference')
+    pubsub: string; // PubSub service (usually 'pubsub')
   };
 
   // Mock configuration
@@ -557,9 +568,9 @@ interface BackendConfig {
 
 // Mock data mimics XMPP structures
 interface MockData {
-  roster: XMPPUser[];            // Initial roster
-  rooms: XMPPRoom[];             // Available MUCs
-  messages: XMPPMessage[];       // Historical messages
+  roster: XMPPUser[]; // Initial roster
+  rooms: XMPPRoom[]; // Available MUCs
+  messages: XMPPMessage[]; // Historical messages
   pubsubNodes: Map<string, any>; // PubSub node data
 }
 ```
@@ -611,13 +622,13 @@ class MockXMPPStorage {
 
 // Storage keys follow XMPP namespace pattern
 const STORAGE_KEYS = {
-  ROSTER: 'xmpp:roster:',          // + JID
-  MUC: 'xmpp:muc:',                // + room JID
-  MAM: 'xmpp:mam:',                // + room JID
-  PUBSUB: 'xmpp:pubsub:',          // + node path
-  PRESENCE: 'xmpp:presence:',      // + bare JID
-  VCARD: 'xmpp:vcard:',            // + bare JID
-}
+  ROSTER: 'xmpp:roster:', // + JID
+  MUC: 'xmpp:muc:', // + room JID
+  MAM: 'xmpp:mam:', // + room JID
+  PUBSUB: 'xmpp:pubsub:', // + node path
+  PRESENCE: 'xmpp:presence:', // + bare JID
+  VCARD: 'xmpp:vcard:', // + bare JID
+};
 ```
 
 ## Data Relationships
@@ -643,6 +654,7 @@ PubSub Extensions:
 ### Production (OpenFire)
 
 Native XMPP features handle all real-time sync:
+
 - **Presence**: Automatic via XMPP protocol
 - **Messages**: Real-time via MUC
 - **Roster**: Push updates via roster protocol
@@ -651,6 +663,7 @@ Native XMPP features handle all real-time sync:
 ### Demo Mode (Mock)
 
 Browser-based simulation of XMPP:
+
 - **EventEmitter**: Simulates XMPP stanzas locally
 - **BroadcastChannel**: Cross-tab synchronization
 - **LocalForage watchers**: Detect external changes
@@ -691,6 +704,7 @@ const roomTheme = roomExtension.theme
 3. **Room theme** (per-room customization)
 
 Room themes override global, global overrides defaults. This allows:
+
 - Game designer sets overall look/feel
 - Individual rooms can have force-specific colors
 - Login screen uses public subset from `/war-rooms/game/public`
@@ -698,6 +712,7 @@ Room themes override global, global overrides defaults. This allows:
 ### Admin UI Theme Editor
 
 The admin interface provides a custom UI for game designers to configure MUI themes:
+
 - Visual color pickers for palette
 - Typography selectors
 - Component overrides
@@ -710,6 +725,7 @@ The admin interface provides a custom UI for game designers to configure MUI the
 ### XMPP Protocol Adherence
 
 The thin client leverages XMPP features directly:
+
 - No custom protocol on top of XMPP
 - Use standard XEPs where available
 - PubSub for all non-core extensions
@@ -718,6 +734,7 @@ The thin client leverages XMPP features directly:
 ### Mock Backend Fidelity
 
 The mock must accurately simulate XMPP:
+
 ```typescript
 class MockXMPPClient {
   // Simulates exact XMPP stanza structure
@@ -730,7 +747,7 @@ class MockXMPPClient {
   joinRoom(roomJid: string, nick: string) {
     const presence: XMPPPresence = {
       from: `${roomJid}/${nick}`,
-      type: undefined
+      type: undefined,
     };
     this.emit('muc:joined', presence);
   }
@@ -740,6 +757,7 @@ class MockXMPPClient {
 ### Performance Optimizations
 
 Leverage XMPP efficiently:
+
 - Use roster versioning (XEP-0237)
 - Enable stream management (XEP-0198)
 - Batch PubSub subscriptions
@@ -749,6 +767,7 @@ Leverage XMPP efficiently:
 ### Security Model
 
 XMPP provides security foundation:
+
 - Authentication via SASL
 - TLS for transport security
 - MUC affiliations for room access

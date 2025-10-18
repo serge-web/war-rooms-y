@@ -51,19 +51,23 @@ Watch the Actions tab for workflow execution. When complete, check PR comments f
 ### Troubleshooting
 
 **Workflow fails on tests:**
+
 - Check test output in Actions logs
 - Ensure `npm test -- --passWithNoTests` passes locally
 
 **Workflow fails on build:**
+
 - Check build output in Actions logs
 - Ensure `npm run build --workspace=packages/chat-ui` works locally
 
 **Preview URL 404:**
+
 - Verify GitHub Pages is enabled (Settings → Pages)
 - Verify `gh-pages` branch exists after first workflow run
 - Check peaceiris/actions-gh-pages step in workflow logs
 
 **Preview shows blank page:**
+
 - Check browser console for errors
 - Verify mock backend env vars in workflow
 - Check that base path is correctly configured in Vite
@@ -74,4 +78,4 @@ Deferred for now. Will add visual regression testing with Chromatic after PR pre
 
 ## Production Deployment
 
-*To be documented when production deployment is configured.*
+_To be documented when production deployment is configured._

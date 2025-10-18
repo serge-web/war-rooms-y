@@ -12,7 +12,7 @@ test.describe('Chat Functionality', () => {
     // Commander.red should see Red Command and All Hands
     await expect(page.getByText('Red Force Command')).toBeVisible();
     await expect(page.getByText('All Hands')).toBeVisible();
-    
+
     // Should NOT see Blue Command
     await expect(page.getByText('Blue Force Command')).not.toBeVisible();
   });
@@ -26,10 +26,10 @@ test.describe('Chat Functionality', () => {
     // Find message input in Red Command room
     const messageInput = page.getByPlaceholder('Type a message...').first();
     await messageInput.fill('Test message from commander.red');
-    
+
     // Send message
     await page.getByRole('button', { name: 'Send' }).first().click();
-    
+
     // Message should appear in the chat
     await expect(page.getByText('Test message from commander.red')).toBeVisible();
   });

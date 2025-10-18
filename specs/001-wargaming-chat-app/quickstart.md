@@ -5,6 +5,7 @@
 **Purpose**: Step-by-step guide for setting up OpenFire server for development and production
 
 > **💡 Having Docker Issues?** If you're experiencing problems with the OpenFire Docker setup (common on some development machines), you can:
+>
 > 1. **Start with the mock backend** - See [mock-development-guide.md](mock-development-guide.md) to begin UI development immediately without any server
 > 2. **Use a remote OpenFire instance** - Skip to [Remote OpenFire Setup](#remote-openfire-setup) section
 > 3. **Continue with Docker troubleshooting** - See [Docker Troubleshooting](#docker-troubleshooting) section
@@ -32,13 +33,13 @@ services:
     container_name: war-rooms-openfire
     hostname: openfire.local
     ports:
-      - "9090:9090"   # Admin console (HTTP)
-      - "9091:9091"   # Admin console (HTTPS)
-      - "5222:5222"   # XMPP client connections
-      - "5269:5269"   # XMPP server connections
-      - "7443:7443"   # HTTP-Bind (BOSH) / WebSocket (WSS)
-      - "7070:7070"   # HTTP-Bind (BOSH) plain
-      - "5229:5229"   # Flash Cross Domain
+      - '9090:9090' # Admin console (HTTP)
+      - '9091:9091' # Admin console (HTTPS)
+      - '5222:5222' # XMPP client connections
+      - '5269:5269' # XMPP server connections
+      - '7443:7443' # HTTP-Bind (BOSH) / WebSocket (WSS)
+      - '7070:7070' # HTTP-Bind (BOSH) plain
+      - '5229:5229' # Flash Cross Domain
     volumes:
       - openfire-data:/var/lib/openfire
       - ./openfire/plugins:/var/lib/openfire/plugins
@@ -81,13 +82,13 @@ docker-compose logs -f openfire
 1. Navigate to **Plugins** tab
 2. Install from Available Plugins:
 
-| Plugin | Purpose | Required |
-|--------|---------|----------|
-| REST API | Admin operations | ✓ |
-| Monitoring Service | Statistics & MAM | ✓ |
-| User Import Export | Bulk user operations | ✓ |
-| Presence Service | Presence information | ✓ |
-| HTTP File Upload | File sharing | Optional |
+| Plugin             | Purpose              | Required |
+| ------------------ | -------------------- | -------- |
+| REST API           | Admin operations     | ✓        |
+| Monitoring Service | Statistics & MAM     | ✓        |
+| User Import Export | Bulk user operations | ✓        |
+| Presence Service   | Presence information | ✓        |
+| HTTP File Upload   | File sharing         | Optional |
 
 ### Manual Plugin Installation
 
@@ -120,6 +121,7 @@ wget https://www.igniterealtime.org/projects/openfire/plugins/2.5.0/monitoring.j
 
 1. Go to **Server > Server Settings > HTTP Binding**
 2. Settings:
+
    ```
    ✓ HTTP Binding Enabled
    ✓ Script Syntax Enabled
@@ -145,6 +147,7 @@ wget https://www.igniterealtime.org/projects/openfire/plugins/2.5.0/monitoring.j
 
 1. Go to **Server > Group Chat > Group Chat Settings**
 2. Create/Configure service:
+
    ```
    Service Name: conference
    Service Description: War Rooms Conference Service
@@ -253,8 +256,8 @@ const client = createClient({
   jid: 'gamemaster@wargame.local',
   password: 'gm_pass123',
   transports: {
-    websocket: 'ws://localhost:7070/ws'
-  }
+    websocket: 'ws://localhost:7070/ws',
+  },
 });
 
 client.on('session:started', () => {
@@ -288,7 +291,7 @@ await client.joinRoom('blue-command@conference.wargame.local', 'GameMaster');
 client.sendMessage({
   to: 'blue-command@conference.wargame.local',
   type: 'groupchat',
-  body: 'Testing MUC'
+  body: 'Testing MUC',
 });
 ```
 
@@ -303,8 +306,8 @@ await client.publish('pubsub.wargame.local', 'war-rooms/game/state', {
   id: 'current',
   content: {
     status: 'setup',
-    currentTurn: 0
-  }
+    currentTurn: 0,
+  },
 });
 ```
 
@@ -321,12 +324,14 @@ await client.publish('pubsub.wargame.local', 'war-rooms/game/state', {
 ### Installation Steps
 
 1. **Install Java**:
+
 ```bash
 sudo apt update
 sudo apt install openjdk-11-jdk
 ```
 
 2. **Download OpenFire**:
+
 ```bash
 wget https://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_4_7_5.tar.gz \
   -O openfire.tar.gz
@@ -335,12 +340,14 @@ sudo mv openfire /opt/
 ```
 
 3. **Create Service**:
+
 ```bash
 sudo useradd -r -s /bin/false openfire
 sudo chown -R openfire:openfire /opt/openfire
 ```
 
 Create `/etc/systemd/system/openfire.service`:
+
 ```ini
 [Unit]
 Description=OpenFire XMPP Server
@@ -359,6 +366,7 @@ WantedBy=multi-user.target
 ```
 
 4. **Configure Database**:
+
 ```sql
 CREATE DATABASE openfire;
 CREATE USER openfire WITH PASSWORD 'secure_password';
@@ -366,6 +374,7 @@ GRANT ALL PRIVILEGES ON DATABASE openfire TO openfire;
 ```
 
 5. **Start Service**:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable openfire
@@ -447,6 +456,7 @@ find $BACKUP_DIR -name "*.tar.gz" -mtime +30 -delete
 ### Log Rotation
 
 Configure `/etc/logrotate.d/openfire`:
+
 ```
 /opt/openfire/logs/*.log {
     daily
@@ -489,6 +499,7 @@ Configure `/etc/logrotate.d/openfire`:
 ### Debug Logging
 
 Enable debug logging:
+
 1. **Server > Server Manager > Logs**
 2. Set level to DEBUG for:
    - `org.jivesoftware.openfire`
@@ -502,6 +513,7 @@ If using an existing remote OpenFire instance:
 ### 1. Configure Connection
 
 Create `.env.local`:
+
 ```env
 VITE_BACKEND_MODE=openfire
 VITE_OPENFIRE_WS=wss://your-openfire-server.com:7443/ws
@@ -515,6 +527,7 @@ VITE_OPENFIRE_PUBSUB=pubsub.your-domain.com
 Ensure remote OpenFire allows your development origin:
 
 **Admin Console** → **Server Settings** → **HTTP Binding** → **CORS**:
+
 ```
 Allowed Origins: http://localhost:5173, https://localhost:5173
 Allowed Methods: GET, POST, PUT, DELETE, OPTIONS
@@ -528,7 +541,7 @@ import { StanzaBackend } from '@war-rooms/backend-openfire';
 
 const backend = new StanzaBackend({
   websocketUrl: process.env.VITE_OPENFIRE_WS,
-  domain: process.env.VITE_OPENFIRE_DOMAIN
+  domain: process.env.VITE_OPENFIRE_DOMAIN,
 });
 
 try {
@@ -544,6 +557,7 @@ try {
 Common Docker issues and solutions:
 
 ### Port Conflicts
+
 ```bash
 # Check if ports are in use
 lsof -i :9090
@@ -557,6 +571,7 @@ ports:
 ```
 
 ### Memory Issues
+
 ```yaml
 # Add to docker-compose.yml
 services:
@@ -568,6 +583,7 @@ services:
 ```
 
 ### Network Issues on Mac
+
 ```bash
 # Use host network mode (Mac specific)
 docker run --network host nasqueron/openfire:4.7.5
@@ -578,6 +594,7 @@ docker run --network openfire-net --name openfire nasqueron/openfire:4.7.5
 ```
 
 ### Permission Issues
+
 ```bash
 # Fix volume permissions
 sudo chown -R $(id -u):$(id -g) ./openfire/
@@ -587,6 +604,7 @@ docker run --user $(id -u):$(id -g) nasqueron/openfire:4.7.5
 ```
 
 ### Container Won't Start
+
 ```bash
 # Check logs
 docker logs openfire -f
@@ -602,6 +620,7 @@ docker-compose up -d
 For standalone browser demo, see [mock-development-guide.md](mock-development-guide.md) for complete instructions.
 
 Quick start:
+
 ```javascript
 // Initialize mock backend
 import { MockXMPPBackend } from '@war-rooms/backend-mock';
@@ -609,7 +628,7 @@ import { MockXMPPBackend } from '@war-rooms/backend-mock';
 const backend = new MockXMPPBackend({
   persistence: 'localStorage',
   debugMode: true,
-  initialData: initialMockData
+  initialData: initialMockData,
 });
 
 // Use same API as OpenFire backend

@@ -7,14 +7,17 @@
 ## Base Configuration
 
 ### Endpoints
+
 - **Production**: `https://{openfire-host}:9090/plugins/restapi/v1`
 - **Mock**: In-memory handler, no network calls
 
 ### Authentication
+
 - **Production**: Basic Auth or API Key header
 - **Mock**: Simulated auth with localStorage token
 
 ### Common Headers
+
 ```http
 Content-Type: application/json
 Accept: application/json
@@ -23,14 +26,15 @@ X-Request-ID: {uuid}           # Request tracing
 ```
 
 ### Error Response Format
+
 ```typescript
 interface ErrorResponse {
   error: {
-    code: string;               // ERROR_CODE
-    message: string;            // Human-readable message
-    details?: any;              // Additional error context
-    timestamp: string;          // ISO 8601
-    requestId: string;          // Trace ID
+    code: string; // ERROR_CODE
+    message: string; // Human-readable message
+    details?: any; // Additional error context
+    timestamp: string; // ISO 8601
+    requestId: string; // Trace ID
   };
 }
 ```
@@ -38,24 +42,27 @@ interface ErrorResponse {
 ## User Management
 
 ### Create User
+
 ```http
 POST /users
 ```
 
 **Request**:
+
 ```typescript
 interface CreateUserRequest {
-  username: string;             // Required, unique
-  password: string;             // Required, min 8 chars
-  email?: string;               // Optional
-  displayName: string;          // Required
+  username: string; // Required, unique
+  password: string; // Required, min 8 chars
+  email?: string; // Optional
+  displayName: string; // Required
   role: 'admin' | 'participant' | 'observer';
-  groups?: string[];            // Group IDs to join
-  forceId?: string;            // Force affiliation
+  groups?: string[]; // Group IDs to join
+  forceId?: string; // Force affiliation
 }
 ```
 
 **Response**: `201 Created`
+
 ```typescript
 interface CreateUserResponse {
   user: {
@@ -67,17 +74,19 @@ interface CreateUserResponse {
     groups: string[];
     forceId?: string;
     createdAt: string;
-    jid?: string;              // XMPP JID if OpenFire
+    jid?: string; // XMPP JID if OpenFire
   };
 }
 ```
 
 ### Get Users
+
 ```http
 GET /users?page={page}&limit={limit}&role={role}&group={groupId}
 ```
 
 **Query Parameters**:
+
 - `page`: number (default: 1)
 - `limit`: number (default: 100, max: 500)
 - `role`: Filter by role
@@ -85,6 +94,7 @@ GET /users?page={page}&limit={limit}&role={role}&group={groupId}
 - `search`: Text search in username/displayName
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetUsersResponse {
   users: User[];
@@ -98,37 +108,42 @@ interface GetUsersResponse {
 ```
 
 ### Get User
+
 ```http
 GET /users/{userId}
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetUserResponse {
   user: User;
-  presence?: UserPresence;      // Current presence if online
-  groups: Group[];              // Expanded group details
+  presence?: UserPresence; // Current presence if online
+  groups: Group[]; // Expanded group details
 }
 ```
 
 ### Update User
+
 ```http
 PUT /users/{userId}
 ```
 
 **Request**:
+
 ```typescript
 interface UpdateUserRequest {
   displayName?: string;
   email?: string;
   role?: string;
-  groups?: string[];           // Replace all groups
+  groups?: string[]; // Replace all groups
   forceId?: string;
   status?: 'active' | 'suspended';
 }
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface UpdateUserResponse {
   user: User;
@@ -136,6 +151,7 @@ interface UpdateUserResponse {
 ```
 
 ### Delete User
+
 ```http
 DELETE /users/{userId}
 ```
@@ -143,15 +159,17 @@ DELETE /users/{userId}
 **Response**: `204 No Content`
 
 ### Reset Password
+
 ```http
 POST /users/{userId}/reset-password
 ```
 
 **Request**:
+
 ```typescript
 interface ResetPasswordRequest {
-  newPassword: string;         // Min 8 characters
-  requireChange?: boolean;     // Force change on next login
+  newPassword: string; // Min 8 characters
+  requireChange?: boolean; // Force change on next login
 }
 ```
 
@@ -160,22 +178,25 @@ interface ResetPasswordRequest {
 ## Group Management
 
 ### Create Group
+
 ```http
 POST /groups
 ```
 
 **Request**:
+
 ```typescript
 interface CreateGroupRequest {
-  name: string;                // Required, unique
+  name: string; // Required, unique
   description?: string;
   type: 'force' | 'role' | 'custom';
-  allowedRooms?: string[];     // Room IDs
+  allowedRooms?: string[]; // Room IDs
   permissions?: Permission[];
 }
 ```
 
 **Response**: `201 Created`
+
 ```typescript
 interface CreateGroupResponse {
   group: Group;
@@ -183,11 +204,13 @@ interface CreateGroupResponse {
 ```
 
 ### Get Groups
+
 ```http
 GET /groups?type={type}
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetGroupsResponse {
   groups: Group[];
@@ -195,11 +218,13 @@ interface GetGroupsResponse {
 ```
 
 ### Update Group
+
 ```http
 PUT /groups/{groupId}
 ```
 
 **Request**:
+
 ```typescript
 interface UpdateGroupRequest {
   name?: string;
@@ -212,20 +237,23 @@ interface UpdateGroupRequest {
 **Response**: `200 OK`
 
 ### Add Group Members
+
 ```http
 POST /groups/{groupId}/members
 ```
 
 **Request**:
+
 ```typescript
 interface AddMembersRequest {
-  userIds: string[];           // User IDs to add
+  userIds: string[]; // User IDs to add
 }
 ```
 
 **Response**: `200 OK`
 
 ### Remove Group Members
+
 ```http
 DELETE /groups/{groupId}/members/{userId}
 ```
@@ -235,28 +263,31 @@ DELETE /groups/{groupId}/members/{userId}
 ## Room Management
 
 ### Create Room
+
 ```http
 POST /rooms
 ```
 
 **Request**:
+
 ```typescript
 interface CreateRoomRequest {
-  name: string;                // Required, unique
+  name: string; // Required, unique
   description?: string;
   type: 'standard' | 'all-hands' | 'private' | 'command';
-  maxUsers?: number;           // Default based on type
+  maxUsers?: number; // Default based on type
   accessType: 'public' | 'members-only' | 'invite-only';
-  allowedGroups?: string[];    // Group IDs
-  persistent?: boolean;        // Default: true
-  moderated?: boolean;         // Default: false
-  allowForms?: boolean;        // Default: false
+  allowedGroups?: string[]; // Group IDs
+  persistent?: boolean; // Default: true
+  moderated?: boolean; // Default: false
+  allowForms?: boolean; // Default: false
   formSchemaIds?: string[];
   theme?: RoomTheme;
 }
 ```
 
 **Response**: `201 Created`
+
 ```typescript
 interface CreateRoomResponse {
   room: Room;
@@ -264,17 +295,20 @@ interface CreateRoomResponse {
 ```
 
 ### Get Rooms
+
 ```http
 GET /rooms?type={type}&active={boolean}
 ```
 
 **Query Parameters**:
+
 - `type`: Filter by room type
 - `active`: Filter by activity status
 - `userId`: Rooms accessible by user
 - `groupId`: Rooms accessible by group
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetRoomsResponse {
   rooms: Room[];
@@ -282,25 +316,29 @@ interface GetRoomsResponse {
 ```
 
 ### Get Room
+
 ```http
 GET /rooms/{roomId}
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetRoomResponse {
   room: Room;
-  activeUsers: User[];         // Currently in room
-  recentMessages: Message[];   // Last 50 messages
+  activeUsers: User[]; // Currently in room
+  recentMessages: Message[]; // Last 50 messages
 }
 ```
 
 ### Update Room
+
 ```http
 PUT /rooms/{roomId}
 ```
 
 **Request**:
+
 ```typescript
 interface UpdateRoomRequest {
   name?: string;
@@ -318,27 +356,32 @@ interface UpdateRoomRequest {
 **Response**: `200 OK`
 
 ### Delete Room
+
 ```http
 DELETE /rooms/{roomId}
 ```
 
 **Query Parameters**:
+
 - `archive`: boolean (default: true) - Archive vs hard delete
 
 **Response**: `204 No Content`
 
 ### Get Room Messages
+
 ```http
 GET /rooms/{roomId}/messages?before={timestamp}&limit={limit}
 ```
 
 **Query Parameters**:
+
 - `before`: ISO 8601 timestamp (pagination cursor)
 - `after`: ISO 8601 timestamp
 - `limit`: number (default: 50, max: 200)
 - `type`: Filter by message type
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetMessagesResponse {
   messages: Message[];
@@ -349,6 +392,7 @@ interface GetMessagesResponse {
 ```
 
 ### Clear Room Messages
+
 ```http
 DELETE /rooms/{roomId}/messages
 ```
@@ -358,11 +402,13 @@ DELETE /rooms/{roomId}/messages
 ## Form Schema Management
 
 ### Create Form Schema
+
 ```http
 POST /forms
 ```
 
 **Request**:
+
 ```typescript
 interface CreateFormRequest {
   name: string;
@@ -377,11 +423,13 @@ interface CreateFormRequest {
 **Response**: `201 Created`
 
 ### Get Form Schemas
+
 ```http
 GET /forms?category={category}&roomId={roomId}
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetFormsResponse {
   forms: FormSchema[];
@@ -389,6 +437,7 @@ interface GetFormsResponse {
 ```
 
 ### Update Form Schema
+
 ```http
 PUT /forms/{formId}
 ```
@@ -398,6 +447,7 @@ PUT /forms/{formId}
 **Response**: `200 OK`
 
 ### Delete Form Schema
+
 ```http
 DELETE /forms/{formId}
 ```
@@ -409,11 +459,13 @@ DELETE /forms/{formId}
 ## Game Metadata Management
 
 ### Get Game Metadata
+
 ```http
 GET /game
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface GetGameResponse {
   game: GameMetadata;
@@ -421,11 +473,13 @@ interface GetGameResponse {
 ```
 
 ### Update Game Metadata
+
 ```http
 PUT /game
 ```
 
 **Request**:
+
 ```typescript
 interface UpdateGameRequest {
   title?: string;
@@ -440,23 +494,26 @@ interface UpdateGameRequest {
 **Response**: `200 OK`
 
 ### Update Game State
+
 ```http
 PUT /game/state
 ```
 
 **Request**:
+
 ```typescript
 interface UpdateGameStateRequest {
   status?: 'setup' | 'running' | 'paused' | 'completed';
   currentTurn?: number;
   currentPhase?: string;
-  description?: string;        // Change description
+  description?: string; // Change description
 }
 ```
 
 **Response**: `200 OK`
 
 ### Manage Forces
+
 ```http
 POST /game/forces
 PUT /game/forces/{forceId}
@@ -464,6 +521,7 @@ DELETE /game/forces/{forceId}
 ```
 
 ### Manage Missions
+
 ```http
 POST /game/missions
 PUT /game/missions/{missionId}
@@ -473,22 +531,25 @@ DELETE /game/missions/{missionId}
 ## System Operations
 
 ### Reset Wargame
+
 ```http
 POST /system/reset
 ```
 
 **Request**:
+
 ```typescript
 interface ResetRequest {
-  preserveUsers?: boolean;      // Keep user accounts
-  preserveGroups?: boolean;     // Keep group structure
-  preserveRooms?: boolean;      // Keep room definitions
-  clearMessages: boolean;       // Always clear messages
-  resetGameState: boolean;      // Reset to turn 0
+  preserveUsers?: boolean; // Keep user accounts
+  preserveGroups?: boolean; // Keep group structure
+  preserveRooms?: boolean; // Keep room definitions
+  clearMessages: boolean; // Always clear messages
+  resetGameState: boolean; // Reset to turn 0
 }
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface ResetResponse {
   deletedMessages: number;
@@ -498,17 +559,19 @@ interface ResetResponse {
 ```
 
 ### Health Check
+
 ```http
 GET /health
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface HealthResponse {
   status: 'healthy' | 'degraded' | 'unhealthy';
   backend: 'openfire' | 'mock';
   version: string;
-  uptime: number;              // Seconds
+  uptime: number; // Seconds
   checks: {
     database: boolean;
     messaging: boolean;
@@ -518,11 +581,13 @@ interface HealthResponse {
 ```
 
 ### Get Statistics
+
 ```http
 GET /stats
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface StatsResponse {
   users: {
@@ -540,8 +605,8 @@ interface StatsResponse {
     averagePerDay: number;
   };
   storage: {
-    used: number;              // Bytes
-    limit?: number;            // Bytes (if applicable)
+    used: number; // Bytes
+    limit?: number; // Bytes (if applicable)
   };
 }
 ```
@@ -549,19 +614,22 @@ interface StatsResponse {
 ## Batch Operations
 
 ### Bulk Create Users
+
 ```http
 POST /batch/users
 ```
 
 **Request**:
+
 ```typescript
 interface BulkCreateUsersRequest {
   users: CreateUserRequest[];
-  continueOnError?: boolean;   // Default: false
+  continueOnError?: boolean; // Default: false
 }
 ```
 
 **Response**: `200 OK`
+
 ```typescript
 interface BulkCreateResponse {
   created: User[];
@@ -574,11 +642,13 @@ interface BulkCreateResponse {
 ```
 
 ### Bulk Assign Groups
+
 ```http
 POST /batch/group-assignments
 ```
 
 **Request**:
+
 ```typescript
 interface BulkAssignRequest {
   assignments: Array<{
@@ -597,19 +667,28 @@ For real-time admin updates:
 
 ```typescript
 interface AdminEvent {
-  type: 'user.created' | 'user.updated' | 'user.deleted' |
-        'group.created' | 'group.updated' | 'group.deleted' |
-        'room.created' | 'room.updated' | 'room.deleted' |
-        'game.updated' | 'system.reset';
+  type:
+    | 'user.created'
+    | 'user.updated'
+    | 'user.deleted'
+    | 'group.created'
+    | 'group.updated'
+    | 'group.deleted'
+    | 'room.created'
+    | 'room.updated'
+    | 'room.deleted'
+    | 'game.updated'
+    | 'system.reset';
   data: any;
   timestamp: string;
-  userId: string;              // Who made the change
+  userId: string; // Who made the change
 }
 ```
 
 ## Rate Limiting
 
 Production backend enforces:
+
 - 100 requests/minute for read operations
 - 20 requests/minute for write operations
 - 5 requests/minute for bulk operations
@@ -619,6 +698,7 @@ Mock backend has no rate limiting.
 ## Idempotency
 
 All write operations support idempotency via:
+
 ```http
 X-Idempotency-Key: {uuid}
 ```
@@ -628,11 +708,12 @@ Server caches results for 24 hours.
 ## Pagination
 
 Standard pagination format:
+
 ```typescript
 interface PaginatedRequest {
-  page?: number;               // 1-based
-  limit?: number;              // Items per page
-  sort?: string;               // Field to sort by
+  page?: number; // 1-based
+  limit?: number; // Items per page
+  sort?: string; // Field to sort by
   order?: 'asc' | 'desc';
 }
 
@@ -652,6 +733,7 @@ interface PaginatedResponse<T> {
 ## Filtering
 
 Standard filter format:
+
 ```typescript
 interface FilterRequest {
   filters?: Array<{
@@ -665,6 +747,7 @@ interface FilterRequest {
 ## Mock Backend Considerations
 
 The mock backend implements all these contracts with:
+
 - Data stored in localForage
 - No actual network requests
 - Simulated delays (optional) for realism
@@ -672,6 +755,7 @@ The mock backend implements all these contracts with:
 - Cross-tab synchronization via BroadcastChannel
 
 Example mock implementation:
+
 ```typescript
 class MockAdminAPI implements AdminAPI {
   async createUser(request: CreateUserRequest): Promise<CreateUserResponse> {
@@ -683,7 +767,7 @@ class MockAdminAPI implements AdminAPI {
       id: generateUUID(),
       ...request,
       createdAt: new Date().toISOString(),
-      status: 'active'
+      status: 'active',
     };
 
     // Store in localForage

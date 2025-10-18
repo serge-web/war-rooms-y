@@ -210,7 +210,11 @@ export class MockXMPPBackend implements XMPPBackend {
 
   // ===== Presence Operations =====
 
-  async sendPresence(show?: 'away' | 'chat' | 'dnd' | 'xa', status?: string, priority?: number): Promise<void> {
+  async sendPresence(
+    show?: 'away' | 'chat' | 'dnd' | 'xa',
+    status?: string,
+    priority?: number
+  ): Promise<void> {
     if (this.debug) {
       console.debug('[MockXMPP] sendPresence', { show, status, priority });
     }
@@ -441,8 +445,12 @@ export class MockXMPPBackend implements XMPPBackend {
 
     // Get forces and room extensions from PubSub for membership checking
     type PubSubItem<T> = { id: string; payload: T };
-    const forces = await this.storage.getAll<PubSubItem<{ members: string[]; id: string }>>('pubsub/nodes//war-rooms/forces/items/');
-    const roomExtensions = await this.storage.getAll<PubSubItem<{ roomJid: string; forceRestrictions?: string[] }>>('pubsub/nodes//war-rooms/rooms/items/');
+    const forces = await this.storage.getAll<PubSubItem<{ members: string[]; id: string }>>(
+      'pubsub/nodes//war-rooms/forces/items/'
+    );
+    const roomExtensions = await this.storage.getAll<
+      PubSubItem<{ roomJid: string; forceRestrictions?: string[] }>
+    >('pubsub/nodes//war-rooms/rooms/items/');
 
     const myRooms: XMPPRoom[] = [];
 
@@ -467,7 +475,9 @@ export class MockXMPPBackend implements XMPPBackend {
 
       // Check 3: User's force has access
       if (!hasAccess) {
-        const extension = Object.values(roomExtensions).find((ext) => ext.payload?.roomJid === roomJid);
+        const extension = Object.values(roomExtensions).find(
+          (ext) => ext.payload?.roomJid === roomJid
+        );
         if (extension?.payload?.forceRestrictions) {
           const forceRestrictions = extension.payload.forceRestrictions;
 
@@ -563,7 +573,9 @@ export class MockXMPPBackend implements XMPPBackend {
     await delay(this.latency);
 
     // Update occupant role
-    const occupant = await this.storage.getItem<XMPPOccupant>(`rooms/${roomJid}/occupants/${nickname}`);
+    const occupant = await this.storage.getItem<XMPPOccupant>(
+      `rooms/${roomJid}/occupants/${nickname}`
+    );
 
     if (occupant) {
       occupant.role = role;
@@ -660,14 +672,19 @@ export class MockXMPPBackend implements XMPPBackend {
     return id;
   }
 
-  async retrievePubSub(node: string, maxItems?: number): Promise<Array<{ id: string; payload: unknown }>> {
+  async retrievePubSub(
+    node: string,
+    maxItems?: number
+  ): Promise<Array<{ id: string; payload: unknown }>> {
     if (this.debug) {
       console.debug('[MockXMPP] retrievePubSub', { node, maxItems });
     }
 
     await delay(this.latency);
 
-    const items = await this.storage.getAll<{ id: string; payload: unknown }>(`pubsub/nodes/${node}/items/`);
+    const items = await this.storage.getAll<{ id: string; payload: unknown }>(
+      `pubsub/nodes/${node}/items/`
+    );
     let result = Object.values(items);
 
     if (maxItems) {

@@ -6,6 +6,7 @@
 ## Overview
 
 Start developing immediately with the mock backend that simulates XMPP protocol in the browser. Perfect for:
+
 - UI development without server dependencies
 - Quick prototyping and testing
 - Demo/training scenarios
@@ -28,6 +29,7 @@ npm run bootstrap
 ### 2. Configure for Mock Backend
 
 Create `.env.local`:
+
 ```env
 VITE_BACKEND_MODE=mock
 VITE_MOCK_PERSISTENCE=localStorage
@@ -38,6 +40,7 @@ VITE_MOCK_LATENCY=100  # Simulate network delay (ms)
 ### 3. Initialize Mock Data
 
 Create `src/mock-data/initial-data.ts`:
+
 ```typescript
 import { MockData } from '@war-rooms/backend-mock';
 
@@ -53,8 +56,8 @@ export const initialMockData: MockData = {
       vcard: {
         fn: 'Game Administrator',
         email: 'admin@wargame.local',
-        title: 'System Admin'
-      }
+        title: 'System Admin',
+      },
     },
     {
       jid: 'blue-commander@wargame.local',
@@ -64,8 +67,8 @@ export const initialMockData: MockData = {
       groups: ['blue-force', 'commanders'],
       vcard: {
         fn: 'Colonel Smith',
-        title: 'Blue Force Commander'
-      }
+        title: 'Blue Force Commander',
+      },
     },
     {
       jid: 'red-commander@wargame.local',
@@ -75,9 +78,9 @@ export const initialMockData: MockData = {
       groups: ['red-force', 'commanders'],
       vcard: {
         fn: 'Colonel Jones',
-        title: 'Red Force Commander'
-      }
-    }
+        title: 'Red Force Commander',
+      },
+    },
   ],
 
   // Initial rooms (MUCs)
@@ -88,7 +91,7 @@ export const initialMockData: MockData = {
         identity: {
           category: 'conference',
           type: 'text',
-          name: 'All Hands'
+          name: 'All Hands',
         },
         features: ['muc_persistent', 'muc_open', 'muc_unmoderated'],
         x: {
@@ -97,10 +100,10 @@ export const initialMockData: MockData = {
           'muc#roomconfig_persistentroom': true,
           'muc#roomconfig_publicroom': true,
           'muc#roomconfig_maxusers': 200,
-          'muc#roomconfig_membersonly': false
-        }
+          'muc#roomconfig_membersonly': false,
+        },
       },
-      occupants: []
+      occupants: [],
     },
     {
       jid: 'blue-command@conference.wargame.local',
@@ -108,7 +111,7 @@ export const initialMockData: MockData = {
         identity: {
           category: 'conference',
           type: 'text',
-          name: 'Blue Command'
+          name: 'Blue Command',
         },
         features: ['muc_persistent', 'muc_membersonly', 'muc_moderated'],
         x: {
@@ -118,10 +121,10 @@ export const initialMockData: MockData = {
           'muc#roomconfig_publicroom': false,
           'muc#roomconfig_maxusers': 50,
           'muc#roomconfig_membersonly': true,
-          'muc#roomconfig_members': ['blue-commander@wargame.local']
-        }
+          'muc#roomconfig_members': ['blue-commander@wargame.local'],
+        },
       },
-      occupants: []
+      occupants: [],
     },
     {
       jid: 'red-command@conference.wargame.local',
@@ -129,7 +132,7 @@ export const initialMockData: MockData = {
         identity: {
           category: 'conference',
           type: 'text',
-          name: 'Red Command'
+          name: 'Red Command',
         },
         features: ['muc_persistent', 'muc_membersonly', 'muc_moderated'],
         x: {
@@ -139,11 +142,11 @@ export const initialMockData: MockData = {
           'muc#roomconfig_publicroom': false,
           'muc#roomconfig_maxusers': 50,
           'muc#roomconfig_membersonly': true,
-          'muc#roomconfig_members': ['red-commander@wargame.local']
-        }
+          'muc#roomconfig_members': ['red-commander@wargame.local'],
+        },
       },
-      occupants: []
-    }
+      occupants: [],
+    },
   ],
 
   // Initial messages (MAM history)
@@ -155,52 +158,67 @@ export const initialMockData: MockData = {
       type: 'groupchat',
       body: 'Welcome to the wargame. Please join your designated rooms.',
       delay: {
-        stamp: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-      }
-    }
+        stamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      },
+    },
   ],
 
   // PubSub nodes with initial data
   pubsubNodes: new Map([
-    ['/war-rooms/game/metadata', {
-      title: 'Operation Thunder Strike',
-      description: 'Joint forces training exercise',
-      scenario: 'Multi-domain operations in contested environment',
-      logoUrl: '/assets/logo.png'
-    }],
-    ['/war-rooms/game/state', {
-      status: 'setup',
-      currentTurn: 0,
-      currentPhase: 'initialization',
-      lastUpdate: {
-        timestamp: new Date().toISOString(),
-        changedBy: 'admin@wargame.local',
-        description: 'Game initialized'
-      }
-    }],
-    ['/war-rooms/game/theme', {
-      primaryColor: '#1976d2',
-      secondaryColor: '#dc004e',
-      backgroundColor: '#f5f5f5',
-      fontFamily: 'Roboto, sans-serif'
-    }],
-    ['/war-rooms/forces/blue', {
-      id: 'blue',
-      name: 'Blue Force',
-      color: '#1976d2',
-      commander: 'blue-commander@wargame.local',
-      memberCount: 0,
-      status: 'active'
-    }],
-    ['/war-rooms/forces/red', {
-      id: 'red',
-      name: 'Red Force',
-      color: '#dc004e',
-      commander: 'red-commander@wargame.local',
-      memberCount: 0,
-      status: 'active'
-    }]
-  ])
+    [
+      '/war-rooms/game/metadata',
+      {
+        title: 'Operation Thunder Strike',
+        description: 'Joint forces training exercise',
+        scenario: 'Multi-domain operations in contested environment',
+        logoUrl: '/assets/logo.png',
+      },
+    ],
+    [
+      '/war-rooms/game/state',
+      {
+        status: 'setup',
+        currentTurn: 0,
+        currentPhase: 'initialization',
+        lastUpdate: {
+          timestamp: new Date().toISOString(),
+          changedBy: 'admin@wargame.local',
+          description: 'Game initialized',
+        },
+      },
+    ],
+    [
+      '/war-rooms/game/theme',
+      {
+        primaryColor: '#1976d2',
+        secondaryColor: '#dc004e',
+        backgroundColor: '#f5f5f5',
+        fontFamily: 'Roboto, sans-serif',
+      },
+    ],
+    [
+      '/war-rooms/forces/blue',
+      {
+        id: 'blue',
+        name: 'Blue Force',
+        color: '#1976d2',
+        commander: 'blue-commander@wargame.local',
+        memberCount: 0,
+        status: 'active',
+      },
+    ],
+    [
+      '/war-rooms/forces/red',
+      {
+        id: 'red',
+        name: 'Red Force',
+        color: '#dc004e',
+        commander: 'red-commander@wargame.local',
+        memberCount: 0,
+        status: 'active',
+      },
+    ],
+  ]),
 };
 ```
 
@@ -224,7 +242,7 @@ import { initialMockData } from './mock-data/initial-data';
 const backend = new MockXMPPBackend({
   persistence: 'localStorage',
   debugMode: true,
-  initialData: initialMockData
+  initialData: initialMockData,
 });
 
 // Connect with any credentials (mock accepts all)
@@ -276,7 +294,7 @@ backend.sendMessage({
   id: 'msg-123',
   to: 'blue-command@conference.wargame.local',
   type: 'groupchat',
-  body: 'Test message from mock backend'
+  body: 'Test message from mock backend',
 });
 
 // Join a room
@@ -296,20 +314,20 @@ backend.on('pubsub:event', (node, data) => {
 backend.simulatePresence({
   from: 'alice@wargame.local',
   show: 'chat',
-  status: 'Ready for ops'
+  status: 'Ready for ops',
 });
 
 // Simulate incoming message
 backend.simulateMessage({
   from: 'blue-command@conference.wargame.local/Alice',
   type: 'groupchat',
-  body: 'Blue team ready for mission'
+  body: 'Blue team ready for mission',
 });
 
 // Simulate PubSub update
 backend.simulatePubSubEvent('/war-rooms/game/state', {
   status: 'running',
-  currentTurn: 1
+  currentTurn: 1,
 });
 ```
 
@@ -353,10 +371,10 @@ await backend.debug.loadScenario('battle-in-progress');
 // test/scenarios/basic-chat.ts
 export async function setupBasicChat(backend: MockXMPPBackend) {
   // Create users
-  const users = ['alice', 'bob', 'charlie'].map(name => ({
+  const users = ['alice', 'bob', 'charlie'].map((name) => ({
     jid: `${name}@wargame.local`,
     name: name.charAt(0).toUpperCase() + name.slice(1),
-    groups: ['participants']
+    groups: ['participants'],
   }));
 
   // Add to roster
@@ -369,16 +387,16 @@ export async function setupBasicChat(backend: MockXMPPBackend) {
     from: 'alice@wargame.local',
     to: 'all-hands@conference.wargame.local',
     type: 'groupchat',
-    body: 'Anyone ready for the mission briefing?'
+    body: 'Anyone ready for the mission briefing?',
   });
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
 
   await backend.simulateMessage({
     from: 'bob@wargame.local',
     to: 'all-hands@conference.wargame.local',
     type: 'groupchat',
-    body: 'Standing by for briefing'
+    body: 'Standing by for briefing',
   });
 }
 ```
@@ -396,9 +414,9 @@ export async function setupFormSubmission(backend: MockXMPPBackend) {
       properties: {
         location: { type: 'string' },
         status: { enum: ['green', 'yellow', 'red'] },
-        details: { type: 'string' }
-      }
-    }
+        details: { type: 'string' },
+      },
+    },
   });
 
   // Simulate form message
@@ -412,10 +430,10 @@ export async function setupFormSubmission(backend: MockXMPPBackend) {
         data: {
           location: 'Grid 123456',
           status: 'green',
-          details: 'All units operational'
-        }
-      }
-    }
+          details: 'All units operational',
+        },
+      },
+    },
   });
 }
 ```
@@ -425,6 +443,7 @@ export async function setupFormSubmission(backend: MockXMPPBackend) {
 When ready to test with real OpenFire:
 
 1. **Update environment**:
+
 ```env
 VITE_BACKEND_MODE=openfire
 VITE_OPENFIRE_WS=wss://remote-openfire.com:7443/ws
@@ -441,7 +460,7 @@ VITE_OPENFIRE_DOMAIN=wargame.local
 await backend.addToRoster({
   jid: 'newuser@wargame.local',
   name: 'New User',
-  groups: ['blue-force']
+  groups: ['blue-force'],
 });
 ```
 
@@ -453,7 +472,7 @@ await backend.createRoom({
   name: 'Planning Room',
   description: 'Mission planning',
   maxUsers: 20,
-  membersOnly: true
+  membersOnly: true,
 });
 ```
 
@@ -525,16 +544,19 @@ if (!validation.valid) {
 ## Troubleshooting
 
 ### Mock data not persisting
+
 - Check localStorage isn't full
 - Verify `VITE_MOCK_PERSISTENCE=localStorage`
 - Try IndexedDB: `VITE_MOCK_PERSISTENCE=indexedDB`
 
 ### Events not firing
+
 - Ensure you're subscribed: `backend.on('message', handler)`
 - Check event name matches XMPP spec
 - Enable debug mode to see all events
 
 ### Cross-tab sync not working
+
 - BroadcastChannel needs same origin
 - Use HTTPS in development: `npm run dev -- --https`
 - Check browser supports BroadcastChannel API

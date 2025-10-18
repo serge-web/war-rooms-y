@@ -3,20 +3,18 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/packages'],
-  testMatch: [
-    '**/__tests__/**/*.+(ts|tsx|js)',
-    '**/?(*.)+(spec|test).+(ts|tsx|js)',
-  ],
+  testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)'],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react-jsx',
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
       },
-    }],
+    ],
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(jotai)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(jotai)/)'],
   moduleNameMapper: {
     '^@war-rooms/(.*)$': '<rootDir>/packages/$1/src',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
@@ -28,8 +26,8 @@ module.exports = {
     '!packages/**/*.stories.tsx',
     '!packages/**/node_modules/**',
     '!packages/**/dist/**',
-    '!packages/chat-ui/**',  // Exclude chat-ui (uses Vite/import.meta)
-    '!**/.storybook/**',     // Exclude storybook config
+    '!packages/chat-ui/**', // Exclude chat-ui (uses Vite/import.meta)
+    '!**/.storybook/**', // Exclude storybook config
   ],
   // Coverage thresholds - start low and increase as tests are added
   coverageThreshold: {

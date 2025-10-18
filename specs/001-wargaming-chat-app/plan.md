@@ -23,15 +23,17 @@ XMPP-first multi-room wargaming chat application leveraging native XMPP protocol
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 ### ✅ I. Code Quality First
+
 - TypeScript enforces type safety and self-documenting interfaces
 - ESLint + Prettier for consistent formatting
 - Modular architecture with shared libraries (xmpp, state, openfire-rest)
 - Maximum complexity managed through functional components and pure state containers
 
 ### ✅ II. Test-Driven Development (NON-NEGOTIABLE)
+
 - Jest for unit tests of helpers and reducers
 - Playwright for e2e multi-client flows
 - Storybook for component isolation and testing
@@ -39,6 +41,7 @@ XMPP-first multi-room wargaming chat application leveraging native XMPP protocol
 - Target: 80% code coverage
 
 ### ✅ III. User Experience Consistency
+
 - flexlayout-react for consistent room layout
 - React-Admin for uniform admin interface
 - RJSF for standardized form rendering
@@ -46,6 +49,7 @@ XMPP-first multi-room wargaming chat application leveraging native XMPP protocol
 - Loading states and error feedback for all actions
 
 ### ✅ IV. Performance by Design
+
 - Message delivery < 2 seconds (p95)
 - UI interactions < 200ms (p95)
 - Support for 100-200 users per room
@@ -53,6 +57,7 @@ XMPP-first multi-room wargaming chat application leveraging native XMPP protocol
 - PubSub for metadata updates (reduces polling)
 
 ### ✅ V. Security in Depth
+
 - OpenFire handles authentication and authorization
 - Input validation via RJSF schemas
 - Secure WebSocket connections (WSS)
@@ -60,6 +65,7 @@ XMPP-first multi-room wargaming chat application leveraging native XMPP protocol
 - Admin operations via authenticated REST API
 
 ### ✅ VI. Observability and Debugging
+
 - Structured logging in all components
 - XMPP stanza logging for debugging
 - React DevTools integration
@@ -144,4 +150,4 @@ playwright.config.ts     # E2E test configuration
 
 ## Complexity Tracking
 
-*No violations - architecture aligns with all constitution principles.*
+_No violations - architecture aligns with all constitution principles._

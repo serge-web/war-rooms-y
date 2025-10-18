@@ -9,6 +9,7 @@
 
 **Decision**: Leverage XMPP protocol directly as the primary data layer
 **Rationale**:
+
 - XMPP handles all core messaging, presence, and room management
 - No need for custom protocols or heavy abstraction layers
 - OpenFire does the heavy lifting for authentication, authorization, and routing
@@ -16,6 +17,7 @@
 - PubSub provides extensibility for metadata without modifying core protocol
 
 **Architecture principles**:
+
 - Use native XMPP features wherever possible
 - Store extended metadata in PubSub nodes
 - Compose XMPP + PubSub data only at the UI layer
@@ -27,6 +29,7 @@
 
 **Decision**: Stanza.js (https://github.com/legastero/stanza)
 **Rationale**:
+
 - JSON-native API aligns with XMPP-first approach
 - TypeScript-first with excellent type definitions
 - Modern async/await patterns
@@ -35,6 +38,7 @@
 - Active maintenance by XMPP standards author
 
 **Alternatives considered**:
+
 - @xmpp/client: More traditional but requires XML handling
 - Strophe.js: Legacy patterns, late TypeScript adoption
 
@@ -42,12 +46,14 @@
 
 **Decision**: Singleton connection manager with React Context + Zustand
 **Rationale**:
+
 - Single XMPP connection shared across all components
 - Zustand for global connection state (status, roster, presence)
 - React Context for dependency injection
 - Automatic reconnection with exponential backoff
 
 **Implementation**:
+
 ```typescript
 // Using Stanza.js
 import { createClient } from 'stanza';
@@ -68,12 +74,14 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: Zustand (global) + Jotai (per-room messages)
 **Rationale**:
+
 - Zustand for connection state, roster, presence (app-wide)
 - Jotai atoms for per-room message streams (fine-grained reactivity)
 - Minimal re-renders, excellent TypeScript support
 - No boilerplate compared to Redux
 
 **Alternatives considered**:
+
 - Redux Toolkit: Too much boilerplate for real-time updates
 - Valtio: Less mature ecosystem
 - MobX: Class-based patterns don't align with functional React
@@ -82,12 +90,14 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: XEP-0313 MAM with pagination
 **Rationale**:
+
 - Permanent message retention per requirements
 - Server-side pagination reduces client memory usage
 - Query by date range or message ID
 - OpenFire has excellent MAM support
 
 **Implementation pattern**:
+
 - Initial load: Last 50 messages per room
 - Infinite scroll: Load 20 messages at a time
 - Use RSM (Result Set Management) for pagination
@@ -96,12 +106,14 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: XMPP PubSub with XEP-0335 (JSON Containers)
 **Rationale**:
+
 - Native JSON storage in XMPP
 - Real-time updates via PubSub subscriptions
 - No additional database required
 - Perfect for game metadata, themes, form schemas
 
 **Node structure**:
+
 ```
 /game/metadata - Global game settings
 /game/state - Game time and turn number
@@ -114,6 +126,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: React JSON Schema Form (RJSF) with rjsf-builder
 **Rationale**:
+
 - Industry standard for dynamic forms
 - TypeScript support via generics
 - Admin can design forms visually with rjsf-builder
@@ -124,6 +137,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: flexlayout-react
 **Rationale**:
+
 - Production-ready draggable/resizable panes
 - TypeScript definitions included
 - State serialization for persistence
@@ -134,6 +148,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: Jest + Playwright + Storybook + MSW
 **Rationale**:
+
 - Jest: Unit tests for pure functions and state logic
 - Playwright: E2E tests simulating multiple clients
 - Storybook: Component isolation and visual testing
@@ -143,6 +158,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: Vite + GitHub Actions
 **Rationale**:
+
 - Vite: Fast builds, native TypeScript support
 - GitHub Actions: Integrated with repo, good for air-gapped export
 - Branch protection with required checks
@@ -151,12 +167,14 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: npm workspaces (native)
 **Rationale**:
+
 - Native npm feature (no additional tools)
 - TypeScript project references for type safety
 - Shared dependencies hoisted automatically
 - Simpler than Lerna/Nx/Rush for this scale
 
 **Alternatives considered**:
+
 - pnpm workspaces: Better performance but less standard
 - Yarn workspaces: No significant advantage
 - Lerna: Overkill for this project
@@ -167,11 +185,13 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: Selective presence broadcasts
 **Rationale**:
+
 - Disable presence for rooms >100 users
 - Use explicit roster queries instead
 - Reduces network traffic by 90%
 
 **Configuration**:
+
 ```javascript
 // Room configuration for large rooms
 {
@@ -185,6 +205,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: Debounced UI updates
 **Rationale**:
+
 - Batch presence updates every 500ms
 - Batch message renders in 100ms windows
 - Reduces React re-renders significantly
@@ -193,6 +214,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: LocalStorage queue with IndexedDB fallback
 **Rationale**:
+
 - LocalStorage for small queue (<1MB)
 - IndexedDB for larger offline periods
 - Messages include queued timestamp
@@ -204,6 +226,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: OpenFire username/password via WSS
 **Rationale**:
+
 - Simple for air-gapped environments
 - No external dependencies
 - TLS encryption for credentials
@@ -213,6 +236,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: Proxy OpenFire REST through backend
 **Rationale**:
+
 - Never expose OpenFire secret key to browser
 - Additional access control layer
 - Request logging and rate limiting
@@ -221,6 +245,7 @@ client.use(client.plugins['stream-management']);
 
 **Decision**: RJSF validation + DOMPurify for display
 **Rationale**:
+
 - Schema validation prevents malformed data
 - DOMPurify sanitizes any rendered HTML
 - CSP headers restrict script execution
@@ -228,6 +253,7 @@ client.use(client.plugins['stream-management']);
 ## Deployment Architecture
 
 ### Development
+
 ```
 npm run dev (Vite dev server)
 OpenFire in Docker
@@ -235,6 +261,7 @@ MSW for mocked services
 ```
 
 ### Production (Air-Gapped)
+
 ```
 1. Build artifacts locally
 2. Export as tarball with dependencies
@@ -247,6 +274,7 @@ MSW for mocked services
 ### Decision: Interface-based backend with swappable implementations
 
 **Rationale**:
+
 - Enables standalone demo/training mode without server
 - Supports development without OpenFire setup
 - Allows testing without network dependencies
@@ -256,12 +284,14 @@ MSW for mocked services
 
 **Decision**: XMPP-compliant simulation with localForage + EventEmitter
 **Rationale**:
+
 - Must faithfully simulate XMPP protocol behavior
 - localForage stores XMPP-structured data (roster, MUC, MAM)
 - EventEmitter simulates stanza routing
 - Maintains protocol compliance for seamless switching
 
 **Implementation approach**:
+
 ```typescript
 // Mock must simulate XMPP protocol exactly
 interface XMPPBackend {
@@ -279,8 +309,8 @@ interface XMPPBackend {
 
 // Both backends implement same XMPP interface
 const backend: XMPPBackend = isDemoMode
-  ? new MockXMPPBackend(localForage)  // Simulates XMPP
-  : new StanzaBackend(config);         // Real XMPP
+  ? new MockXMPPBackend(localForage) // Simulates XMPP
+  : new StanzaBackend(config); // Real XMPP
 ```
 
 **Key requirement**: Mock backend MUST generate identical XMPP stanzas and events as real OpenFire, ensuring the client code never knows the difference.
@@ -289,12 +319,14 @@ const backend: XMPPBackend = isDemoMode
 
 **Decision**: Vite static build with runtime config
 **Rationale**:
+
 - Single HTML file with embedded JS/CSS
 - Runtime backend selection via URL param or localStorage
 - No server required for demo mode
 - Can be hosted on CDN or opened locally
 
 **Build outputs**:
+
 - `dist/index.html` - Production build (OpenFire)
 - `dist/demo.html` - Demo build (localForage default)
 - Both use same compiled JS with runtime switch
@@ -308,13 +340,13 @@ const backend: XMPPBackend = isDemoMode
 
 ## Risk Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| OpenFire downtime | Stream Management for resumption, client-side queue |
-| Network latency | Optimistic UI updates, local message echo |
-| Large room performance | Disable presence, paginated MAM |
-| Browser compatibility | Target modern browsers only (Chrome 90+, Firefox 88+, Safari 14+) |
-| TypeScript complexity | Strict mode, comprehensive types for all APIs |
+| Risk                   | Mitigation                                                        |
+| ---------------------- | ----------------------------------------------------------------- |
+| OpenFire downtime      | Stream Management for resumption, client-side queue               |
+| Network latency        | Optimistic UI updates, local message echo                         |
+| Large room performance | Disable presence, paginated MAM                                   |
+| Browser compatibility  | Target modern browsers only (Chrome 90+, Firefox 88+, Safari 14+) |
+| TypeScript complexity  | Strict mode, comprehensive types for all APIs                     |
 
 ## Next Steps
 

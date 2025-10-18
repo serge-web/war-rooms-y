@@ -106,10 +106,7 @@ export const MOCK_FORCES: ForceMetadata[] = [
     name: 'Red Force',
     description: 'Opposing force conducting offensive operations',
     color: '#D32F2F',
-    members: [
-      buildJid('commander.red', MOCK_DOMAIN),
-      buildJid('analyst.red1', MOCK_DOMAIN),
-    ],
+    members: [buildJid('commander.red', MOCK_DOMAIN), buildJid('analyst.red1', MOCK_DOMAIN)],
     commander: buildJid('commander.red', MOCK_DOMAIN),
     metadata: {
       designation: 'OPFOR',
@@ -123,10 +120,7 @@ export const MOCK_FORCES: ForceMetadata[] = [
     name: 'Blue Force',
     description: 'Friendly force conducting defensive operations',
     color: '#1976D2',
-    members: [
-      buildJid('commander.blue', MOCK_DOMAIN),
-      buildJid('analyst.blue1', MOCK_DOMAIN),
-    ],
+    members: [buildJid('commander.blue', MOCK_DOMAIN), buildJid('analyst.blue1', MOCK_DOMAIN)],
     commander: buildJid('commander.blue', MOCK_DOMAIN),
     metadata: {
       designation: 'BLUFOR',
@@ -199,12 +193,7 @@ export const MOCK_ROOMS: Array<{
         type: 'text',
         name: 'All Hands',
       },
-      features: [
-        'http://jabber.org/protocol/muc',
-        'muc_public',
-        'muc_persistent',
-        'muc_open',
-      ],
+      features: ['http://jabber.org/protocol/muc', 'muc_public', 'muc_persistent', 'muc_open'],
       x: {
         description: 'Main coordination room for all participants',
         'muc#roomconfig_roomname': 'All Hands',
@@ -231,11 +220,7 @@ export const MOCK_ROOMS: Array<{
         type: 'text',
         name: 'Red Force Command',
       },
-      features: [
-        'http://jabber.org/protocol/muc',
-        'muc_persistent',
-        'muc_membersonly',
-      ],
+      features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
       x: {
         description: 'Red Force command and control room',
         'muc#roomconfig_roomname': 'Red Force Command',
@@ -270,11 +255,7 @@ export const MOCK_ROOMS: Array<{
         type: 'text',
         name: 'Blue Force Command',
       },
-      features: [
-        'http://jabber.org/protocol/muc',
-        'muc_persistent',
-        'muc_membersonly',
-      ],
+      features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
       x: {
         description: 'Blue Force command and control room',
         'muc#roomconfig_roomname': 'Blue Force Command',

@@ -8,12 +8,15 @@
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
+
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3, US4, US5)
 - Include exact file paths in descriptions
 
 ## Path Conventions
+
 Based on plan.md monorepo structure:
+
 - Backend packages: `packages/backend-interface/`, `packages/backend-mock/`, `packages/backend-openfire/`
 - State management: `packages/state/`
 - Chat UI: `packages/chat-ui/`
@@ -25,15 +28,15 @@ Based on plan.md monorepo structure:
 
 **Purpose**: Project initialization and basic monorepo structure
 
-- [X] T001 Create monorepo structure with npm workspaces in package.json
-- [X] T002 [P] Initialize TypeScript configuration in tsconfig.json and packages/*/tsconfig.json
-- [X] T003 [P] Configure ESLint and Prettier in .eslintrc.js and .prettierrc
-- [X] T004 [P] Setup Jest testing framework configuration in jest.config.js
-- [X] T005 [P] Setup Playwright for E2E testing in playwright.config.ts
-- [X] T006 [P] Configure Storybook in .storybook/main.js
-- [X] T007 Create GitHub Actions CI/CD pipeline in .github/workflows/ci.yml
-- [X] T008 [P] Initialize Vite build configuration for UIs in packages/chat-ui/vite.config.ts and packages/admin-ui/vite.config.ts
-- [X] T009 Create environment configuration template in .env.example
+- [x] T001 Create monorepo structure with npm workspaces in package.json
+- [x] T002 [P] Initialize TypeScript configuration in tsconfig.json and packages/\*/tsconfig.json
+- [x] T003 [P] Configure ESLint and Prettier in .eslintrc.js and .prettierrc
+- [x] T004 [P] Setup Jest testing framework configuration in jest.config.js
+- [x] T005 [P] Setup Playwright for E2E testing in playwright.config.ts
+- [x] T006 [P] Configure Storybook in .storybook/main.js
+- [x] T007 Create GitHub Actions CI/CD pipeline in .github/workflows/ci.yml
+- [x] T008 [P] Initialize Vite build configuration for UIs in packages/chat-ui/vite.config.ts and packages/admin-ui/vite.config.ts
+- [x] T009 Create environment configuration template in .env.example
 
 ---
 
@@ -56,7 +59,7 @@ Based on plan.md monorepo structure:
 - [ ] T020 [P] Create initial mock data fixtures in packages/backend-mock/src/fixtures/initial-data.ts
 - [ ] T021 [P] Setup Zustand store structure in packages/state/src/stores/index.ts
 - [ ] T022 [P] Create base React component library structure in packages/chat-ui/src/components/index.ts
-- [ ] T023 Write unit tests for mock backend XMPP compliance in packages/backend-mock/src/__tests__/xmpp-compliance.test.ts
+- [ ] T023 Write unit tests for mock backend XMPP compliance in packages/backend-mock/src/**tests**/xmpp-compliance.test.ts
 
 **Checkpoint**: Mock backend ready - user story implementation can now begin
 
@@ -121,7 +124,7 @@ Based on plan.md monorepo structure:
 - [ ] T051 [US1] Implement message composition helpers in packages/chat-ui/src/utils/message-composer.ts
 - [ ] T052 [US1] Add real-time message handling in packages/chat-ui/src/hooks/useMessageHandler.ts
 - [ ] T053 [US1] Implement unread message tracking in packages/state/src/stores/unread.ts
-- [ ] T054 [P] [US1] Create Storybook stories for chat components in packages/chat-ui/src/components/*.stories.tsx
+- [ ] T054 [P] [US1] Create Storybook stories for chat components in packages/chat-ui/src/components/\*.stories.tsx
 
 **Checkpoint**: Core messaging functionality complete and independently testable
 
@@ -153,7 +156,7 @@ Based on plan.md monorepo structure:
 - [ ] T067 [US2] Create admin dashboard in packages/admin-ui/src/pages/Dashboard.tsx
 - [ ] T068 [US2] Configure React-Admin app in packages/admin-ui/src/App.tsx
 - [ ] T069 [P] [US2] Mock REST API endpoints in packages/backend-mock/src/rest-api.ts
-- [ ] T070 [P] [US2] Create Storybook stories for admin components in packages/admin-ui/src/resources/*.stories.tsx
+- [ ] T070 [P] [US2] Create Storybook stories for admin components in packages/admin-ui/src/resources/\*.stories.tsx
 
 **Checkpoint**: Administrative interface fully functional
 
@@ -367,6 +370,7 @@ With 3+ developers:
 - **Polish**: 10 tasks
 
 **Parallel Opportunities**:
+
 - 67 tasks marked [P] can run in parallel within their phases
 - 5 user stories can be developed independently after mock backend
 - OpenFire backend entirely parallel to UI development

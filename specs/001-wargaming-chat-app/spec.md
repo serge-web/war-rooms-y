@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "War-Rooms-Y: Multi-Room Wargaming Chat Application - Collaborative communication system for distributed wargaming"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Basic Multi-Room Messaging (Priority: P1)
 
@@ -112,7 +112,7 @@ Trainers and demonstrators need to run a fully functional instance of the applic
 - Q: When should permission changes take effect for active users? → A: Backend evicts on room loss, role changes apply immediately
 - Q: How should demo/training mode work without a server? → A: Abstract backend behind interface, provide localForage-based mock implementation that simulates OpenFire functionality in browser storage
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -147,7 +147,7 @@ Trainers and demonstrators need to run a fully functional instance of the applic
 - **FR-029**: Mock backend MUST simulate XMPP messaging, presence, and PubSub functionality using browser storage and in-memory event emitters
 - **FR-030**: Demo mode MUST provide data reset capability by clearing browser storage
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **User**: Represents a wargame participant or administrator with credentials, profile information, and group memberships
 - **Group**: Collection of users with shared permissions, typically representing a force or command level
@@ -159,7 +159,7 @@ Trainers and demonstrators need to run a fully functional instance of the applic
 - **Wargame State**: Versioned metadata tracking current game time and turn number with full history of state changes
 - **Backend Interface**: Abstraction layer defining contracts for all backend operations (authentication, messaging, storage, presence) with swappable implementations for OpenFire and localForage
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

@@ -55,7 +55,10 @@ export const DEFAULT_SEED_OPTIONS: SeedOptions = {
 /**
  * Seed mock backend with fixture data
  */
-export async function seedMockData(storage: Storage, options: SeedOptions = DEFAULT_SEED_OPTIONS): Promise<void> {
+export async function seedMockData(
+  storage: Storage,
+  options: SeedOptions = DEFAULT_SEED_OPTIONS
+): Promise<void> {
   const opts = { ...DEFAULT_SEED_OPTIONS, ...options };
 
   // Clear existing data if requested
