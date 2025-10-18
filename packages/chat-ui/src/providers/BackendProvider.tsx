@@ -12,6 +12,9 @@ import {
   useRoomsStore,
   useMetadataStore,
   messageBackendAtom,
+  type ConnectionStore,
+  type RoomsStore,
+  type MetadataStore,
 } from '@war-rooms/state';
 
 // ============================================================================
@@ -46,9 +49,9 @@ function getBackendConfig(): XMPPConfig {
 // ============================================================================
 
 export function BackendProvider({ children }: { children: React.ReactNode }) {
-  const setBackend = useConnectionStore((state) => state.setBackend);
-  const setRoomsBackend = useRoomsStore((state) => state.setBackend);
-  const setPubSub = useMetadataStore((state) => state.setPubSub);
+  const setBackend = useConnectionStore((state: ConnectionStore) => state.setBackend);
+  const setRoomsBackend = useRoomsStore((state: RoomsStore) => state.setBackend);
+  const setPubSub = useMetadataStore((state: MetadataStore) => state.setPubSub);
   const setMessageBackend = useSetAtom(messageBackendAtom);
 
   // Create backend instance

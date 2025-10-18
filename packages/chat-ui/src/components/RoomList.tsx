@@ -15,7 +15,7 @@ import {
 import {
   MeetingRoom as RoomIcon,
 } from '@mui/icons-material';
-import { useRoomsStore, selectAllRooms } from '@war-rooms/state';
+import { useRoomsStore, selectAllRooms, type RoomState } from '@war-rooms/state';
 
 interface RoomListProps {
   onRoomSelect?: (roomJid: string) => void;
@@ -31,7 +31,7 @@ export function RoomList({ onRoomSelect }: RoomListProps) {
       </Typography>
 
       <List>
-        {allRooms.map((room) => {
+        {allRooms.map((room: RoomState) => {
           const roomName = room.info.info.identity.name;
 
           return (

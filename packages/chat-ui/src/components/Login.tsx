@@ -14,16 +14,16 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useConnectionStore, selectIsConnecting, useRoomsStore } from '@war-rooms/state';
+import { useConnectionStore, selectIsConnecting, useRoomsStore, type ConnectionStore, type RoomsStore } from '@war-rooms/state';
 
 export function Login() {
   const [username, setUsername] = useState('commander.red');
   const [password, setPassword] = useState('any');
   const [error, setError] = useState<string | null>(null);
 
-  const connect = useConnectionStore((state) => state.connect);
+  const connect = useConnectionStore((state: ConnectionStore) => state.connect);
   const isConnecting = useConnectionStore(selectIsConnecting);
-  const loadMyRooms = useRoomsStore((state) => state.loadMyRooms);
+  const loadMyRooms = useRoomsStore((state: RoomsStore) => state.loadMyRooms);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -9,7 +9,7 @@ import {
   createTheme,
   Theme,
 } from '@mui/material/styles';
-import { useMetadataStore, selectGameTheme } from '@war-rooms/state';
+import { useMetadataStore, selectGameTheme, type MetadataStore } from '@war-rooms/state';
 
 // ============================================================================
 // Default War Rooms Theme
@@ -65,7 +65,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
  */
 export function useRoomTheme(roomJid?: string): Theme {
   const gameTheme = useMetadataStore(selectGameTheme);
-  const getRoomExtension = useMetadataStore((state) => state.getRoomExtension);
+  const getRoomExtension = useMetadataStore((state: MetadataStore) => state.getRoomExtension);
 
   return useMemo(() => {
     let theme = baseTheme;
