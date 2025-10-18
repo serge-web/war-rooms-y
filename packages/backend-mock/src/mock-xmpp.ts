@@ -414,6 +414,89 @@ export class MockXMPPBackend implements XMPPBackend {
     return Object.values(occupants);
   }
 
+  async getMyRooms(): Promise<XMPPRoom[]> {
+    if (this.debug) {
+      console.debug('[MockXMPP] getMyRooms');
+    }
+
+    if (!this.currentJid) {
+      throw new Error('Not connected');
+    }
+
+    await delay(this.latency);
+
+    const bareJid = getBareJid(this.currentJid);
+
+    // Get all room info from storage
+    const allRoomInfos = await this.storage.getAll<XMPPRoom['info']>('rooms/');
+    const roomJids: string[] = [];
+
+    // Extract room JIDs from keys like "rooms/room@conference.domain/info"
+    for (const key of Object.keys(allRoomInfos)) {
+      const match = key.match(/^rooms\/([^/]+)\/info$/);
+      if (match) {
+        roomJids.push(match[1]!);
+      }
+    }
+
+    // Get forces and room extensions from PubSub for membership checking
+    const forces = await this.storage.getAll<{ members: string[]; id: string }>('pubsub/nodes//war-rooms/forces/items/');
+    const roomExtensions = await this.storage.getAll<{ roomJid: string; forceRestrictions?: string[] }>('pubsub/nodes//war-rooms/rooms/items/');
+
+    const myRooms: XMPPRoom[] = [];
+
+    for (const roomJid of roomJids) {
+      const info = allRoomInfos[`rooms/${roomJid}/info`];
+      if (!info) continue;
+
+      let hasAccess = false;
+
+      // Check 1: Public room
+      if (info.x?.['muc#roomconfig_publicroom'] === true) {
+        hasAccess = true;
+      }
+
+      // Check 2: User in member list
+      if (!hasAccess) {
+        const members = info.x?.['muc#roomconfig_members'] as string[] | undefined;
+        if (members && members.includes(bareJid)) {
+          hasAccess = true;
+        }
+      }
+
+      // Check 3: User's force has access
+      if (!hasAccess) {
+        const extension = Object.values(roomExtensions).find((ext) => ext.payload && (ext.payload as any).roomJid === roomJid);
+        if (extension?.payload && (extension.payload as any).forceRestrictions) {
+          const forceRestrictions = (extension.payload as any).forceRestrictions as string[];
+
+          // Check if user is member of any restricted force
+          for (const forceId of forceRestrictions) {
+            const force = Object.values(forces).find((f) => f.payload && (f.payload as any).id === forceId);
+            if (force?.payload && (force.payload as any).members) {
+              const forceMembers = (force.payload as any).members as string[];
+              if (forceMembers.includes(bareJid)) {
+                hasAccess = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if (hasAccess) {
+        const occupants = await this.getRoomOccupants(roomJid);
+        myRooms.push({
+          jid: roomJid,
+          info,
+          occupants,
+        });
+      }
+    }
+
+    return myRooms;
+  }
+
   async setRoomSubject(roomJid: string, subject: string): Promise<void> {
     if (this.debug) {
       console.debug('[MockXMPP] setRoomSubject', { roomJid, subject });
