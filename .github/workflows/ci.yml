@@ -64,6 +64,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Build packages (needed for dev server)
+        run: npm run build
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
       - name: Run E2E tests
