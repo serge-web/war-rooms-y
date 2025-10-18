@@ -31,5 +31,5 @@ export async function seedMockData() {
 
 // Export for manual trigger from console
 if (typeof window !== 'undefined') {
-  (window as any).seedMockData = seedMockData;
+  (window as typeof window & { seedMockData: typeof seedMockData }).seedMockData = seedMockData;
 }

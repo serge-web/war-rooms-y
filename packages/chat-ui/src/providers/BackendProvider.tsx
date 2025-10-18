@@ -29,7 +29,7 @@ function getBackendConfig(): XMPPConfig {
       domain: import.meta.env.VITE_MOCK_DOMAIN || 'wargame.local',
       conferenceService: import.meta.env.VITE_MOCK_CONFERENCE || 'conference.wargame.local',
       pubsubService: import.meta.env.VITE_MOCK_PUBSUB || 'pubsub.wargame.local',
-      mockPersistence: (import.meta.env.VITE_MOCK_PERSISTENCE || 'localStorage') as any,
+      mockPersistence: (import.meta.env.VITE_MOCK_PERSISTENCE as 'localStorage' | 'memory' | undefined) || 'localStorage',
       mockLatency: Number(import.meta.env.VITE_MOCK_LATENCY || 100),
       mockDebug: import.meta.env.VITE_MOCK_DEBUG === 'true',
     };

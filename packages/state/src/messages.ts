@@ -5,7 +5,7 @@
 
 import { atom } from 'jotai';
 import { atomFamily } from 'jotai/utils';
-import type { XMPPMessage } from '@war-rooms/backend-interface';
+import type { XMPPMessage, XMPPBackend } from '@war-rooms/backend-interface';
 
 // ============================================================================
 // Message Atoms (per room)
@@ -32,7 +32,7 @@ export const messagesLoadingAtomFamily = atomFamily((_roomJid: string) =>
 /**
  * Backend reference for message operations
  */
-export const messageBackendAtom = atom<{ backend: any } | null>(null);
+export const messageBackendAtom = atom<{ backend: XMPPBackend } | null>(null);
 
 // ============================================================================
 // Derived Atoms
@@ -110,7 +110,7 @@ export const loadArchivedMessagesAtom = atom(
     set(loadingAtom, true);
 
     try {
-      const result = await backendRef.backend.queryArchive(roomJid, { limit });
+      const result = await backendRef.backend.queryArchive(roomJid, limit !== undefined ? { limit } : {});
       const messagesAtom = messagesAtomFamily(roomJid);
       set(messagesAtom, result.messages);
     } catch (error) {

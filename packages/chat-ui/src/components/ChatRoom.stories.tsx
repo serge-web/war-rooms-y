@@ -52,7 +52,7 @@ function MockRoomSetup({ roomJid, children }: { roomJid: string; children: React
       }
     };
 
-    setup();
+    void setup();
   }, [roomJid, setMessages, loadMyRooms]);
 
   return <>{children}</>;
