@@ -27,13 +27,13 @@ test.describe('Login Flow', () => {
     await page.getByRole('button', { name: 'Connect' }).click();
 
     // Wait for login to complete
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
 
-    // Should see main app interface
-    await expect(page.getByText('commander.red@wargame.local')).toBeVisible();
+    // Should see main app interface (username appears in multiple places, use first)
+    await expect(page.getByText('commander.red@wargame.local').first()).toBeVisible();
 
-    // Should see Red Force Command room
-    await expect(page.getByText('Red Force Command')).toBeVisible();
+    // Should see Red Force Command room (use heading to be specific)
+    await expect(page.getByRole('heading', { name: 'Red Force Command' })).toBeVisible();
   });
 
   test('should show error for invalid credentials', async ({ page }) => {
