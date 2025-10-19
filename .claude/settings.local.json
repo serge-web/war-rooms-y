@@ -16,7 +16,9 @@
       "Bash(npx storybook@latest init:*)",
       "Bash(awk:*)",
       "Bash(gh run list:*)",
-      "Bash(gh run watch:*)"
+      "Bash(gh run watch:*)",
+      "Bash(git push)",
+      "Bash(gh pr view:*)"
     ],
     "deny": [],
     "ask": []
