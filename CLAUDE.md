@@ -9,6 +9,7 @@ War Rooms Y is a multi-room wargaming chat application with XMPP protocol suppor
 ## Development Commands
 
 ### Quick Start
+
 ```bash
 npm install                          # Install all dependencies
 npm run dev                          # Start dev server (localhost:5173)
@@ -16,6 +17,7 @@ npm run dev                          # Start dev server (localhost:5173)
 ```
 
 ### Build & Test Commands
+
 ```bash
 # Build (sequential due to dependencies)
 npm run build                        # Builds in order: backend-interface → backend-mock → state → chat-ui
@@ -41,6 +43,7 @@ npm run build-storybook              # Build static Storybook
 ```
 
 ### Working with Specific Packages
+
 ```bash
 npm run dev --workspace=packages/chat-ui    # Run specific package
 npm run build --workspace=packages/state    # Build specific package
@@ -64,6 +67,7 @@ packages/chat-ui (React Frontend)
 ```
 
 **Key Packages:**
+
 - **backend-interface**: XMPP protocol type definitions (XMPPUser, XMPPRoom, XMPPMessage)
 - **backend-mock**: Mock XMPP backend using localStorage, pre-seeded with fixtures
 - **state**: Jotai atoms for messages, Zustand store for rooms/presence
@@ -72,12 +76,14 @@ packages/chat-ui (React Frontend)
 ### Mock Backend System
 
 The application uses a sophisticated mock backend (`packages/backend-mock`) that:
+
 - Simulates XMPP protocol operations in-browser
 - Uses localStorage for persistence (MemoryStorage fallback)
 - Pre-seeded with realistic wargaming data (users, forces, rooms, messages)
 - Configured via environment variables (VITE_BACKEND_MODE, VITE_MOCK_DOMAIN, etc.)
 
 Key files:
+
 - `packages/backend-mock/src/fixtures.ts` - Mock data (users, rooms, forces, messages)
 - `packages/backend-mock/src/mock-xmpp.ts` - XMPP protocol simulation
 - `packages/backend-mock/src/storage.ts` - Storage abstraction
@@ -85,6 +91,7 @@ Key files:
 ### Room Access Control
 
 Rooms have force-based restrictions defined in `RoomExtension.forceRestrictions`:
+
 - Users belong to forces (e.g., 'force-red', 'force-blue')
 - Rooms can restrict access to specific forces
 - Room types: 'all-hands' (public), 'command', 'standard', 'private'
@@ -92,11 +99,13 @@ Rooms have force-based restrictions defined in `RoomExtension.forceRestrictions`
 ### State Management Pattern
 
 **Jotai (Atoms)** for message state:
+
 - `messagesAtomFamily` - Per-room message storage
 - `messageBackendAtom` - Backend reference
 - Async actions for loading archived messages
 
 **Zustand** for room/presence state:
+
 - `RoomsStore` - Rooms, occupants, join/leave operations
 - Selectors for derived state
 
@@ -150,17 +159,20 @@ specs/<feature-id>/
 ## Testing Strategy
 
 ### Unit Tests (Jest)
+
 - Focus: Business logic, state management, utilities
 - Location: `packages/**/src/__tests__/*.test.ts`
 - Run single: `npm test -- path/to/test.ts`
 
 ### E2E Tests (Playwright)
+
 - Focus: User workflows, critical paths
 - Location: `e2e/*.spec.ts`
 - Fixtures: Uses mock backend with pre-seeded data
 - Debug: Use `--ui` flag for interactive debugging
 
 ### Component Stories (Storybook)
+
 - Focus: Visual documentation, component variations
 - Location: `packages/**/*.stories.tsx`
 - Purpose: Component development and future Chromatic integration
@@ -181,6 +193,7 @@ VITE_MOCK_LATENCY=100               # Simulated network delay
 ## Current Implementation Status
 
 **Completed:**
+
 - Mock XMPP backend with localStorage persistence
 - Multi-room chat UI with flexlayout-react
 - Force-based room access control
@@ -189,6 +202,7 @@ VITE_MOCK_LATENCY=100               # Simulated network delay
 - PR preview deployments to GitHub Pages
 
 **Not Yet Implemented:**
+
 - Real Openfire backend integration (`packages/backend-openfire`)
 - Admin console (`packages/admin-ui`)
 - Form submissions with RJSF
@@ -198,7 +212,9 @@ VITE_MOCK_LATENCY=100               # Simulated network delay
 ## Common Tasks
 
 ### Adding a New Room
+
 Edit `packages/backend-mock/src/fixtures.ts`:
+
 ```typescript
 {
   jid: buildJid('room-name', MOCK_CONFERENCE),
@@ -212,9 +228,11 @@ Edit `packages/backend-mock/src/fixtures.ts`:
 ```
 
 ### Modifying Mock Users
+
 Edit `packages/backend-mock/src/fixtures.ts` MOCK_USERS and MOCK_FORCES arrays.
 
 ### Debugging State Issues
+
 1. Check Redux DevTools for Zustand store
 2. Use React DevTools to inspect Jotai atoms
 3. Check localStorage: `localStorage.getItem('war-rooms:messages:room-jid')`
@@ -222,10 +240,13 @@ Edit `packages/backend-mock/src/fixtures.ts` MOCK_USERS and MOCK_FORCES arrays.
 ## Deployment
 
 ### PR Previews
+
 Automated deployment to GitHub Pages on PR creation/update:
+
 - URL: `https://{owner}.github.io/{repo}/pr-{number}/`
 - Uses mock backend with pre-configured data
 - Bot comments on PR with preview URL
 
 ### Production
+
 Not yet configured. Will require Openfire server setup.
