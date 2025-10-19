@@ -22,7 +22,7 @@ import {
   sortMessages,
   getMessageSender,
 } from '@war-rooms/state';
-import { useRoomsStore, selectRoom, type RoomsStore } from '@war-rooms/state';
+import { useRoomsStore, type RoomsStore } from '@war-rooms/state';
 import type { XMPPMessage } from '@war-rooms/backend-interface';
 
 interface ChatRoomProps {
@@ -32,11 +32,6 @@ interface ChatRoomProps {
 export function ChatRoom({ roomJid }: ChatRoomProps) {
   const [messageText, setMessageText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Get room info
-  const room = useRoomsStore(selectRoom(roomJid));
-  // Note: room.info is actually the whole XMPPRoom object (naming inconsistency in RoomState)
-  const roomName = room ? room.info.info.identity.name : roomJid;
 
   // Get messages for this room
   const messages = useAtomValue(messagesAtomFamily(roomJid));
@@ -84,29 +79,13 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <Paper
-        elevation={1}
-        sx={{
-          p: 2,
-          borderRadius: 0,
-          borderBottom: 1,
-          borderColor: 'divider',
-        }}
-      >
-        <Typography variant="h6">{roomName}</Typography>
-        <Typography variant="caption" color="text.secondary">
-          {room?.occupants.length || 0} participant{room?.occupants.length !== 1 ? 's' : ''}
-        </Typography>
-      </Paper>
-
       {/* Messages */}
       <Box
         sx={{
           flex: 1,
           overflowY: 'auto',
           p: 2,
-          bgcolor: 'background.default',
+          bgcolor: 'background.paper',
         }}
       >
         <List>
