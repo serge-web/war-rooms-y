@@ -2,87 +2,103 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Overview
+## Project Overview
 
-This is a **Speckit** repository - a specification-driven development workflow that transforms feature descriptions into structured, executable implementation plans. The workflow progresses through specification → planning → task generation → implementation phases, with constitution-based governance ensuring consistency and quality.
+War Rooms Y is a multi-room wargaming chat application with XMPP protocol support, built as a TypeScript monorepo. It features real-time messaging, force-based room access control, and schema-driven message forms.
 
-## Core Workflow Commands
+## Development Commands
 
-All workflow commands are namespaced under `/speckit.`:
+### Quick Start
+```bash
+npm install                          # Install all dependencies
+npm run dev                          # Start dev server (localhost:5173)
+# Login: commander.red / any (pre-populated)
+```
 
-### Feature Specification
+### Build & Test Commands
+```bash
+# Build (sequential due to dependencies)
+npm run build                        # Builds in order: backend-interface → backend-mock → state → chat-ui
 
-- `/speckit.specify <feature-description>` - Create feature spec from natural language description
-  - Creates feature branch and `specs/<feature>/spec.md`
-  - Generates spec using `.specify/templates/spec-template.md`
-  - Validates completeness with automated quality checklist
-  - Limits clarifications to max 3 critical questions
+# Testing
+npm test                             # Run Jest unit tests
+npm run test:watch                   # Jest watch mode
+npm run test:coverage                # Generate coverage report
+npm run test:e2e                     # Run Playwright E2E tests
+npm run test:e2e -- --ui             # Playwright UI mode (debugging)
+npm run test:e2e -- --headed         # Show browser during tests
 
-### Implementation Planning
+# Code Quality
+npm run lint                         # ESLint
+npm run lint:fix                     # Fix linting issues
+npm run format                       # Format with Prettier
+npm run format:check                 # Check formatting
+npm run typecheck                    # TypeScript type checking
 
-- `/speckit.plan` - Generate implementation plan with tech stack and architecture
-  - **Phase 0**: Research unknowns, resolve NEEDS CLARIFICATION markers
-  - **Phase 1**: Generate `data-model.md`, `contracts/`, `quickstart.md`
-  - Updates agent context automatically
-  - Validates against constitution rules
+# Storybook
+npm run storybook                    # Start Storybook (port 6006)
+npm run build-storybook              # Build static Storybook
+```
 
-### Task Generation
+### Working with Specific Packages
+```bash
+npm run dev --workspace=packages/chat-ui    # Run specific package
+npm run build --workspace=packages/state    # Build specific package
+npm test packages/state                     # Test specific package
+```
 
-- `/speckit.tasks` - Generate dependency-ordered task list from design artifacts
-  - Organizes tasks by user story priority (P1, P2, P3)
-  - Each story is independently testable and deployable
-  - Uses checklist format: `- [ ] [T###] [P?] [Story?] Description with file path`
-  - Creates parallel execution opportunities
+## Architecture
 
-### Implementation Execution
+### Package Structure & Dependencies
 
-- `/speckit.implement` - Execute all tasks from `tasks.md`
-  - Validates checklists before proceeding
-  - Follows TDD approach (tests before implementation)
-  - Respects task dependencies and parallel markers
-  - Updates ignore files (`.gitignore`, `.dockerignore`, etc.)
-
-### Quality & Refinement
-
-- `/speckit.clarify` - Identify underspecified areas and gather targeted clarifications
-- `/speckit.analyze` - Cross-artifact consistency and quality analysis
-- `/speckit.checklist` - Generate custom checklist for current feature
-- `/speckit.constitution` - Create or update project constitution
-
-## Key Bash Scripts
-
-Located in `.specify/scripts/bash/`:
-
-- `create-new-feature.sh --json --short-name <name> "<description>"` - Initialize feature branch and spec file
-- `check-prerequisites.sh --json [--require-tasks] [--include-tasks]` - Validate workflow prerequisites
-- `setup-plan.sh --json` - Initialize planning phase
-- `update-agent-context.sh claude` - Update Claude-specific context with tech stack from plan
-
-All scripts support `--json` flag for structured output parsing.
-
-## Repository Structure
+The monorepo uses npm workspaces with a strict dependency hierarchy:
 
 ```
-.specify/
-├── memory/
-│   └── constitution.md         # Project governance rules and principles
-├── scripts/bash/               # Workflow automation scripts
-└── templates/                  # Templates for all artifacts
-    ├── spec-template.md        # Feature specification structure
-    ├── plan-template.md        # Implementation plan structure
-    ├── tasks-template.md       # Task breakdown structure
-    └── checklist-template.md   # Quality checklist structure
-
-specs/<feature-id>/             # Generated per feature
-├── spec.md                     # What users need (technology-agnostic)
-├── plan.md                     # How to build it (tech stack, structure)
-├── tasks.md                    # Actionable implementation steps
-├── research.md                 # Technical decisions and rationale
-├── data-model.md               # Entities and relationships
-├── quickstart.md               # Integration scenarios
-├── contracts/                  # API specifications
-└── checklists/                 # Quality validation checklists
+packages/backend-interface (Protocol Types)
+    ↓
+packages/backend-mock (Mock Implementation)
+    ↓
+packages/state (State Management)
+    ↓
+packages/chat-ui (React Frontend)
 ```
+
+**Key Packages:**
+- **backend-interface**: XMPP protocol type definitions (XMPPUser, XMPPRoom, XMPPMessage)
+- **backend-mock**: Mock XMPP backend using localStorage, pre-seeded with fixtures
+- **state**: Jotai atoms for messages, Zustand store for rooms/presence
+- **chat-ui**: React app with Material UI and flexlayout-react for resizable panes
+
+### Mock Backend System
+
+The application uses a sophisticated mock backend (`packages/backend-mock`) that:
+- Simulates XMPP protocol operations in-browser
+- Uses localStorage for persistence (MemoryStorage fallback)
+- Pre-seeded with realistic wargaming data (users, forces, rooms, messages)
+- Configured via environment variables (VITE_BACKEND_MODE, VITE_MOCK_DOMAIN, etc.)
+
+Key files:
+- `packages/backend-mock/src/fixtures.ts` - Mock data (users, rooms, forces, messages)
+- `packages/backend-mock/src/mock-xmpp.ts` - XMPP protocol simulation
+- `packages/backend-mock/src/storage.ts` - Storage abstraction
+
+### Room Access Control
+
+Rooms have force-based restrictions defined in `RoomExtension.forceRestrictions`:
+- Users belong to forces (e.g., 'force-red', 'force-blue')
+- Rooms can restrict access to specific forces
+- Room types: 'all-hands' (public), 'command', 'standard', 'private'
+
+### State Management Pattern
+
+**Jotai (Atoms)** for message state:
+- `messagesAtomFamily` - Per-room message storage
+- `messageBackendAtom` - Backend reference
+- Async actions for loading archived messages
+
+**Zustand** for room/presence state:
+- `RoomsStore` - Rooms, occupants, join/leave operations
+- Selectors for derived state
 
 ## Critical Workflow Rules
 
@@ -103,87 +119,113 @@ Required commands to run locally (in order):
 
 **Never discover errors in CI that you should have caught locally.** If CI fails, you failed to validate properly.
 
-### Specification Phase
+## Speckit Workflow
 
-- **Technology-agnostic**: No frameworks, languages, or implementation details in spec.md
-- **User-focused**: Written for business stakeholders, not developers
-- **Testable requirements**: Every requirement must be measurable and unambiguous
-- **Limited clarifications**: Maximum 3 [NEEDS CLARIFICATION] markers per spec
-- **Success criteria**: Must be measurable, technology-agnostic outcomes
+This is a **Speckit** repository - a specification-driven development workflow. All workflow commands are namespaced under `/speckit.`:
 
-### Planning Phase
+### Core Commands
 
-- **Constitution compliance**: All designs must pass constitution gates
-- **Research first**: Resolve all unknowns in Phase 0 before design in Phase 1
-- **Agent context updates**: Automatically keep AI context in sync with tech decisions
+- `/speckit.specify <feature-description>` - Create feature spec from natural language
+- `/speckit.plan` - Generate implementation plan with tech stack
+- `/speckit.tasks` - Generate dependency-ordered task list
+- `/speckit.implement` - Execute all tasks from tasks.md
+- `/speckit.clarify` - Identify underspecified areas
+- `/speckit.analyze` - Cross-artifact consistency analysis
+- `/speckit.checklist` - Generate custom checklist
+- `/speckit.constitution` - Create or update project constitution
 
-### Task Generation
+### Speckit Files
 
-- **User story organization**: Tasks grouped by priority (P1, P2, P3)
-- **Independent testability**: Each story is self-contained and deployable
-- **Strict checklist format**: `- [ ] [T###] [P?] [US#?] Description with file/path`
-- **Parallel markers [P]**: Indicate tasks that can run concurrently
-
-### Implementation Phase
-
-- **TDD approach**: Tests written before implementation (if requested)
-- **Checklist validation**: All checklists must pass before implementation
-- **Sequential by default**: Only parallel-marked tasks run concurrently
-- **Progress tracking**: Mark tasks as [X] upon completion
-
-## Key Principles
-
-1. **Specification drives everything** - Start with user needs, not technical solutions
-2. **Independent deliverables** - Each user story is a complete, testable increment
-3. **Constitution as arbiter** - Project governance rules supersede ad-hoc decisions
-4. **Automated validation** - Quality checks prevent incomplete or inconsistent artifacts
-5. **Parallel execution** - Maximize concurrency where dependencies allow
-
-## Common Patterns
-
-### Starting a new feature
-
-```bash
-/speckit.specify Build a user authentication system with email/password login
-# → Creates branch, spec.md, validates quality
-/speckit.plan
-# → Generates plan.md, research.md, data-model.md, contracts/
-/speckit.tasks
-# → Creates tasks.md with prioritized, executable tasks
-/speckit.implement
-# → Executes all tasks in dependency order
+```
+specs/<feature-id>/
+├── spec.md         # User requirements (technology-agnostic)
+├── plan.md         # Implementation approach
+├── tasks.md        # Actionable tasks with dependencies
+├── research.md     # Technical decisions
+├── data-model.md   # Entities and relationships
+├── quickstart.md   # Integration scenarios
+└── contracts/      # API specifications
 ```
 
-### Handling unclear requirements
+## Testing Strategy
 
-- Speckit makes informed guesses based on industry standards
-- Only marks critical decisions as [NEEDS CLARIFICATION]
-- Clarifications limited to: scope > security > UX > technical details
+### Unit Tests (Jest)
+- Focus: Business logic, state management, utilities
+- Location: `packages/**/src/__tests__/*.test.ts`
+- Run single: `npm test -- path/to/test.ts`
 
-### Working with checklists
+### E2E Tests (Playwright)
+- Focus: User workflows, critical paths
+- Location: `e2e/*.spec.ts`
+- Fixtures: Uses mock backend with pre-seeded data
+- Debug: Use `--ui` flag for interactive debugging
 
-- Auto-generated during `/speckit.specify` for requirements validation
-- Can create custom checklists with `/speckit.checklist`
-- Implementation halts if checklists incomplete (unless user overrides)
+### Component Stories (Storybook)
+- Focus: Visual documentation, component variations
+- Location: `packages/**/*.stories.tsx`
+- Purpose: Component development and future Chromatic integration
 
-## File Path Conventions
+## Environment Configuration
 
-- **Always use absolute paths** in scripts and task descriptions
-- **Escape single quotes** in bash arguments: `'I'\''m Groot'` or use double quotes
-- **Script execution** always from repository root
+The chat-ui uses Vite environment variables to configure the backend:
 
-## Quality Gates
+```bash
+VITE_BACKEND_MODE=mock              # 'mock' or 'openfire'
+VITE_MOCK_DOMAIN=wargame.local
+VITE_MOCK_CONFERENCE=conference.wargame.local
+VITE_MOCK_PUBSUB=pubsub.wargame.local
+VITE_MOCK_PERSISTENCE=localStorage  # or 'memory'
+VITE_MOCK_LATENCY=100               # Simulated network delay
+```
 
-### Specification Quality
+## Current Implementation Status
 
-- No implementation details leak into spec.md
-- All requirements testable and unambiguous
-- Success criteria are measurable outcomes
-- Maximum 3 unresolved clarifications
+**Completed:**
+- Mock XMPP backend with localStorage persistence
+- Multi-room chat UI with flexlayout-react
+- Force-based room access control
+- Jotai/Zustand state management
+- CI/CD pipeline with GitHub Actions
+- PR preview deployments to GitHub Pages
 
-### Implementation Readiness
+**Not Yet Implemented:**
+- Real Openfire backend integration (`packages/backend-openfire`)
+- Admin console (`packages/admin-ui`)
+- Form submissions with RJSF
+- PubSub metadata publishing
+- Full test coverage (currently ~10%)
 
-- All checklists complete (or explicitly bypassed)
-- Constitution rules validated
-- Task dependencies clearly defined
-- File paths specified for all tasks
+## Common Tasks
+
+### Adding a New Room
+Edit `packages/backend-mock/src/fixtures.ts`:
+```typescript
+{
+  jid: buildJid('room-name', MOCK_CONFERENCE),
+  info: { identity: { name: 'Display Name' }, ... },
+  extension: {
+    type: 'standard', // or 'all-hands', 'command', 'private'
+    forceRestrictions: ['force-red'], // optional
+    ...
+  }
+}
+```
+
+### Modifying Mock Users
+Edit `packages/backend-mock/src/fixtures.ts` MOCK_USERS and MOCK_FORCES arrays.
+
+### Debugging State Issues
+1. Check Redux DevTools for Zustand store
+2. Use React DevTools to inspect Jotai atoms
+3. Check localStorage: `localStorage.getItem('war-rooms:messages:room-jid')`
+
+## Deployment
+
+### PR Previews
+Automated deployment to GitHub Pages on PR creation/update:
+- URL: `https://{owner}.github.io/{repo}/pr-{number}/`
+- Uses mock backend with pre-configured data
+- Bot comments on PR with preview URL
+
+### Production
+Not yet configured. Will require Openfire server setup.
