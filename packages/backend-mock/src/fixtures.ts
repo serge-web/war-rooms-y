@@ -303,7 +303,7 @@ export const MOCK_ROOMS: Array<{
     },
     extension: {
       roomJid: buildJid('red-media', MOCK_CONFERENCE),
-      type: 'functional',
+      type: 'standard',
       forceRestrictions: ['force-red'],
       formSchemaIds: ['sitrep'],
       theme: {
@@ -338,7 +338,7 @@ export const MOCK_ROOMS: Array<{
     },
     extension: {
       roomJid: buildJid('red-logistics', MOCK_CONFERENCE),
-      type: 'functional',
+      type: 'standard',
       forceRestrictions: ['force-red'],
       formSchemaIds: ['sitrep'],
       theme: {
@@ -373,7 +373,7 @@ export const MOCK_ROOMS: Array<{
     },
     extension: {
       roomJid: buildJid('red-HQ', MOCK_CONFERENCE),
-      type: 'functional',
+      type: 'standard',
       forceRestrictions: ['force-red'],
       formSchemaIds: ['sitrep', 'oporder'],
       theme: {
