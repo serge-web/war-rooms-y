@@ -18,7 +18,8 @@
       "Bash(gh run list:*)",
       "Bash(gh run watch:*)",
       "Bash(git push)",
-      "Bash(gh pr view:*)"
+      "Bash(gh pr view:*)",
+      "Bash(npx playwright install --with-deps)"
     ],
     "deny": [],
     "ask": []
