@@ -282,6 +282,111 @@ export const MOCK_ROOMS: Array<{
       createdBy: buildJid('gamemaster', MOCK_DOMAIN),
     },
   },
+  {
+    jid: buildJid('red-media', MOCK_CONFERENCE),
+    info: {
+      identity: {
+        category: 'conference',
+        type: 'text',
+        name: 'Red Force Media',
+      },
+      features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
+      x: {
+        description: 'Red Force media operations room',
+        'muc#roomconfig_roomname': 'Red Force Media',
+        'muc#roomconfig_roomdesc': 'Red Force Media Ops',
+        'muc#roomconfig_persistentroom': true,
+        'muc#roomconfig_publicroom': false,
+        'muc#roomconfig_membersonly': true,
+        'muc#roomconfig_moderatedroom': false,
+      },
+    },
+    extension: {
+      roomJid: buildJid('red-media', MOCK_CONFERENCE),
+      type: 'functional',
+      forceRestrictions: ['force-red'],
+      formSchemaIds: ['sitrep'],
+      theme: {
+        palette: {
+          primary: {
+            main: '#D32F2F',
+          },
+        },
+      } as Partial<import('@mui/material/styles').Theme>,
+      createdAt: '2025-01-15T08:00:00.000Z',
+      createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+    },
+  },
+  {
+    jid: buildJid('red-logistics', MOCK_CONFERENCE),
+    info: {
+      identity: {
+        category: 'conference',
+        type: 'text',
+        name: 'Red Force Logistics',
+      },
+      features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
+      x: {
+        description: 'Red Force logistics coordination room',
+        'muc#roomconfig_roomname': 'Red Force Logistics',
+        'muc#roomconfig_roomdesc': 'Red Force Logistics',
+        'muc#roomconfig_persistentroom': true,
+        'muc#roomconfig_publicroom': false,
+        'muc#roomconfig_membersonly': true,
+        'muc#roomconfig_moderatedroom': false,
+      },
+    },
+    extension: {
+      roomJid: buildJid('red-logistics', MOCK_CONFERENCE),
+      type: 'functional',
+      forceRestrictions: ['force-red'],
+      formSchemaIds: ['sitrep'],
+      theme: {
+        palette: {
+          primary: {
+            main: '#D32F2F',
+          },
+        },
+      } as Partial<import('@mui/material/styles').Theme>,
+      createdAt: '2025-01-15T08:00:00.000Z',
+      createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+    },
+  },
+  {
+    jid: buildJid('red-HQ', MOCK_CONFERENCE),
+    info: {
+      identity: {
+        category: 'conference',
+        type: 'text',
+        name: 'Red Force HQ',
+      },
+      features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
+      x: {
+        description: 'Red Force headquarters coordination room',
+        'muc#roomconfig_roomname': 'Red Force HQ',
+        'muc#roomconfig_roomdesc': 'Red Force HQ',
+        'muc#roomconfig_persistentroom': true,
+        'muc#roomconfig_publicroom': false,
+        'muc#roomconfig_membersonly': true,
+        'muc#roomconfig_moderatedroom': false,
+      },
+    },
+    extension: {
+      roomJid: buildJid('red-HQ', MOCK_CONFERENCE),
+      type: 'functional',
+      forceRestrictions: ['force-red'],
+      formSchemaIds: ['sitrep', 'oporder'],
+      theme: {
+        palette: {
+          primary: {
+            main: '#D32F2F',
+          },
+        },
+      } as Partial<import('@mui/material/styles').Theme>,
+      createdAt: '2025-01-15T08:00:00.000Z',
+      createdBy: buildJid('gamemaster', MOCK_DOMAIN),
+    },
+  },
 ];
 
 // ============================================================================
