@@ -9,12 +9,30 @@ test.describe('Chat Functionality', () => {
   });
 
   test('should display assigned rooms', async ({ page }) => {
-    // Commander.red should see Red Command and All Hands (check headings in room panels)
-    await expect(page.getByRole('heading', { name: 'Red Force Command' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'All Hands' })).toBeVisible();
+    // Commander.red should see Red Command tab label and All Hands messages
+    await expect(page.getByText('Red Force Command')).toBeVisible();
+    await expect(page.getByText('Welcome to Winter Exercise 2025')).toBeVisible();
 
-    // Should NOT see Blue Command
-    await expect(page.getByRole('heading', { name: 'Blue Force Command' })).not.toBeVisible();
+    // Should NOT see Blue Command tab label
+    await expect(page.getByText('Blue Force Command')).not.toBeVisible();
+  });
+
+  test('should verify commander.red sees all 5 assigned rooms', async ({ page }) => {
+    // Commander.red should see exactly 5 rooms:
+    // 1. All Hands (public) - appears in OutOfGamePanel, not as tab
+    // 2-5. Four Red Force rooms (force-red restricted) - appear as tabs
+
+    // Check All Hands room in OutOfGamePanel
+    await expect(page.getByText('Welcome to Winter Exercise 2025')).toBeVisible();
+
+    // Check all 4 Red Force room tab labels
+    await expect(page.getByText('Red Force Command')).toBeVisible();
+    await expect(page.getByText('Red Force Media')).toBeVisible();
+    await expect(page.getByText('Red Force Logistics')).toBeVisible();
+    await expect(page.getByText('Red Force HQ')).toBeVisible();
+
+    // Should NOT see any Blue Force rooms
+    await expect(page.getByText('Blue Force Command')).not.toBeVisible();
   });
 
   test('should display messages in All Hands room', async ({ page }) => {
