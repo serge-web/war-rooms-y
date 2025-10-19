@@ -91,11 +91,15 @@ specs/<feature-id>/             # Generated per feature
 **YOU MUST run the full CI test suite locally BEFORE declaring any task complete or committing code.**
 
 Required commands to run locally (in order):
+
 1. `npm run build` - Build all packages
 2. `npm run lint` - Run ESLint
-3. `npm run typecheck` - Type check all packages
-4. `npm run test` - Run unit tests
-5. `npm run test:e2e` - Run E2E tests (if applicable)
+3. `npm run format:check` - Check Prettier formatting
+4. `npm run typecheck` - Type check all packages
+5. `npm run test` - Run unit tests
+6. `npm run test:e2e` - Run E2E tests (if applicable)
+
+**If formatting issues found, run `npm run format` to fix them before committing.**
 
 **Never discover errors in CI that you should have caught locally.** If CI fails, you failed to validate properly.
 
