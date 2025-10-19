@@ -30,6 +30,7 @@ export function Login() {
   const connect = useConnectionStore((state: ConnectionStore) => state.connect);
   const isConnecting = useConnectionStore(selectIsConnecting);
   const loadMyRooms = useRoomsStore((state: RoomsStore) => state.loadMyRooms);
+  const joinRoom = useRoomsStore((state: RoomsStore) => state.joinRoom);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +43,18 @@ export function Login() {
 
     try {
       await connect(username, password);
+
       // Load user's assigned rooms after successful connection
       await loadMyRooms();
+
+      // Auto-join all discovered rooms
+      const rooms = useRoomsStore.getState().rooms;
+      for (const [roomJid, roomState] of rooms.entries()) {
+        if (!roomState.joined) {
+          // Use username as nickname
+          await joinRoom(roomJid, username);
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Connection failed');
     }
