@@ -31,7 +31,7 @@ jobs:
         run: npm run build
 
       - name: Build chat-ui for production
-        run: npm run build --workspace=packages/chat-ui
+        run: cd packages/chat-ui && npm run build -- --base=/${{ github.event.repository.name }}/pr-${{ github.event.pull_request.number }}/
         env:
           VITE_BACKEND_MODE: mock
           VITE_MOCK_DOMAIN: wargame.local
