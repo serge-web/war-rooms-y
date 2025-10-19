@@ -86,6 +86,19 @@ specs/<feature-id>/             # Generated per feature
 
 ## Critical Workflow Rules
 
+### **IMPORTANT: Local Validation Before Declaring Work Complete**
+
+**YOU MUST run the full CI test suite locally BEFORE declaring any task complete or committing code.**
+
+Required commands to run locally (in order):
+1. `npm run build` - Build all packages
+2. `npm run lint` - Run ESLint
+3. `npm run typecheck` - Type check all packages
+4. `npm run test` - Run unit tests
+5. `npm run test:e2e` - Run E2E tests (if applicable)
+
+**Never discover errors in CI that you should have caught locally.** If CI fails, you failed to validate properly.
+
 ### Specification Phase
 
 - **Technology-agnostic**: No frameworks, languages, or implementation details in spec.md
