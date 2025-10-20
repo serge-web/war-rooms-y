@@ -151,9 +151,9 @@ Based on plan.md monorepo structure:
 - [x] T062 [P] [US2] Create Forces resource (OpenFire Groups) in packages/admin-ui/src/resources/forces/index.tsx
 - [x] T063 [P] [US2] Create Rooms resource (MUC management) in packages/admin-ui/src/resources/rooms/index.tsx
 - [x] T064 [P] [US2] Create Templates placeholder resource in packages/admin-ui/src/resources/templates/index.tsx
-- [ ] T065 [US2] Implement force metadata editor (color, icon, objectives) in packages/admin-ui/src/resources/forces/MetadataEditor.tsx
-- [ ] T066 [US2] Implement room metadata editor (theme, assignments) in packages/admin-ui/src/resources/rooms/MetadataEditor.tsx
-- [ ] T067 [US2] Implement group membership management via REST API in packages/admin-ui/src/resources/forces/MembershipManager.tsx
+- [x] T065 [US2] Implement force metadata editor (color, icon, objectives) in packages/chat-ui/src/admin/resources/forces/index.tsx
+- [x] T066 [US2] Implement room metadata editor (theme, assignments) in packages/chat-ui/src/admin/resources/rooms/index.tsx
+- [x] T067 [US2] Implement group membership management via REST API in packages/chat-ui/src/admin/resources/forces/MembershipManager.tsx
 - [x] T068 [US2] Configure React-Admin app with resources in packages/admin-ui/src/App.tsx
 - [x] T069 [P] [US2] Mock OpenFire REST API endpoints in packages/backend-mock/src/rest/openfire-api.ts
 - [x] T070 [P] [US2] Mock PubSub metadata storage in packages/backend-mock/src/rest/pubsub-metadata.ts

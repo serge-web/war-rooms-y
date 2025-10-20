@@ -18,7 +18,6 @@ import {
   ChipField,
   ArrayInput,
   SimpleFormIterator,
-  ColorInput,
   FunctionField,
   SimpleForm,
 } from 'react-admin';
@@ -73,9 +72,10 @@ export const ForceEdit = () => (
           helperText="Extended description for this force"
         />
 
-        <ColorInput
+        <TextInput
           source="metadata.color"
           label="Force Color"
+          type="color"
           helperText="Primary color for this force (used in UI theming)"
         />
 
@@ -115,9 +115,10 @@ export const ForceCreate = () => (
         helperText="Extended description for this force"
       />
 
-      <ColorInput
+      <TextInput
         source="metadata.color"
         label="Force Color"
+        type="color"
         defaultValue="#1976D2"
         helperText="Primary color for this force (used in UI theming)"
       />
