@@ -58,10 +58,7 @@ export interface Storage {
 // ============================================================================
 
 class LocalStorageBackend implements Storage {
-  constructor(
-    private namespace: string,
-    private debug: boolean
-  ) {}
+  constructor(private namespace: string) {}
 
   private prefixKey(key: string): string {
     return `${this.namespace}:${key}`;
@@ -74,31 +71,16 @@ class LocalStorageBackend implements Storage {
   async getItem<T>(key: string): Promise<T | null> {
     const prefixedKey = this.prefixKey(key);
     const value = localStorage.getItem(prefixedKey);
-
-    if (this.debug) {
-      console.debug('[MockStorage] getItem', { key, value });
-    }
-
     return value ? JSON.parse(value) : null;
   }
 
   async setItem<T>(key: string, value: T): Promise<void> {
     const prefixedKey = this.prefixKey(key);
-
-    if (this.debug) {
-      console.debug('[MockStorage] setItem', { key, value });
-    }
-
     localStorage.setItem(prefixedKey, JSON.stringify(value));
   }
 
   async removeItem(key: string): Promise<void> {
     const prefixedKey = this.prefixKey(key);
-
-    if (this.debug) {
-      console.debug('[MockStorage] removeItem', { key });
-    }
-
     localStorage.removeItem(prefixedKey);
   }
 
@@ -112,21 +94,11 @@ class LocalStorageBackend implements Storage {
         keys.push(this.unprefixKey(key));
       }
     }
-
-    if (this.debug) {
-      console.debug('[MockStorage] keys', { prefix, count: keys.length });
-    }
-
     return keys;
   }
 
   async clear(): Promise<void> {
     const keys = await this.keys();
-
-    if (this.debug) {
-      console.debug('[MockStorage] clear', { count: keys.length });
-    }
-
     for (const key of keys) {
       await this.removeItem(key);
     }
@@ -154,10 +126,7 @@ class LocalStorageBackend implements Storage {
 class IndexedDBBackend implements Storage {
   private instance: typeof localforage;
 
-  constructor(
-    namespace: string,
-    private debug: boolean
-  ) {
+  constructor(namespace: string) {
     this.instance = localforage.createInstance({
       name: namespace,
       storeName: 'xmpp_data',
@@ -166,46 +135,24 @@ class IndexedDBBackend implements Storage {
 
   async getItem<T>(key: string): Promise<T | null> {
     const value = await this.instance.getItem<T>(key);
-
-    if (this.debug) {
-      console.debug('[MockStorage] getItem', { key, value });
-    }
-
     return value;
   }
 
   async setItem<T>(key: string, value: T): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockStorage] setItem', { key, value });
-    }
-
     await this.instance.setItem(key, value);
   }
 
   async removeItem(key: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockStorage] removeItem', { key });
-    }
-
     await this.instance.removeItem(key);
   }
 
   async keys(prefix = ''): Promise<string[]> {
     const allKeys = await this.instance.keys();
     const filtered = prefix ? allKeys.filter((k) => k.startsWith(prefix)) : allKeys;
-
-    if (this.debug) {
-      console.debug('[MockStorage] keys', { prefix, count: filtered.length });
-    }
-
     return filtered;
   }
 
   async clear(): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockStorage] clear');
-    }
-
     await this.instance.clear();
   }
 
@@ -231,10 +178,7 @@ class IndexedDBBackend implements Storage {
 class MemoryBackend implements Storage {
   private data = new Map<string, unknown>();
 
-  constructor(
-    private namespace: string,
-    private debug: boolean
-  ) {}
+  constructor(private namespace: string) {}
 
   private prefixKey(key: string): string {
     return `${this.namespace}:${key}`;
@@ -243,31 +187,16 @@ class MemoryBackend implements Storage {
   async getItem<T>(key: string): Promise<T | null> {
     const prefixedKey = this.prefixKey(key);
     const value = this.data.get(prefixedKey) as T | undefined;
-
-    if (this.debug) {
-      console.debug('[MockStorage] getItem', { key, value });
-    }
-
     return value ?? null;
   }
 
   async setItem<T>(key: string, value: T): Promise<void> {
     const prefixedKey = this.prefixKey(key);
-
-    if (this.debug) {
-      console.debug('[MockStorage] setItem', { key, value });
-    }
-
     this.data.set(prefixedKey, value);
   }
 
   async removeItem(key: string): Promise<void> {
     const prefixedKey = this.prefixKey(key);
-
-    if (this.debug) {
-      console.debug('[MockStorage] removeItem', { key });
-    }
-
     this.data.delete(prefixedKey);
   }
 
@@ -280,21 +209,11 @@ class MemoryBackend implements Storage {
         keys.push(key.slice(this.namespace.length + 1));
       }
     }
-
-    if (this.debug) {
-      console.debug('[MockStorage] keys', { prefix, count: keys.length });
-    }
-
     return keys;
   }
 
   async clear(): Promise<void> {
     const keys = await this.keys();
-
-    if (this.debug) {
-      console.debug('[MockStorage] clear', { count: keys.length });
-    }
-
     for (const key of keys) {
       await this.removeItem(key);
     }
@@ -321,17 +240,16 @@ class MemoryBackend implements Storage {
 
 export function createStorage(options: StorageOptions): Storage {
   const namespace = options.namespace || 'war-rooms';
-  const debug = options.debug ?? false;
 
   switch (options.backend) {
     case 'localStorage':
-      return new LocalStorageBackend(namespace, debug);
+      return new LocalStorageBackend(namespace);
 
     case 'indexedDB':
-      return new IndexedDBBackend(namespace, debug);
+      return new IndexedDBBackend(namespace);
 
     case 'memory':
-      return new MemoryBackend(namespace, debug);
+      return new MemoryBackend(namespace);
 
     default:
       throw new Error(`Unknown storage backend: ${options.backend}`);

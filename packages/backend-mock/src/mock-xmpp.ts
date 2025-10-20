@@ -39,31 +39,21 @@ export class MockXMPPBackend implements XMPPBackend {
   private connectionState: ConnectionState = 'disconnected';
   private currentJid?: string;
   private latency: number;
-  private debug: boolean;
 
   constructor(config: XMPPConfig) {
     this.config = config;
     this.latency = config.mockLatency ?? 100;
-    this.debug = config.mockDebug ?? false;
 
     this.storage = createStorage({
       backend: config.mockPersistence || 'localStorage',
-      debug: this.debug,
+      debug: config.mockDebug ?? false,
       namespace: 'war-rooms-mock',
     });
-
-    if (this.debug) {
-      console.debug('[MockXMPP] Initialized', { config });
-    }
   }
 
   // ===== Connection Management =====
 
   async connect(username: string, _password: string): Promise<string> {
-    if (this.debug) {
-      console.debug('[MockXMPP] connect', { username });
-    }
-
     this.updateConnectionState('connecting');
     await delay(this.latency);
 
@@ -95,10 +85,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async disconnect(): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] disconnect');
-    }
-
     this.updateConnectionState('disconnecting');
     await delay(this.latency);
 
@@ -132,10 +118,6 @@ export class MockXMPPBackend implements XMPPBackend {
   // ===== Roster Operations =====
 
   async getRoster(): Promise<XMPPUser[]> {
-    if (this.debug) {
-      console.debug('[MockXMPP] getRoster');
-    }
-
     await delay(this.latency);
 
     const roster = await this.storage.getAll<XMPPUser>('roster/');
@@ -143,10 +125,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async addRosterItem(jid: string, name?: string, groups?: string[]): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] addRosterItem', { jid, name, groups });
-    }
-
     await delay(this.latency);
 
     const bareJid = getBareJid(jid);
@@ -166,10 +144,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async removeRosterItem(jid: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] removeRosterItem', { jid });
-    }
-
     await delay(this.latency);
 
     const bareJid = getBareJid(jid);
@@ -180,10 +154,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async updateRosterItem(jid: string, name?: string, groups?: string[]): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] updateRosterItem', { jid, name, groups });
-    }
-
     await delay(this.latency);
 
     const bareJid = getBareJid(jid);
@@ -215,10 +185,6 @@ export class MockXMPPBackend implements XMPPBackend {
     status?: string,
     priority?: number
   ): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] sendPresence', { show, status, priority });
-    }
-
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -240,10 +206,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async sendUnavailable(): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] sendUnavailable');
-    }
-
     if (!this.currentJid) {
       return;
     }
@@ -253,10 +215,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async subscribePresence(jid: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] subscribePresence', { jid });
-    }
-
     await delay(this.latency);
 
     // In mock, we auto-approve subscriptions
@@ -272,10 +230,6 @@ export class MockXMPPBackend implements XMPPBackend {
   // ===== Direct Messaging =====
 
   async sendMessage(to: string, body: string, thread?: string): Promise<string> {
-    if (this.debug) {
-      console.debug('[MockXMPP] sendMessage', { to, body, thread });
-    }
-
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -301,10 +255,6 @@ export class MockXMPPBackend implements XMPPBackend {
   // ===== Multi-User Chat Operations =====
 
   async joinRoom(roomJid: string, nickname: string, _password?: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] joinRoom', { roomJid, nickname });
-    }
-
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -330,10 +280,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async leaveRoom(roomJid: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] leaveRoom', { roomJid });
-    }
-
     await delay(this.latency);
 
     // Get nickname
@@ -349,10 +295,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async sendGroupchatMessage(roomJid: string, body: string): Promise<string> {
-    if (this.debug) {
-      console.debug('[MockXMPP] sendGroupchatMessage', { roomJid, body });
-    }
-
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -385,10 +327,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async getRoomInfo(roomJid: string): Promise<XMPPRoom> {
-    if (this.debug) {
-      console.debug('[MockXMPP] getRoomInfo', { roomJid });
-    }
-
     await delay(this.latency);
 
     // Get room info from storage
@@ -408,10 +346,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async getRoomOccupants(roomJid: string): Promise<XMPPOccupant[]> {
-    if (this.debug) {
-      console.debug('[MockXMPP] getRoomOccupants', { roomJid });
-    }
-
     await delay(this.latency);
 
     const occupants = await this.storage.getAll<XMPPOccupant>(`rooms/${roomJid}/occupants/`);
@@ -419,10 +353,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async getMyRooms(): Promise<XMPPRoom[]> {
-    if (this.debug) {
-      console.debug('[MockXMPP] getMyRooms');
-    }
-
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -509,10 +439,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async setRoomSubject(roomJid: string, subject: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] setRoomSubject', { roomJid, subject });
-    }
-
     await delay(this.latency);
 
     // Store subject
@@ -520,10 +446,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async getRoomConfig(roomJid: string): Promise<Record<string, unknown>> {
-    if (this.debug) {
-      console.debug('[MockXMPP] getRoomConfig', { roomJid });
-    }
-
     await delay(this.latency);
 
     const config = await this.storage.getItem<Record<string, unknown>>(`rooms/${roomJid}/config`);
@@ -531,10 +453,6 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async setRoomConfig(roomJid: string, config: Record<string, unknown>): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] setRoomConfig', { roomJid, config });
-    }
-
     await delay(this.latency);
 
     await this.storage.setItem(`rooms/${roomJid}/config`, config);
@@ -546,10 +464,6 @@ export class MockXMPPBackend implements XMPPBackend {
     affiliation: 'owner' | 'admin' | 'member' | 'none' | 'outcast',
     reason?: string
   ): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] setAffiliation', { roomJid, jid, affiliation, reason });
-    }
-
     await delay(this.latency);
 
     // Store affiliation
@@ -564,12 +478,8 @@ export class MockXMPPBackend implements XMPPBackend {
     roomJid: string,
     nickname: string,
     role: 'moderator' | 'participant' | 'visitor' | 'none',
-    reason?: string
+    _reason?: string
   ): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] setRole', { roomJid, nickname, role, reason });
-    }
-
     await delay(this.latency);
 
     // Update occupant role
@@ -586,10 +496,6 @@ export class MockXMPPBackend implements XMPPBackend {
   // ===== Message Archive Management =====
 
   async queryArchive(roomJid: string, query: MAMQuery): Promise<MAMResult> {
-    if (this.debug) {
-      console.debug('[MockXMPP] queryArchive', { roomJid, query });
-    }
-
     await delay(this.latency);
 
     // Get all messages for room
@@ -629,10 +535,6 @@ export class MockXMPPBackend implements XMPPBackend {
   // (Basic implementation - will be expanded in T015-T016)
 
   async subscribePubSub(node: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] subscribePubSub', { node });
-    }
-
     await delay(this.latency);
 
     await this.storage.setItem(`pubsub/subscriptions/${node}`, {
@@ -641,20 +543,12 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async unsubscribePubSub(node: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] unsubscribePubSub', { node });
-    }
-
     await delay(this.latency);
 
     await this.storage.removeItem(`pubsub/subscriptions/${node}`);
   }
 
   async publishPubSub(node: string, payload: unknown, itemId?: string): Promise<string> {
-    if (this.debug) {
-      console.debug('[MockXMPP] publishPubSub', { node, payload, itemId });
-    }
-
     await delay(this.latency);
 
     const id = itemId || generateMessageId();
@@ -676,10 +570,6 @@ export class MockXMPPBackend implements XMPPBackend {
     node: string,
     maxItems?: number
   ): Promise<Array<{ id: string; payload: unknown }>> {
-    if (this.debug) {
-      console.debug('[MockXMPP] retrievePubSub', { node, maxItems });
-    }
-
     await delay(this.latency);
 
     const items = await this.storage.getAll<{ id: string; payload: unknown }>(
@@ -695,30 +585,18 @@ export class MockXMPPBackend implements XMPPBackend {
   }
 
   async deletePubSubItem(node: string, itemId: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] deletePubSubItem', { node, itemId });
-    }
-
     await delay(this.latency);
 
     await this.storage.removeItem(`pubsub/nodes/${node}/items/${itemId}`);
   }
 
   async createPubSubNode(node: string, config?: Record<string, unknown>): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] createPubSubNode', { node, config });
-    }
-
     await delay(this.latency);
 
     await this.storage.setItem(`pubsub/nodes/${node}/config`, config || {});
   }
 
   async deletePubSubNode(node: string): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] deletePubSubNode', { node });
-    }
-
     await delay(this.latency);
 
     // Delete node config and all items
@@ -733,14 +611,10 @@ export class MockXMPPBackend implements XMPPBackend {
   // ===== Chat States =====
 
   async sendChatState(
-    to: string,
-    state: 'active' | 'composing' | 'paused' | 'inactive' | 'gone',
-    isGroupchat = false
+    _to: string,
+    _state: 'active' | 'composing' | 'paused' | 'inactive' | 'gone',
+    _isGroupchat = false
   ): Promise<void> {
-    if (this.debug) {
-      console.debug('[MockXMPP] sendChatState', { to, state, isGroupchat });
-    }
-
     await delay(this.latency);
 
     // Chat states are typically not stored, just broadcast

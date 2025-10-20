@@ -71,9 +71,7 @@ export async function seedMockData(
     for (const user of MOCK_USERS) {
       const bareJid = getBareJid(user.jid);
       await storage.setItem(`roster/${bareJid}`, user);
-    }
-    console.info(`[MockSeed] Seeded ${MOCK_USERS.length} users`);
-  }
+    }  }
 
   // Seed game metadata
   if (opts.game) {
@@ -89,10 +87,7 @@ export async function seedMockData(
       payload: MOCK_GAME_THEME,
       publishedAt: MOCK_GAME.createdAt,
       publisher: MOCK_GAME.createdBy,
-    });
-
-    console.info('[MockSeed] Seeded game metadata and theme');
-  }
+    });  }
 
   // Seed forces
   if (opts.forces) {
@@ -103,9 +98,7 @@ export async function seedMockData(
         publishedAt: force.createdAt,
         publisher: force.createdBy,
       });
-    }
-    console.info(`[MockSeed] Seeded ${MOCK_FORCES.length} forces`);
-  }
+    }  }
 
   // Seed rooms
   if (opts.rooms) {
@@ -148,9 +141,7 @@ export async function seedMockData(
           presence: { status: 'Online' },
         });
       }
-    }
-    console.info(`[MockSeed] Seeded ${MOCK_ROOMS.length} rooms with occupants`);
-  }
+    }  }
 
   // Seed messages
   if (opts.messages) {
@@ -162,9 +153,7 @@ export async function seedMockData(
       } else {
         await storage.setItem(`archive/direct/${message.id}`, message);
       }
-    }
-    console.info(`[MockSeed] Seeded ${MOCK_MESSAGES.length} messages`);
-  }
+    }  }
 
   // Seed form schemas
   if (opts.forms) {
@@ -175,12 +164,7 @@ export async function seedMockData(
         publishedAt: schema.createdAt,
         publisher: schema.createdBy,
       });
-    }
-    console.info(`[MockSeed] Seeded ${MOCK_FORM_SCHEMAS.length} form schemas`);
-  }
-
-  console.info('[MockSeed] Seeding complete');
-}
+    }  }}
 
 /**
  * Convenience function to seed all fixture data
@@ -193,6 +177,4 @@ export async function seedAll(storage: Storage): Promise<void> {
  * Convenience function to clear all data
  */
 export async function clearAll(storage: Storage): Promise<void> {
-  await storage.clear();
-  console.info('[MockSeed] Cleared all data');
-}
+  await storage.clear();}

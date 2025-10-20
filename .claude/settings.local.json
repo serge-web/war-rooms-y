@@ -20,7 +20,8 @@
       "Bash(git push)",
       "Bash(gh pr view:*)",
       "Bash(npx playwright install --with-deps)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(perl:*)"
     ],
     "deny": [],
     "ask": []
