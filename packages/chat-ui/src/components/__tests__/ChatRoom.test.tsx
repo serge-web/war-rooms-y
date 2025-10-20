@@ -71,7 +71,6 @@ describe('ChatRoom', () => {
   ];
 
   const mockSendMessage = jest.fn();
-  const mockSelectRoomOccupants = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();

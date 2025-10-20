@@ -92,12 +92,22 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
   const sortedMessages = sortMessages(messages);
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
       {/* Messages */}
       <Box
         sx={{
           flex: 1,
           overflowY: 'auto',
+          overflowX: 'hidden',
           p: 2,
           bgcolor: 'background.paper',
         }}
@@ -182,8 +192,13 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
         anchor="right"
         open={participantsOpen}
         onClose={() => setParticipantsOpen(false)}
-        variant="persistent"
+        variant="temporary"
+        ModalProps={{
+          container: document.body,
+          style: { position: 'absolute' },
+        }}
         sx={{
+          position: 'absolute',
           '& .MuiDrawer-paper': {
             position: 'absolute',
             width: 250,
