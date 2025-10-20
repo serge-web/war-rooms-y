@@ -13,8 +13,9 @@ import {
   List,
   ListItem,
   Divider,
+  Drawer,
 } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import { Send as SendIcon, People as PeopleIcon } from '@mui/icons-material';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
   messagesAtomFamily,
@@ -22,8 +23,9 @@ import {
   sortMessages,
   getMessageSender,
 } from '@war-rooms/state';
-import { useRoomsStore, type RoomsStore } from '@war-rooms/state';
+import { useRoomsStore, selectRoomOccupants, type RoomsStore } from '@war-rooms/state';
 import type { XMPPMessage } from '@war-rooms/backend-interface';
+import { ParticipantList } from './ParticipantList';
 
 interface ChatRoomProps {
   roomJid: string;
@@ -31,11 +33,15 @@ interface ChatRoomProps {
 
 export function ChatRoom({ roomJid }: ChatRoomProps) {
   const [messageText, setMessageText] = useState('');
+  const [participantsOpen, setParticipantsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Get messages for this room
   const messages = useAtomValue(messagesAtomFamily(roomJid));
   const loadArchived = useSetAtom(loadArchivedMessagesAtom);
+
+  // Get room occupants
+  const occupants = useRoomsStore(selectRoomOccupants(roomJid));
 
   // Send message action from rooms store
   const sendMessage = useRoomsStore((state: RoomsStore) => state.sendMessage);
@@ -130,6 +136,14 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
         }}
       >
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            color="default"
+            onClick={() => setParticipantsOpen(!participantsOpen)}
+            aria-label="Show participants"
+            size="small"
+          >
+            <PeopleIcon />
+          </IconButton>
           <TextField
             fullWidth
             size="small"
@@ -152,6 +166,25 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
           </IconButton>
         </Box>
       </Paper>
+
+      {/* Participants Drawer */}
+      <Drawer
+        anchor="right"
+        open={participantsOpen}
+        onClose={() => setParticipantsOpen(false)}
+        variant="persistent"
+        sx={{
+          '& .MuiDrawer-paper': {
+            position: 'absolute',
+            width: 250,
+            height: '100%',
+            borderLeft: 1,
+            borderColor: 'divider',
+          },
+        }}
+      >
+        <ParticipantList occupants={occupants} />
+      </Drawer>
     </Box>
   );
 }
