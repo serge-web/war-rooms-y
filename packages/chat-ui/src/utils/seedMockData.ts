@@ -15,11 +15,13 @@ export async function seedMockData() {
   });
 
   // Seed all fixture data
-  await seedAll(storage);  console.info('  - commander.red (Red Force Commander)');
+  await seedAll(storage);
+  console.info('  - commander.red (Red Force Commander)');
   console.info('  - commander.blue (Blue Force Commander)');
   console.info('  - gamemaster (Game Master)');
   console.info('  - analyst.red1 (Red Analyst)');
-  console.info('  - analyst.blue1 (Blue Analyst)');}
+  console.info('  - analyst.blue1 (Blue Analyst)');
+}
 
 // Export for manual trigger from console
 if (typeof window !== 'undefined') {
