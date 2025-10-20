@@ -154,6 +154,84 @@ playwright.config.ts     # E2E test configuration
 
 **Structure Decision**: Monorepo with XMPP-protocol-focused packages. The `backend-interface` defines standard XMPP operations that both `backend-openfire` (using Stanza.js) and `backend-mock` (simulating XMPP) must implement exactly. The mock backend must generate identical XMPP stanzas and events to ensure the thin client never knows the difference. State management simply reflects XMPP protocol state (roster, MUC occupancy, MAM history) with PubSub extensions composed only at the UI layer.
 
+## Deployment Architecture
+
+### Separate Application Strategy
+
+Chat UI and Admin UI are deployed as **independent applications** with separate entry points:
+
+**Chat UI (`/`)**:
+- Entry point: `packages/chat-ui/src/main.tsx`
+- Accessible to all authenticated users
+- Authentication: XMPP login via OpenFire
+- Static build output: `packages/chat-ui/static/`
+- Bundle optimized for chat functionality only
+
+**Admin UI (`/admin`)**:
+- Entry point: `packages/admin-ui/src/main.tsx`
+- Accessible only to users in 'admins' OpenFire group
+- Authentication: XMPP login + 'admins' group membership verification
+- Static build output: `packages/admin-ui/static/`
+- Bundle includes React-Admin and admin-specific resources
+
+### Authentication Flows
+
+**Chat UI Login**:
+1. User provides credentials at `/` login page
+2. XMPP authentication via backend (OpenFire or mock)
+3. On success, user accesses chat interface
+4. Admin users see "Admin Panel" navigation button
+
+**Admin UI Login**:
+1. User provides credentials at `/admin` login page
+2. XMPP authentication via backend
+3. Backend verifies user is member of 'admins' group
+4. Non-admin users: Error message + redirect to `/`
+5. Admin users: Access granted to React-Admin interface
+6. "Chat Interface" navigation button available
+
+### Cross-Navigation
+
+Admin users can seamlessly switch interfaces:
+- Chat UI → Admin UI: Click "Admin Panel" button
+- Admin UI → Chat UI: Click "Chat Interface" button
+- Both interfaces maintain separate authentication state
+- Opens in new tab to preserve both contexts
+
+### Build & Deployment
+
+**Development Mode**:
+```bash
+npm run dev --workspace=packages/chat-ui    # Start chat UI at :5173
+npm run dev --workspace=packages/admin-ui   # Start admin UI at :5174
+```
+
+**Production Builds**:
+```bash
+npm run build --workspace=packages/chat-ui    # → packages/chat-ui/static/
+npm run build --workspace=packages/admin-ui   # → packages/admin-ui/static/
+```
+
+**Static Deployment** (air-gapped):
+- Deploy `chat-ui/static/` to web server root
+- Deploy `admin-ui/static/` to `/admin` path
+- Both bundles include mock backend for demo mode
+- No server required - runs entirely in browser
+
+**Production Deployment** (with OpenFire):
+- Same static file deployment
+- Configure both apps to connect to OpenFire server
+- Backend selection via environment/config
+- Shared OpenFire instance for both applications
+
+### Security Benefits
+
+- **Code Separation**: Regular users never download admin UI code
+- **Smaller Bundles**: Each app optimized for its specific purpose
+- **Attack Surface**: Admin functionality not exposed in chat bundle
+- **Clear Authorization**: Explicit admin group check at login
+- **Audit Trail**: Separate entry points simplify access logging
+
 ## Complexity Tracking
 
 _No violations - architecture aligns with all constitution principles._

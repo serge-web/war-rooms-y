@@ -7,6 +7,85 @@
 Base URL: `https://[openfire-server]:9091/plugins/restapi/v1`
 Authentication: Basic Auth or Shared Secret Key
 
+## Authentication Flow
+
+### Admin UI Access Control
+
+The Admin UI (`/admin`) enforces access control through OpenFire group membership:
+
+**Login Flow**:
+1. User provides credentials at `/admin` login page
+2. Admin UI performs XMPP authentication via backend
+3. On successful XMPP auth, check user's group memberships
+4. Query OpenFire REST API: `GET /users/{username}`
+5. Response includes `properties` object with group information
+6. Verify user is member of `admins` group
+7. **If admin**: Grant access to React-Admin interface
+8. **If not admin**: Display error + redirect to `/` (Chat UI)
+
+### REST API Authentication Endpoint
+
+```
+GET /users/{username}
+Authorization: Basic [admin-credentials] or X-Auth-Token: [secret-key]
+
+Response:
+{
+  "username": "gamemaster",
+  "name": "Game Master",
+  "email": "gm@example.com",
+  "properties": {
+    "sharedGroups": ["admins", "gamemaster-group"]
+  }
+}
+```
+
+### Mock Implementation
+
+Mock backend must simulate admin group check:
+
+**Mock Storage Structure** (localForage):
+```typescript
+// Key: 'rest:user:gamemaster'
+{
+  username: 'gamemaster',
+  password: 'password', // For mock auth only
+  properties: {
+    sharedGroups: ['admins', 'gamemaster-group']
+  }
+}
+```
+
+**Mock Auth Provider**:
+```typescript
+async checkAuth(credentials) {
+  // 1. Authenticate via XMPP mock
+  const authenticated = await mockBackend.authenticate(credentials);
+  if (!authenticated) throw new Error('Invalid credentials');
+
+  // 2. Check admin group membership
+  const user = await mockStorage.get(`rest:user:${credentials.username}`);
+  const isAdmin = user.properties?.sharedGroups?.includes('admins');
+  if (!isAdmin) throw new Error('Unauthorized: admin access required');
+
+  return { username: credentials.username, isAdmin: true };
+}
+```
+
+### Error Handling
+
+**401 Unauthorized**: Invalid credentials
+- Message: "Authentication failed. Please check your username and password."
+- Action: Clear form, allow retry
+
+**403 Forbidden**: Valid user but not in admin group
+- Message: "Admin access required. Redirecting to chat interface..."
+- Action: Auto-redirect to `/` after 2 seconds
+
+**500 Server Error**: OpenFire connection failed
+- Message: "Unable to connect to server. Please try again later."
+- Action: Retry option, don't redirect
+
 ### Core REST Endpoints Used
 
 #### Users

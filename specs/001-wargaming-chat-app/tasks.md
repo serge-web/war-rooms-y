@@ -146,7 +146,7 @@ Based on plan.md monorepo structure:
 ### Implementation for User Story 2
 
 - [ ] T059 [P] [US2] Create hybrid REST/PubSub data provider in packages/admin-ui/src/providers/dataProvider.ts
-- [ ] T060 [P] [US2] Create auth provider for OpenFire authentication in packages/admin-ui/src/providers/authProvider.ts
+- [ ] T060 [P] [US2] Create auth provider with 'admins' group verification in packages/admin-ui/src/providers/authProvider.ts
 - [ ] T061 [P] [US2] Create Overview resource (single game record) in packages/admin-ui/src/resources/overview/index.tsx
 - [ ] T062 [P] [US2] Create Forces resource (OpenFire Groups) in packages/admin-ui/src/resources/forces/index.tsx
 - [ ] T063 [P] [US2] Create Rooms resource (MUC management) in packages/admin-ui/src/resources/rooms/index.tsx

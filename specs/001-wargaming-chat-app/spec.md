@@ -26,25 +26,34 @@ Wargame participants need to communicate in real-time across multiple chat rooms
 
 ### User Story 2 - User and Room Administration (Priority: P2)
 
-System administrators need to manage users, groups, and room configurations through a React-Admin interface that integrates with the OpenFire REST API. The admin UI provides resources for Overview (game summary), Forces (OpenFire Groups with roles and metadata), Rooms (MUC rooms with assignments), and Templates (placeholder for RJSF forms). Additional metadata not available through the REST API is stored in XMPP PubSub nodes.
+System administrators need to manage users, groups, and room configurations through a React-Admin interface that integrates with the OpenFire REST API. The admin UI is deployed as a separate application from the chat UI, with its own authentication flow that verifies admin group membership. The admin UI provides resources for Overview (game summary), Forces (OpenFire Groups with metadata), Rooms (MUC rooms with assignments), and Templates (placeholder for RJSF forms). Additional metadata not available through the REST API is stored in XMPP PubSub nodes.
 
 **Why this priority**: Administrative control is essential for organizing wargame exercises and maintaining security boundaries between different player groups.
 
 **Independent Test**: Can be tested by having an administrator create users and rooms, then verifying participants can access only their assigned rooms. Mock implementation simulates both REST API responses and PubSub node storage.
 
+**Application Architecture**:
+- **Separate Applications**: Chat UI (`/`) and Admin UI (`/admin`) are independent applications with separate entry points
+- **Admin Authentication**: Admin UI login verifies user is in 'admins' OpenFire group before granting access
+- **Cross-Navigation**: Admin users can switch between admin and chat interfaces via navigation links
+- **Security**: Regular users never load admin UI code, reducing bundle size and attack surface
+
 **Admin UI Resources**:
 - **Overview**: Single-record resource displaying current game summary and status
-- **Forces**: Maps to OpenFire Groups, with in-page role management and PubSub-stored metadata (objectives, icon, color)
+- **Forces**: Maps to OpenFire Groups, with member management and PubSub-stored metadata (objectives, icon, color)
 - **Rooms**: MUC room management with group/individual assignments, extra details in PubSub nodes
 - **Templates**: Placeholder for future RJSF form template management
 
 **Acceptance Scenarios**:
 
-1. **Given** an administrator is logged in to React-Admin, **When** they create a new user account via REST API, **Then** the user can log in with provided credentials
-2. **Given** an administrator creates a room, **When** they assign it to a group, **Then** only group members can access that room
-3. **Given** a room exists, **When** an administrator applies a theme via PubSub metadata, **Then** participants see the customized appearance
-4. **Given** users and groups exist, **When** an administrator modifies group membership via REST API, **Then** access permissions update immediately
-5. **Given** force metadata is stored in PubSub, **When** an administrator updates force color/icon/objectives, **Then** changes propagate to all connected clients
+1. **Given** a user with admin privileges attempts to access `/admin`, **When** they provide credentials, **Then** they are granted access to the admin interface
+2. **Given** a regular user attempts to access `/admin`, **When** they provide credentials, **Then** they see an error and are redirected to the chat UI
+3. **Given** an administrator is logged in to React-Admin, **When** they create a new user account via REST API, **Then** the user can log in to the chat UI with provided credentials
+4. **Given** an administrator creates a room, **When** they assign it to a group, **Then** only group members can access that room in the chat UI
+5. **Given** a room exists, **When** an administrator applies a theme via PubSub metadata, **Then** participants see the customized appearance in the chat UI
+6. **Given** users and groups exist, **When** an administrator modifies group membership via REST API, **Then** access permissions update immediately
+7. **Given** force metadata is stored in PubSub, **When** an administrator updates force color/icon/objectives, **Then** changes propagate to all connected chat clients
+8. **Given** an admin user is in the chat UI, **When** they see the admin navigation button, **Then** they can open the admin interface in a new tab
 
 ---
 
