@@ -354,3 +354,599 @@ const backend: XMPPBackend = isDemoMode
 2. Design REST API contracts for admin operations
 3. Define PubSub node structure for metadata
 4. Create quickstart guide for OpenFire setup
+
+---
+
+# Research: Unifying Mock Data Layers (2025-10-20)
+
+## Executive Summary
+
+This section analyzes technical decisions for consolidating two separate mock data systems (XMPP for chat-ui and REST for admin-ui) into a unified fixture layer while maintaining protocol-specific representations.
+
+## Background
+
+**Current Architecture:**
+
+- **chat-ui**: Uses XMPP protocol types (`XMPPUser`, `XMPPRoom`, `XMPPMessage`) from `backend-interface`
+  - Storage namespace: `war-rooms-mock`
+  - Fixture source: `packages/backend-mock/src/fixtures.ts`
+  - Seeder: `packages/backend-mock/src/seed.ts`
+  - Storage keys: `roster/{jid}`, `rooms/{jid}/info`, `archive/rooms/{jid}/{msgId}`
+
+- **admin-ui**: Uses OpenFire REST API types (`OpenFireUser`, `OpenFireGroup`, `OpenFireRoom`)
+  - Storage namespace: `war-rooms-admin`
+  - REST API: `packages/backend-mock/src/rest/openfire-api.ts`
+  - Seeder: `packages/backend-mock/src/rest/seed-rest.ts`
+  - Storage keys: `rest:user:{username}`, `rest:group:{name}`, `rest:room:{name}`
+
+**Challenge**: Need single source of truth for mock data that both UIs consume while maintaining protocol fidelity.
+
+---
+
+## Research Topic 1: Entity Mapping Strategy
+
+### Decision: **Canonical XMPP Format with Bidirectional Transformers**
+
+XMPP types serve as canonical internal representation with explicit conversion functions to/from REST.
+
+### Rationale
+
+1. **Protocol Authority**: XMPP is the production protocol. OpenFire REST API exists only for admin operations and maps internally to XMPP entities.
+
+2. **Type Safety**: TypeScript transformers enforce complete mapping:
+   ```typescript
+   // Unidirectional transformation
+   function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
+     const { local } = parseJid(xmppUser.bare_jid);
+     return {
+       username: local,
+       name: xmppUser.vcard?.fn || xmppUser.name,
+       email: xmppUser.vcard?.email,
+       properties: {
+         sharedGroups: xmppUser.groups,
+       },
+     };
+   }
+
+   function restUserToXmpp(restUser: OpenFireUser, domain: string): XMPPUser {
+     const jid = buildJid(restUser.username, domain);
+     return {
+       jid,
+       bare_jid: jid,
+       name: restUser.name,
+       subscription: 'both', // Default for roster members
+       groups: restUser.properties?.sharedGroups || [],
+       vcard: {
+         fn: restUser.name,
+         email: restUser.email,
+       },
+     };
+   }
+   ```
+
+3. **Field Mapping Clarity**:
+   - **User**: `XMPPUser.bare_jid` → `OpenFireUser.username` (extract local part)
+   - **Groups**: `XMPPUser.groups` ↔ `OpenFireUser.properties.sharedGroups`
+   - **Room**: `XMPPRoom.jid` → `OpenFireRoom.roomName` (extract local part)
+   - **Force Metadata**: Lives in PubSub nodes, referenced by `ForceMetadata.id` = `OpenFireGroup.name`
+
+4. **Asymmetry Handling**: Some fields exist only in one protocol:
+   - XMPP-only: `subscription`, `vcard.photo`, `presence.caps`
+   - REST-only: `OpenFireRoom.creationDate`, `OpenFireRoom.modificationDate`
+   - **Solution**: Use sensible defaults when converting (e.g., `subscription: 'both'` for admin-created users)
+
+### Alternatives Considered
+
+**Option A: Separate Fixture Arrays** (`MOCK_USERS_XMPP`, `MOCK_USERS_REST`)
+- ❌ Rejected: Duplication leads to drift. No guarantee fixtures stay in sync.
+
+**Option B: Peer Formats with Conversion** (XMPP and REST as equals)
+- ❌ Rejected: Adds conceptual overhead. XMPP is production protocol; REST is administrative interface.
+
+**Option C: Neutral Canonical Format** (internal representation → XMPP/REST)
+- ❌ Rejected: Unnecessary abstraction layer. Would still need to map from neutral to XMPP, then XMPP already serves as canonical.
+
+### Implementation Notes
+
+**File Structure:**
+```
+packages/backend-mock/src/
+├── fixtures.ts              # CANONICAL: XMPP fixtures (MOCK_USERS, MOCK_ROOMS, etc.)
+├── rest/
+│   ├── transformers.ts      # NEW: Bidirectional XMPP ↔ REST conversion
+│   ├── openfire-api.ts      # Unchanged: REST API implementation
+│   └── seed-rest.ts         # MODIFIED: Use transformers to seed from XMPP fixtures
+```
+
+**Transformer Module** (`rest/transformers.ts`):
+```typescript
+import type { XMPPUser, XMPPRoom } from '@war-rooms/backend-interface';
+import type { OpenFireUser, OpenFireGroup, OpenFireRoom } from './openfire-api';
+import { parseJid, buildJid } from '../helpers';
+
+// User transformations
+export function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser;
+export function restUserToXmpp(restUser: OpenFireUser, domain: string): XMPPUser;
+
+// Room transformations
+export function xmppRoomToRest(xmppRoom: XMPPRoom): OpenFireRoom;
+export function restRoomToXmpp(restRoom: OpenFireRoom, conferenceDomain: string): XMPPRoom;
+
+// Group transformations (roster groups → OpenFire groups)
+export function rosterGroupsToRestGroups(users: XMPPUser[]): OpenFireGroup[];
+```
+
+---
+
+## Research Topic 2: Storage Namespace Sharing
+
+### Decision: **Shared Namespace with Environment Variable Override**
+
+Both UIs use same default namespace (`war-rooms`) but allow override via `VITE_STORAGE_NAMESPACE`.
+
+### Rationale
+
+1. **Unified Mock State**: Admin changes (create user via REST) must be immediately visible in chat UI (user appears in roster). Shared namespace ensures single source of truth in localStorage.
+
+2. **Development Flexibility**: Environment variable override allows:
+   - Test isolation: `namespace: 'test-${uuid}'` in unit tests
+   - Multi-tenant development: Run separate game instances side-by-side
+   - CI parallelization: Each test suite uses unique namespace
+
+3. **Collision Avoidance**: Storage keys already prefixed by protocol:
+   - XMPP: `war-rooms:roster/{jid}`, `war-rooms:rooms/{jid}/info`
+   - REST: `war-rooms:rest:user:{username}`, `war-rooms:rest:group:{name}`
+   - PubSub: `war-rooms:pubsub:force:{id}`, `war-rooms:pubsub:room:{name}`
+   - **No overlap**: Protocol prefixes prevent collisions even within shared namespace.
+
+4. **Key Format Consistency**:
+   ```
+   {namespace}:{protocol}:{entity-type}:{identifier}
+
+   Examples:
+   war-rooms:roster/commander.red@wargame.local
+   war-rooms:rest:user:commander.red
+   war-rooms:pubsub:force:force-red
+   ```
+
+### Alternatives Considered
+
+**Option A: Separate Namespaces** (`war-rooms-xmpp`, `war-rooms-rest`)
+- ❌ Rejected: Requires cross-namespace synchronization. Admin UI changes wouldn't reflect in chat UI without complex event bus.
+
+**Option B: Single Hardcoded Namespace**
+- ❌ Rejected: Breaks test isolation. Parallel test runs would interfere.
+
+**Option C: App-Specific Namespaces** (`war-rooms-chat`, `war-rooms-admin`)
+- ❌ Rejected: Same synchronization problems as Option A. Admin UI is admin interface to same XMPP backend.
+
+### Implementation Notes
+
+**Environment Variable:**
+```bash
+# .env (default for both apps)
+VITE_STORAGE_NAMESPACE=war-rooms
+
+# Test override
+VITE_STORAGE_NAMESPACE=test-${TEST_ID}
+```
+
+**Storage Creation:**
+```typescript
+// packages/backend-mock/src/storage.ts (already implemented)
+export function createStorage(options: StorageOptions): Storage {
+  const namespace = options.namespace ||
+                    import.meta.env.VITE_STORAGE_NAMESPACE ||
+                    'war-rooms';
+  // ...
+}
+```
+
+**Risk Mitigation:**
+- **Namespace Prefix Validation**: Ensure all storage keys follow `{protocol}:{entity}:{id}` pattern
+- **Clear Documentation**: Document shared namespace requirement in CLAUDE.md
+- **Storage Clearing**: Both UIs must call `storage.clear()` during seeding to prevent orphaned keys
+
+---
+
+## Research Topic 3: Fixture Seeding Coordination
+
+### Decision: **Master Seeder with Sequential Protocol Seeding**
+
+Single `seedAll()` function seeds XMPP representation, then transforms and seeds REST representation.
+
+### Rationale
+
+1. **Dependency Order**: Entities have FK-like relationships:
+   ```
+   Users → Groups → Forces → Rooms → Messages
+   ```
+   - Users must exist before Groups can reference them
+   - Groups must exist before Forces (PubSub) can link to them
+   - Rooms require Force metadata for `forceRestrictions`
+   - Messages require Rooms to exist
+
+2. **Transform-Then-Seed Pattern**:
+   ```typescript
+   export async function seedAll(storage: Storage): Promise<void> {
+     // 1. Seed XMPP entities (canonical)
+     await seedMockData(storage, { clear: true });
+
+     // 2. Transform XMPP → REST and seed
+     await seedRestFromXmpp(storage);
+   }
+
+   async function seedRestFromXmpp(storage: Storage): Promise<void> {
+     const domain = MOCK_DOMAIN;
+
+     // Seed REST users from XMPP roster
+     for (const xmppUser of MOCK_USERS) {
+       const restUser = xmppUserToRest(xmppUser);
+       await storage.setItem(`rest:user:${restUser.username}`, restUser);
+     }
+
+     // Update REST users list
+     const usernames = MOCK_USERS.map(u => parseJid(u.bare_jid).local);
+     await storage.setItem('rest:users:list', usernames);
+
+     // Seed REST groups from roster groups
+     const restGroups = rosterGroupsToRestGroups(MOCK_USERS);
+     for (const group of restGroups) {
+       await storage.setItem(`rest:group:${group.name}`, group);
+     }
+     await storage.setItem('rest:groups:list', restGroups.map(g => g.name));
+
+     // Seed REST rooms from XMPP rooms
+     for (const mockRoom of MOCK_ROOMS) {
+       const xmppRoom: XMPPRoom = { jid: mockRoom.jid, info: mockRoom.info };
+       const restRoom = xmppRoomToRest(xmppRoom);
+       await storage.setItem(`rest:room:${restRoom.roomName}`, restRoom);
+     }
+
+     const roomNames = MOCK_ROOMS.map(r => parseJid(r.jid).local);
+     await storage.setItem('rest:rooms:list', roomNames);
+   }
+   ```
+
+3. **Idempotency**: Seeding can be re-run safely (clear flag defaults to `true`).
+
+4. **Single Source of Truth**: Only edit `fixtures.ts` (XMPP format). REST representation auto-generated.
+
+### Alternatives Considered
+
+**Option A: Parallel Seeding** (XMPP and REST simultaneously)
+- ❌ Rejected: Race conditions if transformers depend on existence checks. Complex ordering logic.
+
+**Option B: Lazy Transformation** (transform on-demand during REST API calls)
+- ❌ Rejected: Performance overhead. Every REST `getUsers()` would transform XMPP roster. Storage should be pre-seeded.
+
+**Option C: Dual Fixture Files** (manual maintenance of both)
+- ❌ Rejected: Guaranteed drift between XMPP and REST fixtures.
+
+### Implementation Notes
+
+**Seeding Flow:**
+```typescript
+// packages/backend-mock/src/seed.ts (MODIFIED)
+import { seedRestFromXmpp } from './rest/seed-rest';
+
+export async function seedAll(storage: Storage): Promise<void> {
+  // Step 1: Seed XMPP (canonical)
+  await seedMockData(storage, DEFAULT_SEED_OPTIONS);
+
+  // Step 2: Seed REST (transformed)
+  await seedRestFromXmpp(storage);
+}
+```
+
+**Error Handling:**
+- If XMPP seeding fails, abort before REST seeding
+- Log clear separation: `console.info('[XMPP Seed]')` vs `console.info('[REST Seed]')`
+- Validation: Assert REST user count matches XMPP user count after seeding
+
+---
+
+## Research Topic 4: Type Safety for Cross-Protocol Entities
+
+### Decision: **Explicit Conversion Functions with Runtime Validation**
+
+All XMPP ↔ REST conversions go through typed transformer functions with optional runtime checks.
+
+### Rationale
+
+1. **Compile-Time Safety**: TypeScript ensures all required fields are mapped:
+   ```typescript
+   // Compile error if OpenFireUser gains new required field
+   function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
+     return {
+       username: parseJid(xmppUser.bare_jid).local,
+       name: xmppUser.vcard?.fn || xmppUser.name,
+       email: xmppUser.vcard?.email,
+       // TypeScript error if 'properties' becomes required
+     };
+   }
+   ```
+
+2. **Runtime Validation (Optional)**: Development-mode assertions catch data quality issues:
+   ```typescript
+   function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
+     if (import.meta.env.DEV) {
+       if (!xmppUser.bare_jid.includes('@')) {
+         throw new Error(`Invalid JID: ${xmppUser.bare_jid}`);
+       }
+     }
+     // ... transformation
+   }
+   ```
+
+3. **Protocol Evolution**: When OpenFire API adds fields:
+   - Add to `OpenFireUser` type
+   - TypeScript highlights all transformers needing updates
+   - Decide: Map from XMPP field, use default, or mark optional
+
+4. **Reverse Transformation** (REST → XMPP for admin-created entities):
+   ```typescript
+   function restUserToXmpp(restUser: OpenFireUser, domain: string): XMPPUser {
+     const jid = buildJid(restUser.username, domain);
+     return {
+       jid,
+       bare_jid: jid,
+       name: restUser.name,
+       subscription: 'both', // ASSUMPTION: Admin-created users are roster members
+       groups: restUser.properties?.sharedGroups || [],
+       vcard: {
+         fn: restUser.name,
+         email: restUser.email,
+       },
+     };
+   }
+   ```
+
+5. **Bidirectional Tests**: Ensure transformations are lossless where applicable:
+   ```typescript
+   test('round-trip transformation preserves core fields', () => {
+     const xmppUser = MOCK_USERS[0];
+     const restUser = xmppUserToRest(xmppUser);
+     const xmppRoundTrip = restUserToXmpp(restUser, MOCK_DOMAIN);
+
+     expect(xmppRoundTrip.bare_jid).toBe(xmppUser.bare_jid);
+     expect(xmppRoundTrip.name).toBe(xmppUser.name);
+     expect(xmppRoundTrip.groups).toEqual(xmppUser.groups);
+   });
+   ```
+
+### Alternatives Considered
+
+**Option A: Canonical Internal Format** (XMPP/REST map to neutral type)
+- ❌ Rejected: Unnecessary indirection. XMPP already serves as canonical (see Topic 1).
+
+**Option B: Manual Conversion in API Layer** (no dedicated transformers)
+- ❌ Rejected: Scattered logic. Easy to miss fields. Hard to test.
+
+**Option C: Zod/Yup Runtime Schemas** (validate all transformations)
+- ⚠️ Partial Adoption: Too heavyweight for every call. Use selectively for admin-created entities.
+
+### Implementation Notes
+
+**Transformer Structure:**
+```typescript
+// packages/backend-mock/src/rest/transformers.ts
+
+import { z } from 'zod';
+import type { XMPPUser, XMPPRoom } from '@war-rooms/backend-interface';
+import type { OpenFireUser, OpenFireGroup, OpenFireRoom } from './openfire-api';
+import { parseJid, buildJid } from '../helpers';
+
+// ============================================================================
+// User Transformations
+// ============================================================================
+
+export function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
+  const { local } = parseJid(xmppUser.bare_jid);
+
+  return {
+    username: local,
+    name: xmppUser.vcard?.fn || xmppUser.name,
+    email: xmppUser.vcard?.email,
+    properties: {
+      sharedGroups: xmppUser.groups,
+    },
+  };
+}
+
+export function restUserToXmpp(
+  restUser: OpenFireUser,
+  domain: string
+): XMPPUser {
+  const jid = buildJid(restUser.username, domain);
+
+  return {
+    jid,
+    bare_jid: jid,
+    name: restUser.name,
+    subscription: 'both', // Default for roster entries
+    groups: restUser.properties?.sharedGroups || [],
+    vcard: {
+      fn: restUser.name,
+      email: restUser.email,
+    },
+  };
+}
+
+// ============================================================================
+// Room Transformations
+// ============================================================================
+
+export function xmppRoomToRest(xmppRoom: XMPPRoom): OpenFireRoom {
+  const { local } = parseJid(xmppRoom.jid);
+
+  return {
+    roomName: local,
+    naturalName: xmppRoom.info.identity.name,
+    description: xmppRoom.info.x?.description,
+    subject: xmppRoom.info.x?.subject,
+    persistent: xmppRoom.info.x?.['muc#roomconfig_persistentroom'],
+    publicRoom: xmppRoom.info.x?.['muc#roomconfig_publicroom'],
+    membersOnly: xmppRoom.info.x?.['muc#roomconfig_membersonly'],
+    moderated: xmppRoom.info.x?.['muc#roomconfig_moderatedroom'],
+    maxUsers: xmppRoom.info.x?.['muc#roomconfig_maxusers'],
+    members: xmppRoom.info.x?.['muc#roomconfig_members'],
+    admins: xmppRoom.info.x?.['muc#roomconfig_admins'],
+  };
+}
+
+export function restRoomToXmpp(
+  restRoom: OpenFireRoom,
+  conferenceDomain: string
+): XMPPRoom {
+  const jid = buildJid(restRoom.roomName, conferenceDomain);
+
+  return {
+    jid,
+    info: {
+      identity: {
+        category: 'conference',
+        type: 'text',
+        name: restRoom.naturalName,
+      },
+      features: ['http://jabber.org/protocol/muc'],
+      x: {
+        description: restRoom.description,
+        subject: restRoom.subject,
+        'muc#roomconfig_roomname': restRoom.naturalName,
+        'muc#roomconfig_roomdesc': restRoom.description,
+        'muc#roomconfig_persistentroom': restRoom.persistent,
+        'muc#roomconfig_publicroom': restRoom.publicRoom,
+        'muc#roomconfig_membersonly': restRoom.membersOnly,
+        'muc#roomconfig_moderatedroom': restRoom.moderated,
+        'muc#roomconfig_maxusers': restRoom.maxUsers,
+        'muc#roomconfig_members': restRoom.members,
+        'muc#roomconfig_admins': restRoom.admins,
+      },
+    },
+  };
+}
+
+// ============================================================================
+// Group Transformations
+// ============================================================================
+
+/**
+ * Extract OpenFire groups from XMPP roster groups
+ * Creates groups with members based on roster group membership
+ */
+export function rosterGroupsToRestGroups(users: XMPPUser[]): OpenFireGroup[] {
+  const groupMap = new Map<string, Set<string>>();
+
+  // Aggregate group membership
+  for (const user of users) {
+    const username = parseJid(user.bare_jid).local;
+    for (const group of user.groups) {
+      if (!groupMap.has(group)) {
+        groupMap.set(group, new Set());
+      }
+      groupMap.get(group)!.add(username);
+    }
+  }
+
+  // Convert to OpenFireGroup[]
+  return Array.from(groupMap.entries()).map(([name, memberSet]) => ({
+    name,
+    description: `Roster group: ${name}`,
+    members: Array.from(memberSet),
+    admins: [], // Roster groups don't have admins
+  }));
+}
+```
+
+**Test Coverage:**
+```typescript
+// packages/backend-mock/src/rest/__tests__/transformers.test.ts
+
+import { describe, test, expect } from 'vitest';
+import { xmppUserToRest, restUserToXmpp } from '../transformers';
+import { MOCK_USERS, MOCK_DOMAIN } from '../../fixtures';
+
+describe('User Transformers', () => {
+  test('xmppUserToRest extracts username from JID', () => {
+    const xmppUser = MOCK_USERS[0]; // commander.red@wargame.local
+    const restUser = xmppUserToRest(xmppUser);
+
+    expect(restUser.username).toBe('commander.red');
+    expect(restUser.name).toBe(xmppUser.vcard?.fn);
+    expect(restUser.properties?.sharedGroups).toEqual(xmppUser.groups);
+  });
+
+  test('restUserToXmpp builds correct JID', () => {
+    const restUser = {
+      username: 'testuser',
+      name: 'Test User',
+      email: 'test@example.com',
+      properties: { sharedGroups: ['TestGroup'] },
+    };
+
+    const xmppUser = restUserToXmpp(restUser, MOCK_DOMAIN);
+
+    expect(xmppUser.bare_jid).toBe('testuser@wargame.local');
+    expect(xmppUser.groups).toEqual(['TestGroup']);
+    expect(xmppUser.subscription).toBe('both');
+  });
+
+  test('round-trip preserves core fields', () => {
+    const original = MOCK_USERS[0];
+    const rest = xmppUserToRest(original);
+    const roundTrip = restUserToXmpp(rest, MOCK_DOMAIN);
+
+    expect(roundTrip.bare_jid).toBe(original.bare_jid);
+    expect(roundTrip.groups).toEqual(original.groups);
+  });
+});
+```
+
+---
+
+## Summary of Decisions
+
+| Topic | Decision | Key Benefit |
+|-------|----------|-------------|
+| **Entity Mapping** | Canonical XMPP + transformers | Single source of truth, protocol fidelity |
+| **Storage Namespace** | Shared with env override | Unified state, test isolation |
+| **Seeding** | Master seeder, sequential protocol seeding | Dependency ordering, idempotency |
+| **Type Safety** | Explicit typed transformers | Compile-time checks, evolution support |
+
+---
+
+## Migration Path
+
+1. **Create Transformer Module**: `packages/backend-mock/src/rest/transformers.ts`
+2. **Update `seed-rest.ts`**: Replace manual seeding with `seedRestFromXmpp()`
+3. **Modify `seed.ts`**: Make `seedAll()` call both XMPP and REST seeders
+4. **Add Tests**: `transformers.test.ts` for round-trip validation
+5. **Update Environment**: Add `VITE_STORAGE_NAMESPACE` to `.env` files
+6. **Documentation**: Update CLAUDE.md with unified fixture workflow
+
+---
+
+## Open Questions
+
+1. **Performance**: Is transformation overhead acceptable? (~5 users × 6 rooms = 30 transformations)
+   - **Answer**: Negligible. One-time cost during seeding. Could cache if needed.
+
+2. **Admin-Only Entities**: What if admin creates entity via REST that has no XMPP equivalent?
+   - **Answer**: Reverse transform (REST → XMPP) stores in XMPP representation. Chat UI sees it immediately.
+
+3. **Namespace Migration**: How to handle users with data in old namespace?
+   - **Answer**: Provide migration utility: `migrateNamespace(oldNs, newNs)` copies all keys.
+
+4. **Protocol Drift**: What if OpenFire REST API diverges from XMPP significantly?
+   - **Answer**: Transformers become more complex, but single canonical fixture (XMPP) prevents data duplication.
+
+---
+
+## References
+
+- **Existing Types**: `packages/backend-interface/src/types.ts` (XMPP)
+- **REST Types**: `packages/backend-mock/src/rest/openfire-api.ts`
+- **Current Seeding**: `packages/backend-mock/src/seed.ts`
+- **Storage Abstraction**: `packages/backend-mock/src/storage.ts`
+- **JID Utilities**: `packages/backend-mock/src/helpers.ts`

@@ -27,7 +27,8 @@
       "Bash(pkill:*)",
       "Bash(then echo \"EXISTS\")",
       "Bash(else echo \"NOT_FOUND\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(/Users/ian/git/war-rooms-y/.specify/scripts/bash/update-agent-context.sh claude)"
     ],
     "deny": [],
     "ask": []

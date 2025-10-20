@@ -1,652 +1,655 @@
-# QuickStart Guide: OpenFire Setup for War-Rooms-Y
+# Quickstart: Unified Mock Data Layer Integration
 
-**Created**: 2025-10-17
-**Phase**: Design (Phase 1)
-**Purpose**: Step-by-step guide for setting up OpenFire server for development and production
+**Feature**: War-Rooms-Y Wargaming Chat Application
+**Date**: 2025-10-20
+**Audience**: Developers integrating unified mock data
 
-> **💡 Having Docker Issues?** If you're experiencing problems with the OpenFire Docker setup (common on some development machines), you can:
->
-> 1. **Start with the mock backend** - See [mock-development-guide.md](mock-development-guide.md) to begin UI development immediately without any server
-> 2. **Use a remote OpenFire instance** - Skip to [Remote OpenFire Setup](#remote-openfire-setup) section
-> 3. **Continue with Docker troubleshooting** - See [Docker Troubleshooting](#docker-troubleshooting) section
+## Overview
 
-## Prerequisites
+This guide shows how the unified mock data layer enables seamless data sharing between chat-ui and admin-ui. After implementation, **changes in admin UI immediately appear in chat UI** and vice versa.
 
-- Docker and Docker Compose (for development)
-- Java 11+ (for production)
-- PostgreSQL or MySQL (optional, for production)
-- 2GB RAM minimum, 4GB recommended
-- Ports 5222, 5269, 7070, 7443, 9090 available
+---
 
-## Development Setup (Docker)
+## Before: Separate Data Silos
 
-### 1. Create Docker Compose Configuration
+```typescript
+// ❌ OLD: chat-ui and admin-ui use separate namespaces
 
-Create `docker-compose.yml`:
-
-```yaml
-version: '3.8'
-
-services:
-  openfire:
-    image: nasqueron/openfire:4.7.5
-    container_name: war-rooms-openfire
-    hostname: openfire.local
-    ports:
-      - '9090:9090' # Admin console (HTTP)
-      - '9091:9091' # Admin console (HTTPS)
-      - '5222:5222' # XMPP client connections
-      - '5269:5269' # XMPP server connections
-      - '7443:7443' # HTTP-Bind (BOSH) / WebSocket (WSS)
-      - '7070:7070' # HTTP-Bind (BOSH) plain
-      - '5229:5229' # Flash Cross Domain
-    volumes:
-      - openfire-data:/var/lib/openfire
-      - ./openfire/plugins:/var/lib/openfire/plugins
-    environment:
-      - OPENFIRE_ADMIN_PASSWORD=admin123
-      - OPENFIRE_DOMAIN=wargame.local
-    restart: unless-stopped
-
-volumes:
-  openfire-data:
-```
-
-### 2. Start OpenFire
-
-```bash
-# Start the container
-docker-compose up -d
-
-# View logs
-docker-compose logs -f openfire
-
-# Wait for startup (typically 30-60 seconds)
-```
-
-### 3. Initial Configuration
-
-1. Open browser to http://localhost:9090
-2. Login with:
-   - Username: `admin`
-   - Password: `admin123`
-3. Complete setup wizard:
-   - Domain: `wargame.local`
-   - Database: Embedded (for development)
-   - Admin email: `admin@wargame.local`
-
-## Required Plugins Installation
-
-### Via Admin Console
-
-1. Navigate to **Plugins** tab
-2. Install from Available Plugins:
-
-| Plugin             | Purpose              | Required |
-| ------------------ | -------------------- | -------- |
-| REST API           | Admin operations     | ✓        |
-| Monitoring Service | Statistics & MAM     | ✓        |
-| User Import Export | Bulk user operations | ✓        |
-| Presence Service   | Presence information | ✓        |
-| HTTP File Upload   | File sharing         | Optional |
-
-### Manual Plugin Installation
-
-Download plugins to `./openfire/plugins/`:
-
-```bash
-# REST API Plugin
-wget https://www.igniterealtime.org/projects/openfire/plugins/1.9.0/restAPI.jar \
-  -O ./openfire/plugins/restAPI.jar
-
-# Monitoring Plugin (includes MAM)
-wget https://www.igniterealtime.org/projects/openfire/plugins/2.5.0/monitoring.jar \
-  -O ./openfire/plugins/monitoring.jar
-```
-
-## Configuration Steps
-
-### 1. Enable REST API
-
-1. Go to **Server > Server Settings > REST API**
-2. Settings:
-   ```
-   ✓ Enabled
-   ✓ HTTP Basic Auth
-   Secret Key: [Generate and save]
-   Allowed IPs: * (development) or specific IPs (production)
-   ```
-
-### 2. Configure WebSocket Support
-
-1. Go to **Server > Server Settings > HTTP Binding**
-2. Settings:
-
-   ```
-   ✓ HTTP Binding Enabled
-   ✓ Script Syntax Enabled
-   HTTP Bind Port: 7070
-   HTTPS Bind Port: 7443
-
-   ✓ WebSocket Enabled
-   WebSocket Port: 7070 (ws://)
-   WebSocket Secure Port: 7443 (wss://)
-   ```
-
-### 3. Enable Message Archive Management (MAM)
-
-1. Go to **Server > Archiving > Archiving Settings**
-2. Settings:
-   ```
-   ✓ Archive one-to-one chats
-   ✓ Archive group chats
-   Retention: Permanent (or set days)
-   ```
-
-### 4. Configure Conference (MUC) Service
-
-1. Go to **Server > Group Chat > Group Chat Settings**
-2. Create/Configure service:
-
-   ```
-   Service Name: conference
-   Service Description: War Rooms Conference Service
-
-   ✓ Room creation restricted to admins
-   ✓ List rooms in service discovery
-   ✓ Allow users to register nicknames
-
-   History Settings:
-   - Show last 50 messages
-   - Store unlimited history
-   ```
-
-### 5. Configure PubSub Service
-
-1. Go to **Server > PubSub > Service Summary**
-2. Verify service exists at `pubsub.wargame.local`
-3. Create root collection node:
-   ```
-   Node ID: war-rooms
-   Type: Collection
-   Access Model: Presence
-   ```
-
-## User and Group Setup
-
-### Create Initial Admin User
-
-```bash
-# Using REST API
-curl -X POST http://localhost:9090/plugins/restapi/v1/users \
-  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "gamemaster",
-    "password": "gm_pass123",
-    "name": "Game Master",
-    "email": "gm@wargame.local"
-  }'
-```
-
-### Create Groups
-
-```bash
-# Force groups
-curl -X POST http://localhost:9090/plugins/restapi/v1/groups \
-  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "groupName": "force-blue",
-    "description": "Blue Force Members"
-  }'
-
-# Role groups
-curl -X POST http://localhost:9090/plugins/restapi/v1/groups \
-  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "groupName": "role-admin",
-    "description": "System Administrators"
-  }'
-```
-
-### Create Initial Rooms
-
-```bash
-# Create standard room
-curl -X POST http://localhost:9090/plugins/restapi/v1/chatrooms \
-  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "roomName": "blue-command",
-    "naturalName": "Blue Force Command",
-    "description": "Blue force command channel",
-    "maxUsers": 50,
-    "persistent": true,
-    "publicRoom": false,
-    "membersOnly": true,
-    "allowedGroups": ["force-blue"]
-  }'
-
-# Create all-hands room
-curl -X POST http://localhost:9090/plugins/restapi/v1/chatrooms \
-  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "roomName": "all-hands",
-    "naturalName": "All Hands",
-    "description": "Server-wide announcements",
-    "maxUsers": 200,
-    "persistent": true,
-    "publicRoom": true
-  }'
-```
-
-## Testing the Setup
-
-### 1. Test XMPP Connection
-
-Using Stanza.js in browser console:
-
-```javascript
-import { createClient } from 'stanza';
-
-const client = createClient({
-  jid: 'gamemaster@wargame.local',
-  password: 'gm_pass123',
-  transports: {
-    websocket: 'ws://localhost:7070/ws',
-  },
+// chat-ui/src/main.tsx
+const chatStorage = createStorage({
+  backend: 'localStorage',
+  namespace: 'war-rooms',  // Default namespace
 });
 
-client.on('session:started', () => {
-  console.log('Connected!');
-  client.getRoster();
-  client.sendPresence();
+// admin-ui/src/providers/dataProvider.ts
+const adminStorage = createStorage({
+  backend: 'localStorage',
+  namespace: 'war-rooms-admin',  // Different namespace!
 });
 
-client.connect();
+// Result: admin creates user → chat UI doesn't see it
 ```
 
-### 2. Test REST API
+---
 
-```bash
-# Get server info
-curl http://localhost:9090/plugins/restapi/v1/system/properties \
-  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM="
+## After: Unified Data Layer
 
-# Get users
-curl http://localhost:9090/plugins/restapi/v1/users \
-  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM="
-```
+```typescript
+// ✅ NEW: Both UIs share same namespace
 
-### 3. Test MUC (Multi-User Chat)
-
-```javascript
-// Join room
-await client.joinRoom('blue-command@conference.wargame.local', 'GameMaster');
-
-// Send message
-client.sendMessage({
-  to: 'blue-command@conference.wargame.local',
-  type: 'groupchat',
-  body: 'Testing MUC',
+// chat-ui/src/main.tsx
+const chatStorage = createStorage({
+  backend: 'localStorage',
+  namespace: process.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
 });
-```
 
-### 4. Test PubSub
-
-```javascript
-// Subscribe to game state
-await client.subscribeToNode('pubsub.wargame.local', 'war-rooms/game/state');
-
-// Publish update
-await client.publish('pubsub.wargame.local', 'war-rooms/game/state', {
-  id: 'current',
-  content: {
-    status: 'setup',
-    currentTurn: 0,
-  },
+// admin-ui/src/main.tsx
+const adminStorage = createStorage({
+  backend: 'localStorage',
+  namespace: process.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
 });
+
+// Result: admin creates user → chat UI sees it instantly
 ```
 
-## Production Setup
+---
 
-### System Requirements
+## Integration Scenarios
 
-- **OS**: Ubuntu 20.04+ or RHEL 8+
-- **Java**: OpenJDK 11 or 17
-- **Database**: PostgreSQL 12+ or MySQL 8+
-- **RAM**: 4GB minimum, 8GB recommended
-- **Disk**: 20GB for application + data growth
+### Scenario 1: Admin Creates User
 
-### Installation Steps
+**Admin UI Flow**:
 
-1. **Install Java**:
+```typescript
+// packages/admin-ui/src/resources/users.tsx
+import { Create, SimpleForm, TextInput } from 'react-admin';
+
+export const UserCreate = () => (
+  <Create>
+    <SimpleForm>
+      <TextInput source="username" />
+      <TextInput source="name" />
+      <TextInput source="email" />
+    </SimpleForm>
+  </Create>
+);
+
+// When user submits form:
+// 1. dataProvider.create('users', { username: 'newuser', ... })
+// 2. MockOpenFireAPI.createUser() writes to rest:user:newuser
+// 3. Transformer writes to roster/newuser@wargame.local
+// 4. Both representations in shared storage
+```
+
+**Chat UI Result**:
+
+```typescript
+// packages/chat-ui/src/components/RosterPanel.tsx
+import { useRoster } from '../hooks/useRoster';
+
+export const RosterPanel = () => {
+  const roster = useRoster();  // Reads from roster/* keys
+  
+  // ✅ New user appears immediately in roster list
+  return (
+    <List>
+      {roster.map(user => (
+        <ListItem key={user.bare_jid}>
+          {user.name}  {/* Shows "New User" */}
+        </ListItem>
+      ))}
+    </List>
+  );
+};
+```
+
+---
+
+### Scenario 2: Admin Creates Room
+
+**Admin UI Flow**:
+
+```typescript
+// packages/admin-ui/src/resources/rooms.tsx
+import { Create, SimpleForm, TextInput, SelectInput } from 'react-admin';
+
+export const RoomCreate = () => (
+  <Create>
+    <SimpleForm>
+      <TextInput source="roomName" />
+      <TextInput source="naturalName" />
+      <SelectInput source="forceRestrictions" choices={[
+        { id: 'force-red', name: 'Red Force' },
+        { id: 'force-blue', name: 'Blue Force' },
+      ]} />
+    </SimpleForm>
+  </Create>
+);
+
+// When admin creates room:
+// 1. dataProvider.create('rooms', { roomName: 'ops-center', ... })
+// 2. MockOpenFireAPI.createRoom() → rest:room:ops-center
+// 3. Transformer creates rooms/ops-center@conference.wargame.local
+// 4. Room appears in both UIs
+```
+
+**Chat UI Result**:
+
+```typescript
+// packages/chat-ui/src/components/RoomList.tsx
+import { useRoomsStore } from '@war-rooms/state';
+
+export const RoomList = () => {
+  const rooms = useRoomsStore(state => state.rooms);
+  
+  // ✅ New room appears in available rooms list
+  return (
+    <List>
+      {rooms.map(room => (
+        <ListItem key={room.jid} onClick={() => joinRoom(room.jid)}>
+          {room.info.identity.name}  {/* Shows "Operations Center" */}
+        </ListItem>
+      ))}
+    </List>
+  );
+};
+```
+
+---
+
+### Scenario 3: Chat User Sends Message
+
+**Chat UI Flow**:
+
+```typescript
+// packages/chat-ui/src/components/MessageInput.tsx
+import { sendMessage } from '../services/xmpp';
+
+const handleSend = async (body: string) => {
+  const message = {
+    id: generateMessageId(),
+    from: 'commander.red@wargame.local',
+    to: 'all-hands@conference.wargame.local',
+    body,
+    timestamp: new Date().toISOString(),
+  };
+  
+  // Writes to messages/all-hands@conference/msg-123
+  await sendMessage(message);
+};
+```
+
+**Admin UI Result**:
+
+```typescript
+// packages/admin-ui/src/resources/rooms.tsx
+import { Show, SimpleShowLayout, TextField, FunctionField } from 'react-admin';
+
+export const RoomShow = () => (
+  <Show>
+    <SimpleShowLayout>
+      <TextField source="roomName" />
+      <FunctionField 
+        label="Message Count" 
+        render={(record) => {
+          // Reads messages/${roomJid}/index from shared storage
+          const count = getMessageCount(record.roomName);
+          return count;  // ✅ Shows updated count
+        }} 
+      />
+    </SimpleShowLayout>
+  </Show>
+);
+```
+
+---
+
+### Scenario 4: Admin Updates Force Metadata
+
+**Admin UI Flow**:
+
+```typescript
+// packages/admin-ui/src/resources/forces.tsx
+import { Edit, SimpleForm, TextInput, ColorInput } from 'react-admin';
+
+export const ForceEdit = () => (
+  <Edit>
+    <SimpleForm>
+      <TextInput source="name" />
+      <TextInput source="description" />
+      <TextInput source="color" type="color" />
+      <TextInput source="icon" />
+    </SimpleForm>
+  </Edit>
+);
+
+// When admin updates force:
+// 1. dataProvider.update('forces', { color: '#FF0000', ... })
+// 2. MockPubSubMetadataREST.setForceMetadata()
+// 3. Writes to pubsub/nodes//war-rooms/forces/items/force-red
+```
+
+**Chat UI Result**:
+
+```typescript
+// packages/chat-ui/src/components/ForceIndicator.tsx
+import { useForceMetadata } from '../hooks/useForceMetadata';
+
+export const ForceIndicator = ({ forceId }) => {
+  const force = useForceMetadata(forceId);  // Reads from PubSub
+  
+  // ✅ Color updates immediately
+  return (
+    <Chip 
+      label={force.name}
+      style={{ backgroundColor: force.color }}  // New color
+      icon={<Avatar src={force.icon} />}        // New icon
+    />
+  );
+};
+```
+
+---
+
+## Configuration
+
+### Environment Variables
+
+Both UIs need same namespace configuration:
 
 ```bash
-sudo apt update
-sudo apt install openjdk-11-jdk
+# .env (project root)
+VITE_STORAGE_NAMESPACE=war-rooms
+
+# .env.test (for isolated tests)
+VITE_STORAGE_NAMESPACE=test-war-rooms-${DATE_NOW}
 ```
 
-2. **Download OpenFire**:
+### Chat UI Setup
 
-```bash
-wget https://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_4_7_5.tar.gz \
-  -O openfire.tar.gz
-tar -xzf openfire.tar.gz
-sudo mv openfire /opt/
-```
+```typescript
+// packages/chat-ui/src/main.tsx
+import { createStorage } from '@war-rooms/backend-mock';
 
-3. **Create Service**:
+const storage = createStorage({
+  backend: 'localStorage',
+  namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+});
 
-```bash
-sudo useradd -r -s /bin/false openfire
-sudo chown -R openfire:openfire /opt/openfire
-```
-
-Create `/etc/systemd/system/openfire.service`:
-
-```ini
-[Unit]
-Description=OpenFire XMPP Server
-After=network.target
-
-[Service]
-Type=forking
-User=openfire
-Group=openfire
-ExecStart=/opt/openfire/bin/openfire.sh start
-ExecStop=/opt/openfire/bin/openfire.sh stop
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-```
-
-4. **Configure Database**:
-
-```sql
-CREATE DATABASE openfire;
-CREATE USER openfire WITH PASSWORD 'secure_password';
-GRANT ALL PRIVILEGES ON DATABASE openfire TO openfire;
-```
-
-5. **Start Service**:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable openfire
-sudo systemctl start openfire
-```
-
-## Security Hardening
-
-### 1. TLS Configuration
-
-1. Generate or obtain SSL certificate
-2. Configure in **Server > Server Settings > Server Certificates**
-3. Force TLS for client connections:
-   - **Server > Server Settings > Client Connections**
-   - Set "Required" for both C2S and S2S
-
-### 2. Firewall Rules
-
-```bash
-# Allow only necessary ports
-sudo ufw allow 5222/tcp  # XMPP clients
-sudo ufw allow 7443/tcp  # WebSocket SSL
-sudo ufw allow 9091/tcp  # Admin HTTPS
-sudo ufw deny 9090/tcp   # Block plain HTTP admin
-```
-
-### 3. Access Control
-
-1. Restrict admin console:
-   - **Server > Server Manager > Admin Console**
-   - Set allowed IP addresses
-2. Configure REST API security:
-   - Use strong secret key
-   - Restrict to backend server IPs
-3. Enable account lockout:
-   - **Server > Server Settings > Security Settings**
-   - Set lockout after 5 failed attempts
-
-## Monitoring and Maintenance
-
-### Health Checks
-
-Create monitoring script:
-
-```bash
-#!/bin/bash
-# check-openfire.sh
-
-# Check if service is running
-systemctl is-active openfire || exit 1
-
-# Check XMPP port
-nc -zv localhost 5222 || exit 1
-
-# Check REST API
-curl -f http://localhost:9090/plugins/restapi/v1/system/properties \
-  -H "Authorization: Basic $API_KEY" || exit 1
-```
-
-### Backup Strategy
-
-```bash
-# Daily backup script
-#!/bin/bash
-BACKUP_DIR="/backup/openfire"
-DATE=$(date +%Y%m%d)
-
-# Backup database
-pg_dump openfire > $BACKUP_DIR/db_$DATE.sql
-
-# Backup config
-tar -czf $BACKUP_DIR/config_$DATE.tar.gz /opt/openfire/conf
-
-# Keep last 30 days
-find $BACKUP_DIR -name "*.sql" -mtime +30 -delete
-find $BACKUP_DIR -name "*.tar.gz" -mtime +30 -delete
-```
-
-### Log Rotation
-
-Configure `/etc/logrotate.d/openfire`:
-
-```
-/opt/openfire/logs/*.log {
-    daily
-    missingok
-    rotate 30
-    compress
-    delaycompress
-    notifempty
-    create 640 openfire openfire
-    sharedscripts
-    postrotate
-        systemctl reload openfire
-    endscript
+// Seed unified fixtures on first load
+if (await storage.keys().length === 0) {
+  await seedAll(storage, DEFAULT_SEED_OPTIONS);
 }
 ```
+
+### Admin UI Setup
+
+```typescript
+// packages/admin-ui/src/main.tsx
+import { createStorage } from '@war-rooms/backend-mock';
+import { createDataProvider } from './providers/dataProvider';
+
+const storage = createStorage({
+  backend: 'localStorage',
+  namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+});
+
+// Seed unified fixtures on first load
+if (await storage.keys().length === 0) {
+  await seedAll(storage, DEFAULT_SEED_OPTIONS);
+}
+
+// Create data provider with shared storage
+const dataProvider = createDataProvider(storage);
+```
+
+---
+
+## Data Flow Diagrams
+
+### User Creation Flow
+
+```
+┌─────────────┐
+│  Admin UI   │
+│  (React-    │
+│   Admin)    │
+└──────┬──────┘
+       │ create({ username: 'newuser', name: 'New User' })
+       ▼
+┌─────────────────┐
+│ MockOpenFireAPI │
+└──────┬──────────┘
+       │ createUser()
+       ▼
+┌──────────────────────┐
+│  REST → XMPP         │
+│  Transformer         │
+└──────┬───────────────┘
+       │
+       ├─→ rest:user:newuser (OpenFireUser)
+       │
+       └─→ roster/newuser@wargame.local (XMPPUser)
+       
+       Both written to shared localStorage namespace
+       
+┌─────────────┐
+│  Chat UI    │
+│  (XMPP)     │
+└──────┬──────┘
+       │ useRoster() reads roster/* keys
+       ▼
+   ✅ New user appears in roster
+```
+
+### Room Creation Flow
+
+```
+┌─────────────┐
+│  Admin UI   │
+└──────┬──────┘
+       │ create({ roomName: 'ops', naturalName: 'Ops Center' })
+       ▼
+┌─────────────────┐
+│ MockOpenFireAPI │
+└──────┬──────────┘
+       │ createRoom()
+       ▼
+┌──────────────────────┐
+│  REST → XMPP         │
+│  Transformer         │
+└──────┬───────────────┘
+       │
+       ├─→ rest:room:ops (OpenFireRoom)
+       │
+       └─→ rooms/ops@conference.wargame.local (XMPPRoom)
+       
+┌─────────────┐
+│  Chat UI    │
+└──────┬──────┘
+       │ useRoomsStore() reads rooms/* keys
+       ▼
+   ✅ New room appears in available rooms
+```
+
+---
+
+## Testing Integration
+
+### Unit Test: Transformer Round-Trip
+
+```typescript
+// packages/backend-mock/src/rest/__tests__/transformers.test.ts
+import { xmppUserToRest, restUserToXmpp } from '../transformers';
+import { MOCK_USERS, MOCK_DOMAIN } from '../../fixtures';
+
+test('user round-trip preserves data', () => {
+  const original = MOCK_USERS[0];
+  const rest = xmppUserToRest(original);
+  const roundTrip = restUserToXmpp(rest, MOCK_DOMAIN);
+  
+  expect(roundTrip.bare_jid).toBe(original.bare_jid);
+  expect(roundTrip.name).toBe(original.name);
+  expect(roundTrip.groups).toEqual(original.groups);
+});
+```
+
+### Integration Test: Cross-UI Data Flow
+
+```typescript
+// packages/backend-mock/src/__tests__/unified-seeding.test.ts
+import { createStorage } from '../storage';
+import { seedAll } from '../seed';
+import { MockOpenFireAPI } from '../rest/openfire-api';
+
+test('admin creates user → appears in XMPP', async () => {
+  const storage = createStorage({ backend: 'memory', namespace: 'test' });
+  await seedAll(storage);
+  
+  const api = new MockOpenFireAPI(storage);
+  
+  // Admin creates user via REST API
+  await api.createUser({
+    username: 'testuser',
+    name: 'Test User',
+    properties: { sharedGroups: ['TestGroup'] },
+  });
+  
+  // Verify XMPP representation exists
+  const xmppUser = await storage.getItem('roster/testuser@wargame.local');
+  expect(xmppUser).toBeDefined();
+  expect(xmppUser.name).toBe('Test User');
+  expect(xmppUser.groups).toContain('TestGroup');
+});
+```
+
+### E2E Test: Admin → Chat Data Sync
+
+```typescript
+// e2e/cross-ui-sync.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('admin creates user → chat sees user in roster', async ({ page, context }) => {
+  // Open admin UI in first tab
+  const adminPage = await context.newPage();
+  await adminPage.goto('/admin');
+  await adminPage.fill('[name="username"]', 'admin');
+  await adminPage.fill('[name="password"]', 'admin');
+  await adminPage.click('button[type="submit"]');
+  
+  // Create new user
+  await adminPage.click('a[href="#/users"]');
+  await adminPage.click('a[href="#/users/create"]');
+  await adminPage.fill('[name="username"]', 'e2euser');
+  await adminPage.fill('[name="name"]', 'E2E Test User');
+  await adminPage.click('button[type="submit"]');
+  
+  // Open chat UI in second tab (shares same localStorage)
+  await page.goto('/');
+  await page.fill('[name="username"]', 'commander.red');
+  await page.fill('[name="password"]', 'any');
+  await page.click('button[type="submit"]');
+  
+  // Verify new user appears in roster
+  await expect(page.locator('text=E2E Test User')).toBeVisible();
+});
+```
+
+---
+
+## Migration Guide
+
+### Step 1: Update Dependencies
+
+```bash
+# Ensure all packages use latest backend-mock
+npm install
+npm run build
+```
+
+### Step 2: Update Environment Configuration
+
+```bash
+# Add to .env
+echo "VITE_STORAGE_NAMESPACE=war-rooms" >> .env
+
+# Add to .env.test
+echo "VITE_STORAGE_NAMESPACE=test-war-rooms" >> .env.test
+```
+
+### Step 3: Update Chat UI
+
+```typescript
+// packages/chat-ui/src/main.tsx
+
+import { createStorage, seedAll, DEFAULT_SEED_OPTIONS } from '@war-rooms/backend-mock';
+
+const storage = createStorage({
+  backend: 'localStorage',
+  namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+});
+
+// Seed unified fixtures
+if ((await storage.keys()).length === 0) {
+  await seedAll(storage, DEFAULT_SEED_OPTIONS);
+}
+```
+
+### Step 4: Update Admin UI
+
+```typescript
+// packages/admin-ui/src/main.tsx
+
+import { createStorage, seedAll, DEFAULT_SEED_OPTIONS } from '@war-rooms/backend-mock';
+
+const storage = createStorage({
+  backend: 'localStorage',
+  namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+});
+
+// Seed unified fixtures
+if ((await storage.keys()).length === 0) {
+  await seedAll(storage, DEFAULT_SEED_OPTIONS);
+}
+```
+
+### Step 5: Migrate Existing Data (Optional)
+
+```typescript
+// One-time migration script
+import { migrateNamespace } from '@war-rooms/backend-mock';
+
+// Migrate old admin data to new shared namespace
+await migrateNamespace('war-rooms-admin', 'war-rooms', 'localStorage');
+
+// Verify migration
+const storage = createStorage({ backend: 'localStorage', namespace: 'war-rooms' });
+const keys = await storage.keys();
+console.log('Migrated keys:', keys.length);
+```
+
+### Step 6: Verify Integration
+
+```bash
+# Run tests
+npm test
+
+# Run E2E tests
+npm run test:e2e
+
+# Start both UIs
+npm run dev  # Chat UI on :5173
+cd packages/admin-ui && npm run dev  # Admin UI on :5174
+
+# Verify:
+# 1. Create user in admin → appears in chat roster
+# 2. Create room in admin → appears in chat room list
+# 3. Send message in chat → count updates in admin
+```
+
+---
 
 ## Troubleshooting
 
-### Common Issues
+### Issue: Admin Changes Not Visible in Chat
 
-1. **Cannot connect via WebSocket**:
-   - Check firewall rules
-   - Verify WebSocket enabled in HTTP Binding
-   - Check CORS settings if browser-based
+**Symptom**: Create user in admin UI, doesn't appear in chat UI roster
 
-2. **Memory issues**:
-   - Edit `/opt/openfire/bin/openfire.sh`
-   - Increase: `-Xms512m -Xmx2048m`
-
-3. **Database connection lost**:
-   - Check connection pool settings
-   - Verify network between OpenFire and DB
-   - Check DB max connections
-
-4. **Plugin not loading**:
-   - Check plugin compatibility with OpenFire version
-   - Review logs in `/opt/openfire/logs/`
-   - Verify file permissions
-
-### Debug Logging
-
-Enable debug logging:
-
-1. **Server > Server Manager > Logs**
-2. Set level to DEBUG for:
-   - `org.jivesoftware.openfire`
-   - `org.jivesoftware.openfire.muc`
-   - `org.jivesoftware.openfire.pubsub`
-
-## Remote OpenFire Setup
-
-If using an existing remote OpenFire instance:
-
-### 1. Configure Connection
-
-Create `.env.local`:
-
-```env
-VITE_BACKEND_MODE=openfire
-VITE_OPENFIRE_WS=wss://your-openfire-server.com:7443/ws
-VITE_OPENFIRE_DOMAIN=your-domain.com
-VITE_OPENFIRE_CONFERENCE=conference.your-domain.com
-VITE_OPENFIRE_PUBSUB=pubsub.your-domain.com
-```
-
-### 2. CORS Configuration
-
-Ensure remote OpenFire allows your development origin:
-
-**Admin Console** → **Server Settings** → **HTTP Binding** → **CORS**:
-
-```
-Allowed Origins: http://localhost:5173, https://localhost:5173
-Allowed Methods: GET, POST, PUT, DELETE, OPTIONS
-Allowed Headers: Content-Type, Authorization
-```
-
-### 3. Test Connection
+**Diagnosis**:
 
 ```typescript
-import { StanzaBackend } from '@war-rooms/backend-openfire';
+// Check namespaces match
+const chatStorage = createStorage({ backend: 'localStorage', namespace: 'war-rooms' });
+const adminStorage = createStorage({ backend: 'localStorage', namespace: 'war-rooms-admin' });
 
-const backend = new StanzaBackend({
-  websocketUrl: process.env.VITE_OPENFIRE_WS,
-  domain: process.env.VITE_OPENFIRE_DOMAIN,
-});
+console.log(await chatStorage.keys());   // Check chat keys
+console.log(await adminStorage.keys());  // Check admin keys
+```
 
-try {
-  await backend.connect('testuser@domain', 'password');
-  console.log('Connected to remote OpenFire!');
-} catch (error) {
-  console.error('Connection failed:', error);
+**Solution**: Ensure both UIs use same `VITE_STORAGE_NAMESPACE`
+
+---
+
+### Issue: Transformer Errors
+
+**Symptom**: `Error: Cannot parse JID from undefined`
+
+**Diagnosis**:
+
+```typescript
+// Check transformer inputs
+const restUser = await storage.getItem('rest:user:testuser');
+console.log('REST user:', restUser);
+
+// Verify transformer can handle it
+const xmppUser = restUserToXmpp(restUser, 'wargame.local');
+console.log('XMPP user:', xmppUser);
+```
+
+**Solution**: Ensure REST entities have required fields before transformation
+
+---
+
+### Issue: Seeding Not Happening
+
+**Symptom**: UIs show no data after first load
+
+**Diagnosis**:
+
+```typescript
+const storage = createStorage({ backend: 'localStorage', namespace: 'war-rooms' });
+const keys = await storage.keys();
+
+if (keys.length === 0) {
+  console.log('No data found - seeding required');
+  await seedAll(storage, DEFAULT_SEED_OPTIONS);
 }
 ```
 
-## Docker Troubleshooting
+**Solution**: Ensure seeding logic runs on first load (check browser console for errors)
 
-Common Docker issues and solutions:
+---
 
-### Port Conflicts
+## Performance Considerations
 
-```bash
-# Check if ports are in use
-lsof -i :9090
-lsof -i :5222
-lsof -i :7443
+### Transformation Overhead
 
-# Use different ports in docker-compose.yml
-ports:
-  - "19090:9090"  # Changed from 9090
-  - "15222:5222"  # Changed from 5222
-```
+- **Volume**: ~5 users, 6 rooms, 3 forces = ~15 transformations per seed
+- **Cost**: <1ms per transformation
+- **Impact**: Negligible (one-time on seed)
 
-### Memory Issues
+### Storage Access Patterns
 
-```yaml
-# Add to docker-compose.yml
-services:
-  openfire:
-    mem_limit: 2g
-    memswap_limit: 2g
-    environment:
-      - JAVA_OPTS=-Xms256m -Xmx1g
-```
+- **Reads**: O(1) via key lookup (localStorage.getItem)
+- **Writes**: O(1) via key set (localStorage.setItem)
+- **Scans**: O(n) for indexes (used rarely)
 
-### Network Issues on Mac
+### Memory Footprint
 
-```bash
-# Use host network mode (Mac specific)
-docker run --network host nasqueron/openfire:4.7.5
+- **XMPP entities**: ~10KB
+- **REST entities**: ~8KB
+- **Messages**: ~50KB (500 messages)
+- **Total**: <100KB (well within localStorage limits)
 
-# Or create custom network
-docker network create openfire-net
-docker run --network openfire-net --name openfire nasqueron/openfire:4.7.5
-```
-
-### Permission Issues
-
-```bash
-# Fix volume permissions
-sudo chown -R $(id -u):$(id -g) ./openfire/
-
-# Or run with user mapping
-docker run --user $(id -u):$(id -g) nasqueron/openfire:4.7.5
-```
-
-### Container Won't Start
-
-```bash
-# Check logs
-docker logs openfire -f
-
-# Common fix: Remove existing data
-docker-compose down -v
-rm -rf ./openfire/data
-docker-compose up -d
-```
-
-## Demo Mode Setup (No OpenFire)
-
-For standalone browser demo, see [mock-development-guide.md](mock-development-guide.md) for complete instructions.
-
-Quick start:
-
-```javascript
-// Initialize mock backend
-import { MockXMPPBackend } from '@war-rooms/backend-mock';
-
-const backend = new MockXMPPBackend({
-  persistence: 'localStorage',
-  debugMode: true,
-  initialData: initialMockData,
-});
-
-// Use same API as OpenFire backend
-await backend.connect('demo@local', 'demo');
-```
+---
 
 ## Next Steps
 
-1. Configure monitoring dashboard
-2. Set up automated backups
-3. Implement security audit logging
-4. Configure rate limiting
-5. Set up development/staging environments
-6. Create deployment automation scripts
+After unified data layer is working:
 
-## Resources
+1. **Add real-time sync**: Broadcast storage events across tabs
+2. **Implement optimistic updates**: Update UI before backend confirms
+3. **Add conflict resolution**: Handle concurrent edits
+4. **Enable partial sync**: Sync only changed entities
+5. **Add change history**: Track all modifications for audit
 
-- [OpenFire Documentation](https://www.igniterealtime.org/projects/openfire/documentation.jsp)
-- [REST API Plugin Docs](https://www.igniterealtime.org/projects/openfire/plugins/1.9.0/restAPI/readme.html)
-- [XMPP Standards](https://xmpp.org/extensions/)
-- [Stanza.js Documentation](https://github.com/legastero/stanza)
+---
+
+## References
+
+- **Research**: [research.md](./research.md) - Technical decisions
+- **Data Model**: [data-model.md](./data-model.md) - Entity schemas
+- **Contracts**: [contracts/](./contracts/) - TypeScript interfaces
+- **Storage API**: [contracts/storage-api.ts](./contracts/storage-api.ts)
+- **Seeding API**: [contracts/seeding-api.ts](./contracts/seeding-api.ts)
+- **Transformers**: [contracts/transformers.ts](./contracts/transformers.ts)
