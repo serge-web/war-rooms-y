@@ -103,28 +103,28 @@ Based on plan.md monorepo structure:
 
 ### Tests for User Story 1
 
-- [ ] T036 [P] [US1] Test message delivery within 2 seconds in packages/chat-ui/tests/message-delivery.test.ts
-- [ ] T037 [P] [US1] Test presence updates on join/leave in packages/chat-ui/tests/presence.test.ts
-- [ ] T038 [P] [US1] Test room switching and unread counts in packages/chat-ui/tests/room-switching.test.ts
-- [ ] T039 [P] [US1] E2E test multi-user messaging flow in packages/chat-ui/e2e/messaging.spec.ts
+- [x] T036 [P] [US1] Test message delivery within 2 seconds in packages/chat-ui/tests/message-delivery.test.ts
+- [x] T037 [P] [US1] Test presence updates on join/leave in packages/chat-ui/tests/presence.test.ts
+- [x] T038 [P] [US1] Test room switching and unread counts in packages/chat-ui/tests/room-switching.test.ts
+- [x] T039 [P] [US1] E2E test multi-user messaging flow in packages/chat-ui/e2e/messaging.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T040 [P] [US1] Create message state store in packages/state/src/stores/messages.ts
-- [ ] T041 [P] [US1] Create room state store in packages/state/src/stores/rooms.ts
-- [ ] T042 [P] [US1] Create presence state store in packages/state/src/stores/presence.ts
-- [ ] T043 [P] [US1] Implement XMPP connection hook in packages/chat-ui/src/hooks/useXMPPConnection.ts
-- [ ] T044 [P] [US1] Create MessageList component in packages/chat-ui/src/components/MessageList.tsx
-- [ ] T045 [P] [US1] Create MessageInput component in packages/chat-ui/src/components/MessageInput.tsx
-- [ ] T046 [P] [US1] Create RoomList component in packages/chat-ui/src/components/RoomList.tsx
-- [ ] T047 [P] [US1] Create PresenceIndicator component in packages/chat-ui/src/components/PresenceIndicator.tsx
-- [ ] T048 [P] [US1] Create ParticipantList component in packages/chat-ui/src/components/ParticipantList.tsx
-- [ ] T049 [US1] Implement room layout with flexlayout-react in packages/chat-ui/src/layouts/ChatLayout.tsx
-- [ ] T050 [US1] Create chat page container in packages/chat-ui/src/pages/ChatPage.tsx
-- [ ] T051 [US1] Implement message composition helpers in packages/chat-ui/src/utils/message-composer.ts
-- [ ] T052 [US1] Add real-time message handling in packages/chat-ui/src/hooks/useMessageHandler.ts
-- [ ] T053 [US1] Implement unread message tracking in packages/state/src/stores/unread.ts
-- [ ] T054 [P] [US1] Create Storybook stories for chat components in packages/chat-ui/src/components/\*.stories.tsx
+- [x] T040 [P] [US1] Create message state store in packages/state/src/messages.ts
+- [x] T041 [P] [US1] Create room state store in packages/state/src/rooms.ts
+- [x] T042 [P] [US1] Create presence state store in packages/state/src/rooms.ts (integrated)
+- [x] T043 [P] [US1] Implement XMPP connection hook in packages/chat-ui/src/providers/BackendProvider.tsx
+- [x] T044 [P] [US1] Create MessageList component in packages/chat-ui/src/components/ChatRoom.tsx (integrated)
+- [x] T045 [P] [US1] Create MessageInput component in packages/chat-ui/src/components/ChatRoom.tsx (integrated)
+- [x] T046 [P] [US1] Create RoomList component in packages/chat-ui/src/components/RoomList.tsx
+- [x] T047 [P] [US1] Create PresenceIndicator component in packages/chat-ui/src/components/PresenceIndicator.tsx
+- [x] T048 [P] [US1] Create ParticipantList component in packages/chat-ui/src/components/ParticipantList.tsx
+- [x] T049 [US1] Implement room layout with flexlayout-react in packages/chat-ui/src/components/GameLayout.tsx
+- [x] T050 [US1] Create chat page container in packages/chat-ui/src/App.tsx
+- [x] T051 [US1] Implement message composition helpers in packages/chat-ui/src/components/ChatRoom.tsx (inline)
+- [x] T052 [US1] Add real-time message handling in packages/chat-ui/src/providers/BackendProvider.tsx
+- [x] T053 [US1] Implement unread message tracking in packages/state/src/unread.ts
+- [x] T054 [P] [US1] Create Storybook stories for chat components in packages/chat-ui/src/components/\*.stories.tsx
 
 **Checkpoint**: Core messaging functionality complete and independently testable
 
