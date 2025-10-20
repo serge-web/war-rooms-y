@@ -5,13 +5,14 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { useSetAtom } from 'jotai';
-import type { XMPPConfig } from '@war-rooms/backend-interface';
+import type { XMPPConfig, XMPPMessage } from '@war-rooms/backend-interface';
 import { MockXMPPBackend, MockPubSubMetadata } from '@war-rooms/backend-mock';
 import {
   useConnectionStore,
   useRoomsStore,
   useMetadataStore,
   messageBackendAtom,
+  addMessageAtom,
   type ConnectionStore,
   type RoomsStore,
   type MetadataStore,
