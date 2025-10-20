@@ -15,7 +15,12 @@ import {
   Create,
   Show,
   SimpleShowLayout,
+  ArrayInput,
+  SimpleFormIterator,
+  SelectArrayInput,
+  FunctionField,
 } from 'react-admin';
+import { Box } from '@mui/material';
 
 export const RoomList = () => (
   <List>
@@ -41,7 +46,40 @@ export const RoomEdit = () => (
       <BooleanInput source="publicRoom" label="Public Room" defaultValue={false} />
       <BooleanInput source="membersOnly" label="Members Only" defaultValue={true} />
       <BooleanInput source="moderated" label="Moderated" defaultValue={false} />
-      <TextInput source="metadata.description" label="Extended Description" multiline rows={2} />
+
+      {/* Metadata Section */}
+      <TextInput
+        source="metadata.description"
+        label="Extended Description"
+        multiline
+        rows={2}
+        helperText="Additional room description visible in metadata"
+      />
+
+      <SelectArrayInput
+        source="metadata.allowedGroups"
+        label="Allowed Groups"
+        choices={[
+          { id: 'admins', name: 'Admins' },
+          { id: 'Red Force', name: 'Red Force' },
+          { id: 'Blue Force', name: 'Blue Force' },
+          { id: 'Control', name: 'Control' },
+        ]}
+        helperText="Groups allowed to access this room"
+      />
+
+      <ArrayInput source="metadata.formTemplates" label="Form Templates">
+        <SimpleFormIterator inline>
+          <TextInput source="" label="Template ID" helperText="" placeholder="sitrep" />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <TextInput
+        source="metadata.theme.palette.primary.main"
+        label="Primary Theme Color"
+        placeholder="#1976D2"
+        helperText="Primary color for this room's theme"
+      />
     </SimpleForm>
   </Edit>
 );
@@ -58,7 +96,41 @@ export const RoomCreate = () => (
       <BooleanInput source="publicRoom" label="Public Room" defaultValue={false} />
       <BooleanInput source="membersOnly" label="Members Only" defaultValue={true} />
       <BooleanInput source="moderated" label="Moderated" defaultValue={false} />
-      <TextInput source="metadata.description" label="Extended Description" multiline rows={2} />
+
+      {/* Metadata Section */}
+      <TextInput
+        source="metadata.description"
+        label="Extended Description"
+        multiline
+        rows={2}
+        helperText="Additional room description visible in metadata"
+      />
+
+      <SelectArrayInput
+        source="metadata.allowedGroups"
+        label="Allowed Groups"
+        choices={[
+          { id: 'admins', name: 'Admins' },
+          { id: 'Red Force', name: 'Red Force' },
+          { id: 'Blue Force', name: 'Blue Force' },
+          { id: 'Control', name: 'Control' },
+        ]}
+        helperText="Groups allowed to access this room"
+      />
+
+      <ArrayInput source="metadata.formTemplates" label="Form Templates">
+        <SimpleFormIterator inline>
+          <TextInput source="" label="Template ID" helperText="" placeholder="sitrep" />
+        </SimpleFormIterator>
+      </ArrayInput>
+
+      <TextInput
+        source="metadata.theme.palette.primary.main"
+        label="Primary Theme Color"
+        placeholder="#1976D2"
+        defaultValue="#1976D2"
+        helperText="Primary color for this room's theme"
+      />
     </SimpleForm>
   </Create>
 );
@@ -75,7 +147,46 @@ export const RoomShow = () => (
       <BooleanField source="publicRoom" label="Public Room" />
       <BooleanField source="membersOnly" label="Members Only" />
       <BooleanField source="moderated" label="Moderated" />
+
+      {/* Metadata Display */}
       <TextField source="metadata.description" label="Extended Description" />
+
+      <FunctionField
+        label="Allowed Groups"
+        render={(record: any) => (
+          <span>{record.metadata?.allowedGroups?.join(', ') || 'N/A'}</span>
+        )}
+      />
+
+      <FunctionField
+        label="Form Templates"
+        render={(record: any) => (
+          <span>{record.metadata?.formTemplates?.join(', ') || 'N/A'}</span>
+        )}
+      />
+
+      <FunctionField
+        label="Theme Color"
+        render={(record: any) => {
+          const color = record.metadata?.theme?.palette?.primary?.main;
+          return color ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 1,
+                  backgroundColor: color,
+                  border: '1px solid rgba(0,0,0,0.2)',
+                }}
+              />
+              <span>{color}</span>
+            </Box>
+          ) : (
+            <span>N/A</span>
+          );
+        }}
+      />
     </SimpleShowLayout>
   </Show>
 );

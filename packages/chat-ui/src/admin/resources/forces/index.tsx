@@ -7,7 +7,8 @@ import {
   Datagrid,
   TextField,
   Edit,
-  SimpleForm,
+  TabbedForm,
+  FormTab,
   TextInput,
   Create,
   Show,
@@ -15,27 +16,87 @@ import {
   ArrayField,
   SingleFieldList,
   ChipField,
+  ArrayInput,
+  SimpleFormIterator,
+  ColorInput,
+  FunctionField,
+  SimpleForm,
 } from 'react-admin';
+import { Box, Chip } from '@mui/material';
+import { MembershipManager } from './MembershipManager';
 
 export const ForceList = () => (
   <List>
     <Datagrid rowClick="edit">
       <TextField source="name" label="Force Name" />
       <TextField source="description" label="Description" />
-      <TextField source="metadata.color" label="Color" />
+      <FunctionField
+        label="Color"
+        render={(record: any) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                width: 20,
+                height: 20,
+                borderRadius: 1,
+                backgroundColor: record.metadata?.color || '#cccccc',
+                border: '1px solid rgba(0,0,0,0.2)',
+              }}
+            />
+            <span>{record.metadata?.color || 'N/A'}</span>
+          </Box>
+        )}
+      />
+      <FunctionField
+        label="Objectives"
+        render={(record: any) => (
+          <span>{record.metadata?.objectives?.length || 0} objectives</span>
+        )}
+      />
     </Datagrid>
   </List>
 );
 
 export const ForceEdit = () => (
   <Edit>
-    <SimpleForm>
-      <TextInput source="name" label="Force Name" disabled />
-      <TextInput source="description" label="Description" multiline rows={3} />
-      <TextInput source="metadata.color" label="Color (hex)" placeholder="#FF0000" />
-      <TextInput source="metadata.icon" label="Icon" placeholder="military-tech" />
-      <TextInput source="metadata.description" label="Force Description" multiline rows={2} />
-    </SimpleForm>
+    <TabbedForm>
+      <FormTab label="General">
+        <TextInput source="name" label="Force Name" disabled />
+        <TextInput source="description" label="Description" multiline rows={3} />
+
+        {/* Metadata Section */}
+        <TextInput
+          source="metadata.description"
+          label="Force Description"
+          multiline
+          rows={2}
+          helperText="Extended description for this force"
+        />
+
+        <ColorInput
+          source="metadata.color"
+          label="Force Color"
+          helperText="Primary color for this force (used in UI theming)"
+        />
+
+        <TextInput
+          source="metadata.icon"
+          label="Icon Name"
+          placeholder="military-tech"
+          helperText="Material UI icon name (e.g., groups, military-tech, shield)"
+        />
+
+        <ArrayInput source="metadata.objectives" label="Objectives">
+          <SimpleFormIterator inline>
+            <TextInput source="" label="Objective" helperText="" />
+          </SimpleFormIterator>
+        </ArrayInput>
+      </FormTab>
+
+      <FormTab label="Members">
+        <MembershipManager />
+      </FormTab>
+    </TabbedForm>
   </Edit>
 );
 
@@ -44,9 +105,36 @@ export const ForceCreate = () => (
     <SimpleForm>
       <TextInput source="name" label="Force Name" required />
       <TextInput source="description" label="Description" multiline rows={3} />
-      <TextInput source="metadata.color" label="Color (hex)" placeholder="#FF0000" defaultValue="#1976D2" />
-      <TextInput source="metadata.icon" label="Icon" placeholder="military-tech" defaultValue="groups" />
-      <TextInput source="metadata.description" label="Force Description" multiline rows={2} />
+
+      {/* Metadata Section */}
+      <TextInput
+        source="metadata.description"
+        label="Force Description"
+        multiline
+        rows={2}
+        helperText="Extended description for this force"
+      />
+
+      <ColorInput
+        source="metadata.color"
+        label="Force Color"
+        defaultValue="#1976D2"
+        helperText="Primary color for this force (used in UI theming)"
+      />
+
+      <TextInput
+        source="metadata.icon"
+        label="Icon Name"
+        placeholder="military-tech"
+        defaultValue="groups"
+        helperText="Material UI icon name (e.g., groups, military-tech, shield)"
+      />
+
+      <ArrayInput source="metadata.objectives" label="Objectives">
+        <SimpleFormIterator inline>
+          <TextInput source="" label="Objective" helperText="" />
+        </SimpleFormIterator>
+      </ArrayInput>
     </SimpleForm>
   </Create>
 );
@@ -56,9 +144,35 @@ export const ForceShow = () => (
     <SimpleShowLayout>
       <TextField source="name" label="Force Name" />
       <TextField source="description" label="Description" />
-      <TextField source="metadata.color" label="Color" />
+
+      {/* Metadata Display */}
+      <FunctionField
+        label="Color"
+        render={(record: any) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                backgroundColor: record.metadata?.color || '#cccccc',
+                border: '1px solid rgba(0,0,0,0.2)',
+              }}
+            />
+            <span>{record.metadata?.color || 'N/A'}</span>
+          </Box>
+        )}
+      />
+
       <TextField source="metadata.icon" label="Icon" />
       <TextField source="metadata.description" label="Force Description" />
+
+      <ArrayField source="metadata.objectives" label="Objectives">
+        <SingleFieldList>
+          <ChipField source="id" />
+        </SingleFieldList>
+      </ArrayField>
+
       <ArrayField source="members" label="Members">
         <SingleFieldList>
           <ChipField source="id" />
