@@ -60,10 +60,10 @@ Phase 6 (Cleanup)
 
 **Goal**: Configure project for unified data layer
 
-- [ ] T001 Add VITE_STORAGE_NAMESPACE to root .env file
-- [ ] T002 Add VITE_STORAGE_NAMESPACE to .env.test file for test isolation
-- [ ] T003 [P] Document namespace config in packages/backend-mock/src/storage.ts
-- [ ] T004 [P] Add REST entity types to packages/backend-interface/src/rest.ts (re-export from backend-mock)
+- [x] T001 Add VITE_STORAGE_NAMESPACE to root .env file
+- [x] T002 Add VITE_STORAGE_NAMESPACE to .env.test file for test isolation
+- [x] T003 [P] Document namespace config in packages/backend-mock/src/storage.ts
+- [x] T004 [P] Add REST entity types to packages/backend-interface/src/rest.ts (re-export from backend-mock)
 
 **Validation**:
 - Environment variables configured in both .env files

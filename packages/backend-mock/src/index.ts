@@ -9,7 +9,16 @@ export { createStorage } from './storage';
 export type { Storage, StorageBackend, StorageOptions } from './storage';
 export * from './helpers';
 export * from './fixtures';
-export { seedMockData, seedAll, clearAll, DEFAULT_SEED_OPTIONS } from './seed';
+export {
+  seedMockData,
+  seedAll,
+  clearAll,
+  seedRestUsers,
+  seedRestGroups,
+  seedRestRooms,
+  seedRestFromXmpp,
+  DEFAULT_SEED_OPTIONS,
+} from './seed';
 export type { SeedOptions } from './seed';
 
 // REST API exports for admin UI
@@ -27,5 +36,3 @@ export type {
   RoomMetadata,
   GameOverview,
 } from './rest/pubsub-metadata';
-
-export { seedRestUsers } from './rest/seed-rest';

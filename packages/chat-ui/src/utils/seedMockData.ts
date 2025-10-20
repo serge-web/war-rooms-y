@@ -7,15 +7,21 @@ import { createStorage } from '@war-rooms/backend-mock';
 import { seedAll } from '@war-rooms/backend-mock';
 
 export async function seedMockData() {
-  // Create storage instance
+  // Create storage instance with unified namespace (T027)
   const storage = createStorage({
     backend: 'localStorage',
     debug: true,
-    namespace: 'war-rooms-mock',
+    namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
   });
 
-  // Seed all fixture data
-  await seedAll(storage);
+  // Seed all fixture data including REST representations (T032)
+  await seedAll(storage, {
+    rest: true,
+    domain: import.meta.env.VITE_MOCK_DOMAIN || 'wargame.local',
+    conferenceService: import.meta.env.VITE_MOCK_CONFERENCE || 'conference.wargame.local',
+  });
+  console.info('✅ Mock data seeded successfully (XMPP + REST)!');
+  console.info('Available users:');
   console.info('  - commander.red (Red Force Commander)');
   console.info('  - commander.blue (Blue Force Commander)');
   console.info('  - gamemaster (Game Master)');

@@ -1,6 +1,54 @@
 /**
  * Mock Storage Layer
  * Abstraction over localStorage, indexedDB (via localforage), and memory
+ *
+ * ## Unified Data Layer
+ *
+ * **CRITICAL**: Both chat-ui and admin-ui MUST use the SAME namespace for unified data.
+ *
+ * ### Namespace Strategy
+ *
+ * - **Production**: Use `war-rooms` namespace (shared across chat-ui and admin-ui)
+ * - **Testing**: Use `test-war-rooms` or unique test ID for isolation
+ * - **Configuration**: Set via `VITE_STORAGE_NAMESPACE` environment variable
+ *
+ * ### Key Prefixes (Protocol Separation)
+ *
+ * Both XMPP and REST protocols share the same namespace but use different key prefixes:
+ *
+ * **XMPP Keys**:
+ * - `roster/` → XMPP user roster entries (XMPPUser)
+ * - `rooms/` → XMPP MUC room info (XMPPRoom)
+ * - `messages/` → Message archives (XMPPMessage)
+ * - `pubsub/nodes/` → PubSub node data (metadata)
+ *
+ * **REST Keys**:
+ * - `rest:user:` → OpenFire users (OpenFireUser)
+ * - `rest:group:` → OpenFire groups (OpenFireGroup)
+ * - `rest:room:` → OpenFire rooms (OpenFireRoom)
+ * - `rest:users:list` → Array of usernames (index)
+ * - `rest:groups:list` → Array of group names (index)
+ * - `rest:rooms:list` → Array of room names (index)
+ *
+ * ### Example Usage
+ *
+ * ```typescript
+ * // Chat UI - uses XMPP keys
+ * const storage = createStorage({
+ *   backend: 'localStorage',
+ *   namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+ * });
+ * const user = await storage.getItem('roster/commander.red@wargame.local');
+ *
+ * // Admin UI - uses REST keys (SAME namespace!)
+ * const storage = createStorage({
+ *   backend: 'localStorage',
+ *   namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+ * });
+ * const restUser = await storage.getItem('rest:user:commander.red');
+ *
+ * // Both refer to the same underlying user, just different protocol representations
+ * ```
  */
 
 import localforage from 'localforage';
@@ -14,7 +62,21 @@ export type StorageBackend = 'localStorage' | 'indexedDB' | 'memory';
 export interface StorageOptions {
   backend: StorageBackend;
   debug?: boolean;
-  namespace?: string; // Prefix for keys
+  /**
+   * Namespace for all storage keys (prevents cross-app collisions)
+   *
+   * **CRITICAL FOR UNIFIED DATA LAYER**: Both chat-ui and admin-ui MUST use
+   * the SAME namespace to enable cross-UI data synchronization.
+   *
+   * @default 'war-rooms'
+   * @example
+   * // Production (shared namespace)
+   * namespace: 'war-rooms'
+   *
+   * // Testing (isolated namespace)
+   * namespace: `test-war-rooms-${testId}`
+   */
+  namespace?: string;
 }
 
 // ============================================================================

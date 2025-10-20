@@ -4,6 +4,7 @@
  */
 
 import type { Storage } from './storage';
+import type { XMPPUser, XMPPRoom } from '@war-rooms/backend-interface';
 import {
   MOCK_USERS,
   MOCK_FORCES,
@@ -14,6 +15,13 @@ import {
   MOCK_FORM_SCHEMAS,
 } from './fixtures';
 import { getBareJid } from './helpers';
+import {
+  xmppUserToRest,
+  xmppRoomToRest,
+  deriveRestGroupsFromRoster,
+  extractUsername,
+  extractRoomName,
+} from './rest/transformers';
 
 // ============================================================================
 // Seed Operations
@@ -40,6 +48,15 @@ export interface SeedOptions {
 
   /** Seed form schemas */
   forms?: boolean;
+
+  /** Seed REST representations (for admin-ui) */
+  rest?: boolean;
+
+  /** XMPP domain (required for REST seeding) */
+  domain?: string;
+
+  /** Conference service (required for REST room seeding) */
+  conferenceService?: string;
 }
 
 export const DEFAULT_SEED_OPTIONS: SeedOptions = {
@@ -50,7 +67,141 @@ export const DEFAULT_SEED_OPTIONS: SeedOptions = {
   rooms: true,
   messages: true,
   forms: true,
+  rest: true,
+  domain: 'wargame.local',
+  conferenceService: 'conference.wargame.local',
 };
+
+// ============================================================================
+// REST Seeding Functions (T020-T022)
+// ============================================================================
+
+/**
+ * Seed REST users from XMPP roster
+ * Transforms all users in roster/* to rest:user:* format
+ *
+ * @param storage Storage instance
+ * @param _domain XMPP domain (not currently used, JIDs already in storage)
+ */
+export async function seedRestUsers(storage: Storage, _domain: string): Promise<void> {
+  // Load all XMPP users from roster
+  const xmppUsers = await storage.getAll<XMPPUser>('roster/');
+  const usernames: string[] = [];
+
+  // Transform each XMPP user to REST format
+  for (const [key, xmppUser] of Object.entries(xmppUsers)) {
+    const restUser = xmppUserToRest(xmppUser);
+    // Key is like "roster/user1@wargame.local", extract JID part after "roster/"
+    const jid = key.replace('roster/', '');
+    const username = extractUsername(jid);
+
+    // Store REST user
+    await storage.setItem(`rest:user:${username}`, restUser);
+    usernames.push(username);
+  }
+
+  // Store user list index
+  await storage.setItem('rest:users:list', usernames);
+}
+
+/**
+ * Seed REST groups from XMPP roster memberships
+ * Derives groups from user.groups arrays across all roster entries
+ *
+ * @param storage Storage instance
+ * @param _domain XMPP domain (not currently used)
+ */
+export async function seedRestGroups(storage: Storage, _domain: string): Promise<void> {
+  // Load all XMPP users
+  const xmppUsers = await storage.getAll<XMPPUser>('roster/');
+  const userArray = Object.values(xmppUsers);
+
+  // Derive groups using transformer
+  const groups = deriveRestGroupsFromRoster(userArray);
+
+  // Store each group
+  for (const group of groups) {
+    await storage.setItem(`rest:group:${group.name}`, group);
+  }
+
+  // Store group list index
+  await storage.setItem(
+    'rest:groups:list',
+    groups.map((g) => g.name)
+  );
+}
+
+/**
+ * Seed REST rooms from XMPP room info
+ * Transforms all rooms in rooms/* to rest:room:* format
+ *
+ * @param storage Storage instance
+ * @param conferenceService MUC service domain
+ */
+export async function seedRestRooms(storage: Storage, conferenceService: string): Promise<void> {
+  // Get all room JIDs
+  const roomKeys = await storage.keys('rooms/');
+  const roomJids = new Set<string>();
+
+  // Extract unique room JIDs (keys are like "rooms/{jid}/info" or "rooms/{jid}/occupants/{nick}")
+  for (const key of roomKeys) {
+    const match = key.match(/^rooms\/([^/]+)/);
+    if (match && match[1]) {
+      roomJids.add(match[1]);
+    }
+  }
+
+  const roomNames: string[] = [];
+
+  // Transform each XMPP room to REST format
+  for (const roomJid of roomJids) {
+    // Try to load full room first (test format), then fall back to info only (production format)
+    let xmppRoom = await storage.getItem<XMPPRoom>(`rooms/${roomJid}`);
+
+    if (!xmppRoom) {
+      const roomInfo = await storage.getItem<XMPPRoom['info']>(`rooms/${roomJid}/info`);
+      if (!roomInfo) continue;
+
+      // Reconstruct XMPPRoom structure for transformer
+      xmppRoom = {
+        jid: roomJid,
+        info: roomInfo,
+      };
+    }
+
+    const restRoom = xmppRoomToRest(xmppRoom, conferenceService);
+    const roomName = extractRoomName(roomJid);
+
+    // Store REST room
+    await storage.setItem(`rest:room:${roomName}`, restRoom);
+    roomNames.push(roomName);
+  }
+
+  // Store room list index
+  await storage.setItem('rest:rooms:list', roomNames);
+}
+
+/**
+ * Seed all REST representations from XMPP data (T023)
+ * Master function that transforms entire XMPP dataset to REST format
+ *
+ * @param storage Storage instance
+ * @param domain XMPP domain
+ * @param conferenceService MUC service domain
+ */
+export async function seedRestFromXmpp(
+  storage: Storage,
+  domain: string,
+  conferenceService: string
+): Promise<void> {
+  await seedRestUsers(storage, domain);
+  await seedRestGroups(storage, domain);
+  await seedRestRooms(storage, conferenceService);
+}
+
+// ============================================================================
+// XMPP Seeding (Original)
+// ============================================================================
 
 /**
  * Seed mock backend with fixture data
@@ -171,13 +322,19 @@ export async function seedMockData(
       });
     }
   }
+
+  // Seed REST representations (T024)
+  if (opts.rest && opts.domain && opts.conferenceService) {
+    await seedRestFromXmpp(storage, opts.domain, opts.conferenceService);
+  }
 }
 
 /**
- * Convenience function to seed all fixture data
+ * Convenience function to seed all fixture data (T025)
+ * Now supports unified REST seeding via options.rest
  */
-export async function seedAll(storage: Storage): Promise<void> {
-  await seedMockData(storage, DEFAULT_SEED_OPTIONS);
+export async function seedAll(storage: Storage, options?: SeedOptions): Promise<void> {
+  await seedMockData(storage, { ...DEFAULT_SEED_OPTIONS, ...options });
 }
 
 /**

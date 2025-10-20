@@ -45,10 +45,10 @@ type UserRecord = OpenFireUser & { id: string };
 // ============================================================================
 
 export function createDataProvider(): DataProvider {
-  // Initialize storage and APIs
+  // Initialize storage with unified namespace (T029, T030)
   const storage = createStorage({
     backend: 'localStorage',
-    namespace: 'war-rooms-admin',
+    namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
   });
 
   const restApi = new MockOpenFireAPI(storage);

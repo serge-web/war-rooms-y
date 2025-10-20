@@ -38,3 +38,11 @@ export type {
 } from './pubsub';
 
 export { PUBSUB_NODES } from './pubsub';
+
+// Export OpenFire REST API types
+export type {
+  OpenFireUser,
+  OpenFireGroup,
+  OpenFireRoom,
+  PaginationParams,
+} from './rest';
