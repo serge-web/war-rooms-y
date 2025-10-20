@@ -14,6 +14,7 @@ import {
   ListItem,
   Divider,
   Drawer,
+  Badge,
 } from '@mui/material';
 import { Send as SendIcon, People as PeopleIcon } from '@mui/icons-material';
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -53,13 +54,11 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
     void loadArchived({ roomJid, limit: 50 });
   }, [roomJid, loadArchived]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive and mark as read
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
-  // Mark room as read when messages change (user is viewing this room)
-  useEffect(() => {
+    // Mark room as read when component is mounted (user is viewing this room)
     if (messages.length > 0) {
       markAsRead(roomJid);
     }
@@ -144,14 +143,16 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
           borderColor: 'divider',
         }}
       >
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <IconButton
-            color="default"
+            color={participantsOpen ? 'primary' : 'default'}
             onClick={() => setParticipantsOpen(!participantsOpen)}
             aria-label="Show participants"
             size="small"
           >
-            <PeopleIcon />
+            <Badge badgeContent={occupants.length} color="primary" max={99}>
+              <PeopleIcon />
+            </Badge>
           </IconButton>
           <TextField
             fullWidth

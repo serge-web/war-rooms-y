@@ -56,6 +56,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   const setRoomsBackend = useRoomsStore((state: RoomsStore) => state.setBackend);
   const setPubSub = useMetadataStore((state: MetadataStore) => state.setPubSub);
   const setMessageBackend = useSetAtom(messageBackendAtom);
+  const addMessage = useSetAtom(addMessageAtom);
 
   // Create backend instance
   const backend = useMemo(() => {
@@ -73,11 +74,24 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
     setPubSub(pubsub);
     setMessageBackend({ backend });
 
+    // Register message handler to update Jotai atoms
+    backend.on({
+      onMessage: (message: XMPPMessage) => {
+        // Extract room JID from groupchat message
+        if (message.type === 'groupchat') {
+          const roomJid = message.from.split('/')[0];
+          if (roomJid) {
+            addMessage({ roomJid, message });
+          }
+        }
+      },
+    });
+
     // Cleanup on unmount
     return () => {
       backend.disconnect().catch(console.error);
     };
-  }, [backend, pubsub, setBackend, setRoomsBackend, setPubSub, setMessageBackend]);
+  }, [backend, pubsub, setBackend, setRoomsBackend, setPubSub, setMessageBackend, addMessage]);
 
   return <>{children}</>;
 }

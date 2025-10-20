@@ -123,8 +123,33 @@ export async function seedMockData(
           publisher: room.extension.createdBy,
         });
       }
+
+      // Seed initial occupants with presence for demonstration
+      if (room.jid.includes('all-hands')) {
+        await storage.setItem(`rooms/${room.jid}/occupants/GM`, {
+          nick: 'GM',
+          jid: 'gamemaster@wargame.local/web',
+          affiliation: 'owner',
+          role: 'moderator',
+          presence: { show: 'chat', status: 'Available for questions' },
+        });
+        await storage.setItem(`rooms/${room.jid}/occupants/RedCmd`, {
+          nick: 'RedCmd',
+          jid: 'commander.red@wargame.local/web',
+          affiliation: 'member',
+          role: 'participant',
+          presence: { show: 'away', status: 'In briefing' },
+        });
+        await storage.setItem(`rooms/${room.jid}/occupants/BlueCmd`, {
+          nick: 'BlueCmd',
+          jid: 'commander.blue@wargame.local/web',
+          affiliation: 'member',
+          role: 'participant',
+          presence: { status: 'Online' },
+        });
+      }
     }
-    console.info(`[MockSeed] Seeded ${MOCK_ROOMS.length} rooms`);
+    console.info(`[MockSeed] Seeded ${MOCK_ROOMS.length} rooms with occupants`);
   }
 
   // Seed messages
