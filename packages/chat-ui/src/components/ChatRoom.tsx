@@ -94,7 +94,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
               <ListItem sx={{ alignItems: 'flex-start', px: 0 }}>
                 <Box sx={{ width: '100%' }}>
                   <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                    <Typography variant="subtitle2" component="span">
+                    <Typography variant="subtitle2" component="span" color="text.primary">
                       {getMessageSender(message)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -103,7 +103,11 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
                         : 'now'}
                     </Typography>
                   </Box>
-                  <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: 'pre-wrap' }}>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ mt: 0.5, whiteSpace: 'pre-wrap' }}
+                  >
                     {message.body}
                   </Typography>
                 </Box>
