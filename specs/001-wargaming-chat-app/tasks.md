@@ -145,18 +145,19 @@ Based on plan.md monorepo structure:
 
 ### Implementation for User Story 2
 
-- [ ] T059 [P] [US2] Create REST API client wrapper in packages/admin-ui/src/providers/dataProvider.ts
-- [ ] T060 [P] [US2] Create auth provider for React-Admin in packages/admin-ui/src/providers/authProvider.ts
-- [ ] T061 [P] [US2] Create User resource component in packages/admin-ui/src/resources/users/index.tsx
-- [ ] T062 [P] [US2] Create Room resource component in packages/admin-ui/src/resources/rooms/index.tsx
-- [ ] T063 [P] [US2] Create Group resource component in packages/admin-ui/src/resources/groups/index.tsx
-- [ ] T064 [US2] Implement Material UI theme editor for rooms in packages/admin-ui/src/resources/rooms/MUIThemeEditor.tsx
-- [ ] T065 [US2] Create bulk user import feature in packages/admin-ui/src/resources/users/BulkImport.tsx
-- [ ] T066 [US2] Implement permission editor in packages/admin-ui/src/resources/groups/PermissionEditor.tsx
-- [ ] T067 [US2] Create admin dashboard in packages/admin-ui/src/pages/Dashboard.tsx
-- [ ] T068 [US2] Configure React-Admin app in packages/admin-ui/src/App.tsx
-- [ ] T069 [P] [US2] Mock REST API endpoints in packages/backend-mock/src/rest-api.ts
-- [ ] T070 [P] [US2] Create Storybook stories for admin components in packages/admin-ui/src/resources/\*.stories.tsx
+- [ ] T059 [P] [US2] Create hybrid REST/PubSub data provider in packages/admin-ui/src/providers/dataProvider.ts
+- [ ] T060 [P] [US2] Create auth provider for OpenFire authentication in packages/admin-ui/src/providers/authProvider.ts
+- [ ] T061 [P] [US2] Create Overview resource (single game record) in packages/admin-ui/src/resources/overview/index.tsx
+- [ ] T062 [P] [US2] Create Forces resource (OpenFire Groups) in packages/admin-ui/src/resources/forces/index.tsx
+- [ ] T063 [P] [US2] Create Rooms resource (MUC management) in packages/admin-ui/src/resources/rooms/index.tsx
+- [ ] T064 [P] [US2] Create Templates placeholder resource in packages/admin-ui/src/resources/templates/index.tsx
+- [ ] T065 [US2] Implement force metadata editor (color, icon, objectives) in packages/admin-ui/src/resources/forces/MetadataEditor.tsx
+- [ ] T066 [US2] Implement room metadata editor (theme, assignments) in packages/admin-ui/src/resources/rooms/MetadataEditor.tsx
+- [ ] T067 [US2] Implement group membership management via REST API in packages/admin-ui/src/resources/forces/MembershipManager.tsx
+- [ ] T068 [US2] Configure React-Admin app with resources in packages/admin-ui/src/App.tsx
+- [ ] T069 [P] [US2] Mock OpenFire REST API endpoints in packages/backend-mock/src/rest/openfire-api.ts
+- [ ] T070 [P] [US2] Mock PubSub metadata storage in packages/backend-mock/src/rest/pubsub-metadata.ts
+- [ ] T071 [P] [US2] Create Storybook stories for admin resources in packages/admin-ui/src/resources/\*/\*.stories.tsx
 
 **Checkpoint**: Administrative interface fully functional
 
@@ -358,12 +359,12 @@ With 3+ developers:
 
 ## Summary
 
-- **Total Tasks**: 120
+- **Total Tasks**: 121
 - **Setup**: 9 tasks
 - **Foundational**: 14 tasks (critical path)
 - **US5 (Mock)**: 12 tasks (enables all development)
 - **US1 (Messaging)**: 19 tasks (MVP)
-- **US2 (Admin)**: 16 tasks
+- **US2 (Admin)**: 17 tasks
 - **US3 (Forms)**: 10 tasks
 - **US4 (Metadata)**: 11 tasks
 - **OpenFire Backend**: 13 tasks

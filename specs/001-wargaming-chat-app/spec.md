@@ -26,18 +26,25 @@ Wargame participants need to communicate in real-time across multiple chat rooms
 
 ### User Story 2 - User and Room Administration (Priority: P2)
 
-System administrators need to manage users, groups, and room configurations through an administrative interface. This includes creating accounts, assigning permissions, setting up rooms with specific themes, and managing group memberships.
+System administrators need to manage users, groups, and room configurations through a React-Admin interface that integrates with the OpenFire REST API. The admin UI provides resources for Overview (game summary), Forces (OpenFire Groups with roles and metadata), Rooms (MUC rooms with assignments), and Templates (placeholder for RJSF forms). Additional metadata not available through the REST API is stored in XMPP PubSub nodes.
 
 **Why this priority**: Administrative control is essential for organizing wargame exercises and maintaining security boundaries between different player groups.
 
-**Independent Test**: Can be tested by having an administrator create users and rooms, then verifying participants can access only their assigned rooms.
+**Independent Test**: Can be tested by having an administrator create users and rooms, then verifying participants can access only their assigned rooms. Mock implementation simulates both REST API responses and PubSub node storage.
+
+**Admin UI Resources**:
+- **Overview**: Single-record resource displaying current game summary and status
+- **Forces**: Maps to OpenFire Groups, with in-page role management and PubSub-stored metadata (objectives, icon, color)
+- **Rooms**: MUC room management with group/individual assignments, extra details in PubSub nodes
+- **Templates**: Placeholder for future RJSF form template management
 
 **Acceptance Scenarios**:
 
-1. **Given** an administrator is logged in, **When** they create a new user account, **Then** the user can log in with provided credentials
+1. **Given** an administrator is logged in to React-Admin, **When** they create a new user account via REST API, **Then** the user can log in with provided credentials
 2. **Given** an administrator creates a room, **When** they assign it to a group, **Then** only group members can access that room
-3. **Given** a room exists, **When** an administrator applies a theme, **Then** participants see the customized appearance
-4. **Given** users and groups exist, **When** an administrator modifies group membership, **Then** access permissions update immediately
+3. **Given** a room exists, **When** an administrator applies a theme via PubSub metadata, **Then** participants see the customized appearance
+4. **Given** users and groups exist, **When** an administrator modifies group membership via REST API, **Then** access permissions update immediately
+5. **Given** force metadata is stored in PubSub, **When** an administrator updates force color/icon/objectives, **Then** changes propagate to all connected clients
 
 ---
 

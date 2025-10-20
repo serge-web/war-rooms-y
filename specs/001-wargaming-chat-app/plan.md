@@ -136,7 +136,13 @@ packages/
 └── admin-ui/            # React-Admin interface
     ├── src/
     │   ├── resources/
+    │   │   ├── overview/  # Game summary (single record)
+    │   │   ├── forces/    # OpenFire Groups + PubSub metadata
+    │   │   ├── rooms/     # MUC rooms + PubSub metadata
+    │   │   └── templates/ # Form templates (placeholder)
     │   ├── providers/
+    │   │   ├── dataProvider.ts    # REST API + PubSub integration
+    │   │   └── authProvider.ts    # OpenFire auth
     │   └── forms/      # RJSF form builder
     ├── tests/
     └── static/         # Static HTML build output
