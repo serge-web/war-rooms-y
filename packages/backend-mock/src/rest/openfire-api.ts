@@ -244,7 +244,7 @@ export class MockOpenFireAPI {
     await this.storage.setItem(KEYS.GROUPS_LIST, groupNames);
 
     // Update user shared groups
-    for (const username of newGroup.members) {
+    for (const username of newGroup.members || []) {
       const user = await this.storage.getItem<OpenFireUser>(KEYS.USER(username));
       if (user) {
         const sharedGroups = user.properties?.sharedGroups || [];
