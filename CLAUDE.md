@@ -81,12 +81,37 @@ The application uses a sophisticated mock backend (`packages/backend-mock`) that
 - Uses localStorage for persistence (MemoryStorage fallback)
 - Pre-seeded with realistic wargaming data (users, forces, rooms, messages)
 - Configured via environment variables (VITE_BACKEND_MODE, VITE_MOCK_DOMAIN, etc.)
+- **Unified Data Layer**: Both chat-ui (XMPP) and admin-ui (REST) share the same storage namespace
 
 Key files:
 
 - `packages/backend-mock/src/fixtures.ts` - Mock data (users, rooms, forces, messages)
 - `packages/backend-mock/src/mock-xmpp.ts` - XMPP protocol simulation
-- `packages/backend-mock/src/storage.ts` - Storage abstraction
+- `packages/backend-mock/src/storage.ts` - Storage abstraction with unified namespace
+- `packages/backend-mock/src/rest/transformers.ts` - Bidirectional XMPP ↔ REST transformers
+- `packages/backend-mock/src/seed.ts` - Unified seeding (creates both XMPP and REST entities)
+
+#### Unified Data Layer Architecture
+
+Both UIs share a single `war-rooms` localStorage namespace but use different key prefixes:
+
+**XMPP Keys** (chat-ui):
+- `roster/*` → XMPP user roster entries
+- `rooms/*` → XMPP MUC room info
+- `messages/*` → Message archives
+- `pubsub/nodes/*` → PubSub metadata
+
+**REST Keys** (admin-ui):
+- `rest:user:*` → OpenFire users
+- `rest:group:*` → OpenFire groups
+- `rest:room:*` → OpenFire rooms
+- `rest:users:list`, `rest:groups:list`, `rest:rooms:list` → Index arrays
+
+This enables:
+- ✅ Admin creates user → Chat UI sees user instantly
+- ✅ Admin creates room → Chat UI can join room
+- ✅ Chat sends message → Admin UI sees count update
+- ✅ Simulates production architecture (OpenFire serves both XMPP and REST)
 
 ### Room Access Control
 
