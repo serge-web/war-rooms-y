@@ -24,7 +24,10 @@
       "Bash(perl:*)",
       "Bash(jest:*)",
       "Bash(npx jest:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(then echo \"EXISTS\")",
+      "Bash(else echo \"NOT_FOUND\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []
