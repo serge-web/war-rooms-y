@@ -19,8 +19,34 @@ import {
   SimpleFormIterator,
   SelectArrayInput,
   FunctionField,
+  useGetList,
+  Loading,
 } from 'react-admin';
 import { Box } from '@mui/material';
+
+/**
+ * Dynamic group selector - fetches current groups
+ */
+function GroupSelector(props: any) {
+  const { data, isLoading } = useGetList('forces', {
+    pagination: { page: 1, perPage: 100 },
+    sort: { field: 'name', order: 'ASC' },
+  });
+
+  if (isLoading) return <Loading />;
+
+  const choices = data?.map((group) => ({
+    id: group.name,
+    name: group.name,
+  })) || [];
+
+  return (
+    <SelectArrayInput
+      {...props}
+      choices={choices}
+    />
+  );
+}
 
 export const RoomList = () => (
   <List>
@@ -56,15 +82,9 @@ export const RoomEdit = () => (
         helperText="Additional room description visible in metadata"
       />
 
-      <SelectArrayInput
+      <GroupSelector
         source="metadata.allowedGroups"
         label="Allowed Groups"
-        choices={[
-          { id: 'admins', name: 'Admins' },
-          { id: 'Red Force', name: 'Red Force' },
-          { id: 'Blue Force', name: 'Blue Force' },
-          { id: 'Control', name: 'Control' },
-        ]}
         helperText="Groups allowed to access this room"
       />
 
@@ -106,15 +126,9 @@ export const RoomCreate = () => (
         helperText="Additional room description visible in metadata"
       />
 
-      <SelectArrayInput
+      <GroupSelector
         source="metadata.allowedGroups"
         label="Allowed Groups"
-        choices={[
-          { id: 'admins', name: 'Admins' },
-          { id: 'Red Force', name: 'Red Force' },
-          { id: 'Blue Force', name: 'Blue Force' },
-          { id: 'Control', name: 'Control' },
-        ]}
         helperText="Groups allowed to access this room"
       />
 
