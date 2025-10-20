@@ -1,18 +1,21 @@
 /**
  * Main App Component
  * Orchestrates authentication, backend initialization, and main UI
+ * Routes: / = Chat UI, /admin = Admin UI
  */
 
 import { Box } from '@mui/material';
 import { Provider } from 'jotai';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useConnectionStore, selectIsConnected } from '@war-rooms/state';
 import { BackendProvider } from './providers/BackendProvider';
 import { ThemeProvider } from './providers/ThemeProvider';
 import { Login } from './components/Login';
 import { GameLayout } from './components/GameLayout';
 import { OutOfGamePanel } from './components/OutOfGamePanel';
+import AdminApp from './admin/AdminApp';
 
-function AppContent() {
+function ChatApp() {
   const isConnected = useConnectionStore(selectIsConnected);
 
   // Show login if not connected
@@ -37,12 +40,25 @@ function AppContent() {
 
 export default function App() {
   return (
-    <Provider>
-      <BackendProvider>
-        <ThemeProvider>
-          <AppContent />
-        </ThemeProvider>
-      </BackendProvider>
-    </Provider>
+    <BrowserRouter>
+      <Routes>
+        {/* Chat UI Route */}
+        <Route
+          path="/"
+          element={
+            <Provider>
+              <BackendProvider>
+                <ThemeProvider>
+                  <ChatApp />
+                </ThemeProvider>
+              </BackendProvider>
+            </Provider>
+          }
+        />
+
+        {/* Admin UI Route */}
+        <Route path="/admin/*" element={<AdminApp />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
