@@ -4,7 +4,7 @@
  */
 
 import type { AuthProvider } from 'react-admin';
-import { MockOpenFireAPI, createStorage } from '@war-rooms/backend-mock';
+import { MockOpenFireAPI, createStorage, seedRestUsers } from '@war-rooms/backend-mock';
 
 // ============================================================================
 // Auth Provider Implementation
@@ -18,6 +18,16 @@ export function createAuthProvider(): AuthProvider {
   });
 
   const restApi = new MockOpenFireAPI(storage);
+
+  // Auto-seed admin users on first run
+  (async () => {
+    const users = await restApi.getUsers();
+    if (users.length === 0) {
+      console.log('[Admin Auth] Seeding default admin users...');
+      await seedRestUsers(storage);
+      console.log('[Admin Auth] Seeded: admin/admin, gamemaster/gamemaster');
+    }
+  })();
 
   // Store current user
   let currentUser: { username: string; isAdmin: boolean } | null = null;

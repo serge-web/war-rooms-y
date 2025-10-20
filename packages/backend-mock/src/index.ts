@@ -27,3 +27,5 @@ export type {
   RoomMetadata,
   GameOverview,
 } from './rest/pubsub-metadata';
+
+export { seedRestUsers } from './rest/seed-rest';
