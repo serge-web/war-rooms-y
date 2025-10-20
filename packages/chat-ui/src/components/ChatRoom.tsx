@@ -22,6 +22,7 @@ import {
   loadArchivedMessagesAtom,
   sortMessages,
   getMessageSender,
+  markRoomAsReadAtom,
 } from '@war-rooms/state';
 import { useRoomsStore, selectRoomOccupants, type RoomsStore } from '@war-rooms/state';
 import type { XMPPMessage } from '@war-rooms/backend-interface';
@@ -39,6 +40,7 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
   // Get messages for this room
   const messages = useAtomValue(messagesAtomFamily(roomJid));
   const loadArchived = useSetAtom(loadArchivedMessagesAtom);
+  const markAsRead = useSetAtom(markRoomAsReadAtom);
 
   // Get room occupants
   const occupants = useRoomsStore(selectRoomOccupants(roomJid));
@@ -55,6 +57,13 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Mark room as read when messages change (user is viewing this room)
+  useEffect(() => {
+    if (messages.length > 0) {
+      markAsRead(roomJid);
+    }
+  }, [messages, roomJid, markAsRead]);
 
   // Subscribe to new messages (in real app, this would be via backend event handler)
   // For now, the backend will trigger the message handler which updates the atom

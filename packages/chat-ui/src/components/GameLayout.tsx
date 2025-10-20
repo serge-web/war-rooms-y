@@ -4,10 +4,11 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Layout, Model, TabNode, IJsonModel } from 'flexlayout-react';
+import { Layout, Model, TabNode, IJsonModel, ITabRenderValues } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import { useRoomsStore, selectAllRooms, type RoomState } from '@war-rooms/state';
 import { ChatRoom } from './ChatRoom';
+import { TabLabel } from './TabLabel';
 
 export function GameLayout() {
   const allRooms = useRoomsStore(selectAllRooms);
@@ -88,13 +89,24 @@ export function GameLayout() {
     return <div>Unknown component: {component}</div>;
   };
 
+  const onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
+    const config = node.getConfig();
+    const component = node.getComponent();
+
+    if (component === 'room' && config.roomJid) {
+      renderValues.content = (
+        <TabLabel roomJid={config.roomJid} name={renderValues.name as string} />
+      );
+    }
+  };
+
   if (!model) {
     return <div>Loading...</div>;
   }
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <Layout model={model} factory={factory} />
+      <Layout model={model} factory={factory} onRenderTab={onRenderTab} />
     </div>
   );
 }

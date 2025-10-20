@@ -54,3 +54,11 @@ export {
   selectFormSchema,
 } from './metadata';
 export type { MetadataStore } from './metadata';
+
+// Unread tracking
+export {
+  lastReadAtomFamily,
+  markRoomAsReadAtom,
+  unreadCountAtomFamily,
+  calculateUnreadCount,
+} from './unread';
