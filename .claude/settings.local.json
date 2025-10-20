@@ -21,7 +21,10 @@
       "Bash(gh pr view:*)",
       "Bash(npx playwright install --with-deps)",
       "Bash(git restore:*)",
-      "Bash(perl:*)"
+      "Bash(perl:*)",
+      "Bash(jest:*)",
+      "Bash(npx jest:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
