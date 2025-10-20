@@ -72,18 +72,18 @@ describe('ParticipantList', () => {
     it('should sort moderators first', () => {
       const { container } = render(<ParticipantList occupants={mockOccupants} />);
 
-      const listItems = container.querySelectorAll('[role="listitem"]');
-      // First two should be moderators (Charlie and Alice sorted alphabetically)
-      // Charlie comes before Alice alphabetically
-      expect(listItems[0]).toHaveTextContent('Charlie');
-      expect(listItems[1]).toHaveTextContent('Alice');
+      const listItems = container.querySelectorAll('.MuiListItem-root');
+      // First two should be moderators (Alice and Charlie sorted alphabetically)
+      // Alice comes before Charlie alphabetically
+      expect(listItems[0]).toHaveTextContent('Alice');
+      expect(listItems[1]).toHaveTextContent('Charlie');
     });
 
     it('should sort non-moderators alphabetically after moderators', () => {
       const { container } = render(<ParticipantList occupants={mockOccupants} />);
 
-      const listItems = container.querySelectorAll('[role="listitem"]');
-      // After moderators (Charlie, Alice), should be Bob, then Diana
+      const listItems = container.querySelectorAll('.MuiListItem-root');
+      // After moderators (Alice, Charlie), should be Bob, then Diana
       expect(listItems[2]).toHaveTextContent('Bob');
       expect(listItems[3]).toHaveTextContent('Diana');
     });
@@ -127,7 +127,7 @@ describe('ParticipantList', () => {
       const { container } = render(<ParticipantList occupants={mockOccupants} />);
 
       // Diana has "none" affiliation - should not have any affiliation label
-      const dianaItem = Array.from(container.querySelectorAll('[role="listitem"]')).find((el) =>
+      const dianaItem = Array.from(container.querySelectorAll('.MuiListItem-root')).find((el) =>
         el.textContent?.includes('Diana')
       );
 
@@ -150,7 +150,7 @@ describe('ParticipantList', () => {
       const { container } = render(<ParticipantList occupants={mockOccupants} />);
 
       // Each list item should have a presence indicator (SVG icon)
-      const listItems = container.querySelectorAll('[role="listitem"]');
+      const listItems = container.querySelectorAll('.MuiListItem-root');
       expect(listItems).toHaveLength(4);
 
       listItems.forEach((item) => {
@@ -187,7 +187,7 @@ describe('ParticipantList', () => {
     it('should use dense list in compact mode', () => {
       const { container } = render(<ParticipantList occupants={mockOccupants} compact />);
 
-      const list = container.querySelector('[role="list"]');
+      const list = container.querySelector('.MuiList-root');
       expect(list).toBeInTheDocument();
     });
 

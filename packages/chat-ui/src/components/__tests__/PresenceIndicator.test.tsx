@@ -3,93 +3,93 @@
  */
 
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { PresenceIndicator } from '../PresenceIndicator';
 
 describe('PresenceIndicator', () => {
   describe('Presence States', () => {
     it('should render available/online state (no show prop)', () => {
-      render(<PresenceIndicator />);
+      const { container } = render(<PresenceIndicator />);
 
-      // Should show tooltip with "Available"
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      // Should show icon
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
 
     it('should render chat state (green)', () => {
-      render(<PresenceIndicator show="chat" />);
+      const { container } = render(<PresenceIndicator show="chat" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
 
     it('should render away state (yellow)', () => {
-      render(<PresenceIndicator show="away" />);
+      const { container } = render(<PresenceIndicator show="away" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
 
     it('should render dnd state (red)', () => {
-      render(<PresenceIndicator show="dnd" />);
+      const { container } = render(<PresenceIndicator show="dnd" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
 
     it('should render xa state (gray)', () => {
-      render(<PresenceIndicator show="xa" />);
+      const { container } = render(<PresenceIndicator show="xa" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
   });
 
   describe('Status Messages', () => {
     it('should display status in tooltip when provided', () => {
-      render(<PresenceIndicator show="away" status="In a meeting" />);
+      const { container } = render(<PresenceIndicator show="away" status="In a meeting" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
       // Tooltip would show "Away: In a meeting"
     });
 
     it('should display only presence label when no status', () => {
-      render(<PresenceIndicator show="dnd" />);
+      const { container } = render(<PresenceIndicator show="dnd" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
       // Tooltip would show "Do not disturb"
     });
   });
 
   describe('Sizes', () => {
     it('should render small size', () => {
-      render(<PresenceIndicator size="small" />);
+      const { container } = render(<PresenceIndicator size="small" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
 
     it('should render medium size', () => {
-      render(<PresenceIndicator size="medium" />);
+      const { container } = render(<PresenceIndicator size="medium" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
 
     it('should render large size', () => {
-      render(<PresenceIndicator size="large" />);
+      const { container } = render(<PresenceIndicator size="large" />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
 
     it('should default to small size when not specified', () => {
-      render(<PresenceIndicator />);
+      const { container } = render(<PresenceIndicator />);
 
-      const indicator = screen.getByRole('img', { hidden: true }).parentElement;
-      expect(indicator).toBeInTheDocument();
+      const icon = container.querySelector('svg');
+      expect(icon).toBeInTheDocument();
     });
   });
 

@@ -11,10 +11,12 @@ import type { XMPPMessage, XMPPOccupant } from '@war-rooms/backend-interface';
 import { messagesAtomFamily, useRoomsStore } from '@war-rooms/state';
 import { ChatRoom } from '../ChatRoom';
 
-// Mock the state stores
+// Mock the state stores and atoms that require backend
 jest.mock('@war-rooms/state', () => ({
   ...jest.requireActual('@war-rooms/state'),
   useRoomsStore: jest.fn(),
+  loadArchivedMessagesAtom: { read: jest.fn(), write: jest.fn() },
+  markRoomAsReadAtom: { read: jest.fn(), write: jest.fn() },
 }));
 
 // Test wrapper to hydrate atoms
@@ -33,6 +35,11 @@ function TestProvider({
 
 describe('ChatRoom', () => {
   const roomJid = 'test-room@conference.example.com';
+
+  // Mock scrollIntoView (not available in jsdom)
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = jest.fn();
+  });
 
   const mockMessages: XMPPMessage[] = [
     {
@@ -78,14 +85,21 @@ describe('ChatRoom', () => {
     // Mock useRoomsStore
     (useRoomsStore as unknown as jest.Mock).mockImplementation((selector: unknown) => {
       if (typeof selector === 'function') {
-        // For selectRoomOccupants selector
-        const selectorFn = selector as (state: { sendMessage: unknown }) => unknown;
+        // Create mock state with rooms map
+        const roomsMap = new Map();
+        roomsMap.set(roomJid, {
+          jid: roomJid,
+          name: 'Test Room',
+          occupants: mockOccupants,
+        });
+
         const mockState = {
           sendMessage: mockSendMessage,
-          rooms: new Map(),
+          rooms: roomsMap,
         };
-        const result = selectorFn(mockState);
-        return result || mockOccupants;
+
+        const selectorFn = selector as (state: typeof mockState) => unknown;
+        return selectorFn(mockState);
       }
       return mockOccupants;
     });
@@ -141,7 +155,7 @@ describe('ChatRoom', () => {
         </Provider>
       );
 
-      const listItems = container.querySelectorAll('[role="listitem"]');
+      const listItems = container.querySelectorAll('.MuiListItem-root');
       expect(listItems[0]).toHaveTextContent('Hello everyone!');
       expect(listItems[1]).toHaveTextContent('Hi Alice!');
     });
@@ -370,12 +384,28 @@ describe('ChatRoom', () => {
       );
 
       // Should not crash, should show empty list
-      const list = container.querySelector('[role="list"]');
+      const list = container.querySelector('.MuiList-root');
       expect(list).toBeInTheDocument();
     });
 
     it('should handle zero occupants', () => {
-      (useRoomsStore as unknown as jest.Mock).mockReturnValue([]);
+      (useRoomsStore as unknown as jest.Mock).mockImplementation((selector: unknown) => {
+        if (typeof selector === 'function') {
+          const roomsMap = new Map();
+          roomsMap.set(roomJid, {
+            jid: roomJid,
+            name: 'Test Room',
+            occupants: [],
+          });
+          const mockState = {
+            sendMessage: mockSendMessage,
+            rooms: roomsMap,
+          };
+          const selectorFn = selector as (state: typeof mockState) => unknown;
+          return selectorFn(mockState);
+        }
+        return [];
+      });
 
       const { container } = render(
         <Provider>
@@ -386,7 +416,8 @@ describe('ChatRoom', () => {
       );
 
       const badge = container.querySelector('.MuiBadge-badge');
-      expect(badge).toHaveTextContent('0');
+      // Badge should be invisible when count is 0
+      expect(badge).toHaveClass('MuiBadge-invisible');
     });
   });
 
@@ -401,7 +432,8 @@ describe('ChatRoom', () => {
       );
 
       const input = screen.getByPlaceholderText('Type a message...');
-      expect(input).toHaveAttribute('rows');
+      // MUI TextField with multiline renders a textarea
+      expect(input.tagName).toBe('TEXTAREA');
     });
 
     it('should preserve line breaks in message body', () => {
