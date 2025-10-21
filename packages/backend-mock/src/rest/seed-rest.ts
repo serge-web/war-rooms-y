@@ -7,38 +7,30 @@ import type { Storage } from '../storage';
 import { MockOpenFireAPI } from './openfire-api';
 
 /**
- * Seed default admin users into REST API storage
+ * Seed passwords for Game Masters group members
+ * Adds login credentials to existing users in the "Game Masters" group
  */
 export async function seedRestUsers(storage: Storage): Promise<void> {
   const api = new MockOpenFireAPI(storage);
 
-  // Create 'admins' group first
-  await api.createGroup({
-    name: 'admins',
-    description: 'System administrators',
-    members: [],
-    admins: [],
-  });
+  // Get all users in "Game Masters" group
+  const gameMastersGroup = await api.getGroup('Game Masters');
+  if (!gameMastersGroup) {
+    console.warn('⚠️  Game Masters group not found - skipping admin password seeding');
+    return;
+  }
 
-  // Create default admin user
-  await api.createUser({
-    username: 'admin',
-    name: 'System Administrator',
-    email: 'admin@wargame.local',
-    password: 'admin', // Default password
-    properties: {
-      sharedGroups: ['admins'],
-    },
-  });
+  const gameMasters = gameMastersGroup.members || [];
 
-  // Create gamemaster user (also admin)
-  await api.createUser({
-    username: 'gamemaster',
-    name: 'Game Master',
-    email: 'gm@wargame.local',
-    password: 'gamemaster',
-    properties: {
-      sharedGroups: ['admins'],
-    },
-  });
+  // Add passwords to each Game Master user
+  for (const username of gameMasters) {
+    const user = await api.getUser(username);
+    if (user) {
+      // Update existing user with password (use username as default password)
+      await api.updateUser(username, {
+        password: username, // Default: username as password
+      });
+      console.info(`✅ Added password for Game Master: ${username}`);
+    }
+  }
 }

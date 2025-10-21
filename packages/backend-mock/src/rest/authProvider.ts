@@ -4,20 +4,32 @@
  */
 
 import type { AuthProvider } from 'react-admin';
-import { MockOpenFireAPI, createStorage } from '@war-rooms/backend-mock';
+import { MockOpenFireAPI } from './openfire-api';
+import { createStorage } from '../storage';
+import { seedRestUsers } from './seed-rest';
 
 // ============================================================================
 // Auth Provider Implementation
 // ============================================================================
 
-export function createAuthProvider(): AuthProvider {
+export function createAuthProvider(namespace = 'war-rooms'): AuthProvider {
   // Initialize storage and API (unified namespace)
   const storage = createStorage({
     backend: 'localStorage',
-    namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+    namespace,
   });
 
   const restApi = new MockOpenFireAPI(storage);
+
+  // Auto-seed Game Masters passwords on first run
+  (async () => {
+    const gameMastersGroup = await restApi.getGroup('Game Masters');
+    if (gameMastersGroup) {
+      console.log('[Admin Auth] Seeding Game Masters passwords...');
+      await seedRestUsers(storage);
+      console.log('[Admin Auth] Passwords added for Game Masters');
+    }
+  })();
 
   // Store current user
   let currentUser: { username: string; isAdmin: boolean } | null = null;
@@ -32,14 +44,15 @@ export function createAuthProvider(): AuthProvider {
       // 1. Check if user exists and password matches
       const user = await restApi.getUser(username);
       if (!user) {
-        throw new Error('User not found');
+        throw new Error('Invalid credentials 3');
       }
+      console.log('user', user);
 
       // In mock, we need to check stored password
       // (In real OpenFire, XMPP auth would handle this)
       const storedUser = await storage.getItem<{ password?: string }>(`rest:user:${username}`);
       if (storedUser?.password !== password) {
-        throw new Error('Invalid credentials 2');
+        throw new Error('Invalid credentials 4');
       }
 
       // 2. Check Game Masters group membership
@@ -117,7 +130,6 @@ export function createAuthProvider(): AuthProvider {
       return {
         id: auth.username,
         fullName: user?.name || auth.username,
-        avatar: undefined,
       };
     },
   };

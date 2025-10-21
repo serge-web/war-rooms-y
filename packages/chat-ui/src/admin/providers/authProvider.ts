@@ -11,21 +11,21 @@ import { MockOpenFireAPI, createStorage, seedRestUsers } from '@war-rooms/backen
 // ============================================================================
 
 export function createAuthProvider(): AuthProvider {
-  // Initialize storage and API
+  // Initialize storage and API (unified namespace)
   const storage = createStorage({
     backend: 'localStorage',
-    namespace: 'war-rooms-admin',
+    namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
   });
 
   const restApi = new MockOpenFireAPI(storage);
 
-  // Auto-seed admin users on first run
+  // Auto-seed Game Masters passwords on first run
   (async () => {
-    const users = await restApi.getUsers();
-    if (users.length === 0) {
-      console.log('[Admin Auth] Seeding default admin users...');
+    const gameMastersGroup = await restApi.getGroup('Game Masters');
+    if (gameMastersGroup) {
+      console.log('[Admin Auth] Seeding Game Masters passwords...');
       await seedRestUsers(storage);
-      console.log('[Admin Auth] Seeded: admin/admin, gamemaster/gamemaster');
+      console.log('[Admin Auth] Passwords added for Game Masters');
     }
   })();
 
@@ -42,22 +42,23 @@ export function createAuthProvider(): AuthProvider {
       // 1. Check if user exists and password matches
       const user = await restApi.getUser(username);
       if (!user) {
-        throw new Error('Invalid credentials');
+        throw new Error('Invalid credentials 3');
       }
+      console.log('user', user);
 
       // In mock, we need to check stored password
       // (In real OpenFire, XMPP auth would handle this)
       const storedUser = await storage.getItem<{ password?: string }>(`rest:user:${username}`);
       if (storedUser?.password !== password) {
-        throw new Error('Invalid credentials');
+        throw new Error('Invalid credentials 4');
       }
 
-      // 2. Check admin group membership
+      // 2. Check Game Masters group membership
       const sharedGroups = user.properties?.sharedGroups || [];
-      const isAdmin = sharedGroups.includes('admins');
+      const isGameMaster = sharedGroups.includes('Game Masters');
 
-      if (!isAdmin) {
-        throw new Error('Unauthorized: admin access required. Redirecting to chat interface...');
+      if (!isGameMaster) {
+        throw new Error('Unauthorized: Game Master access required');
       }
 
       // 3. Store authenticated admin user

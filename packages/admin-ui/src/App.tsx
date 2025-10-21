@@ -5,7 +5,7 @@
 
 import { Admin, Resource } from 'react-admin';
 import { createDataProvider } from './providers/dataProvider';
-import { createAuthProvider } from './providers/authProvider';
+import { createAuthProvider } from '@war-rooms/backend-mock';
 
 // Overview resource (single game record)
 import { OverviewEdit, OverviewShow } from './resources/overview';
@@ -34,10 +34,12 @@ import { TemplateList } from './resources/templates';
 // ============================================================================
 
 export default function App() {
+  const namespace = import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms';
+
   return (
     <Admin
       dataProvider={createDataProvider()}
-      authProvider={createAuthProvider()}
+      authProvider={createAuthProvider(namespace)}
       title="War Rooms Y - Admin"
     >
       <Resource

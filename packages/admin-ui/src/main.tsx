@@ -5,9 +5,9 @@ import { createStorage, seedAll, seedAdminUsers } from '@war-rooms/backend-mock'
 
 // Seed unified mock data on first load (T033)
 const STORAGE_NAMESPACE = import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms';
-const hasSeeded = localStorage.getItem(`${STORAGE_NAMESPACE}:seeded`);
+const hasSeededAdmin = localStorage.getItem(`${STORAGE_NAMESPACE}:admin-seeded`);
 
-if (!hasSeeded) {
+if (!hasSeededAdmin) {
   const storage = createStorage({
     backend: 'localStorage',
     namespace: STORAGE_NAMESPACE,
@@ -23,7 +23,7 @@ if (!hasSeeded) {
     // Also seed admin users with passwords for admin UI login
     seedAdminUsers(storage),
   ]).then(() => {
-    localStorage.setItem(`${STORAGE_NAMESPACE}:seeded`, 'true');
+    localStorage.setItem(`${STORAGE_NAMESPACE}:admin-seeded`, 'true');
     console.info('✅ Admin UI: Mock data seeded (XMPP + REST + Admin users)');
   });
 }

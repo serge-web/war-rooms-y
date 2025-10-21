@@ -48,7 +48,7 @@ export function createDataProvider(): DataProvider {
   // Initialize storage and APIs
   const storage = createStorage({
     backend: 'localStorage',
-    namespace: 'war-rooms-admin',
+    namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
   });
 
   const restApi = new MockOpenFireAPI(storage);

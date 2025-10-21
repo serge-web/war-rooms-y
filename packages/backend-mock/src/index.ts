@@ -39,3 +39,6 @@ export type {
 
 // Admin user seeding (separate from unified seeding)
 export { seedRestUsers as seedAdminUsers } from './rest/seed-rest';
+
+// React-Admin auth provider (for admin UIs)
+export { createAuthProvider } from './rest/authProvider';
