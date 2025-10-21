@@ -46,3 +46,13 @@ export type {
   OpenFireRoom,
   PaginationParams,
 } from './rest';
+
+// Export Unified Data Model types
+export type {
+  UnifiedRoom,
+  UnifiedForce,
+  UnifiedUser,
+  UnifiedFormTemplate,
+} from './unified';
+
+export { UNIFIED_KEYS } from './unified';
