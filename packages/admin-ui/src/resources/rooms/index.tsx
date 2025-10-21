@@ -13,19 +13,15 @@ import {
   BooleanInput,
   NumberInput,
   Create,
-  Show,
-  SimpleShowLayout,
   ArrayInput,
   SimpleFormIterator,
-  SelectArrayInput,
-  FunctionField,
+  AutocompleteArrayInput,
   useGetList,
   Loading,
 } from 'react-admin';
-import { Box } from '@mui/material';
 
 /**
- * Dynamic group selector - fetches current groups
+ * Dynamic group selector with search - fetches current groups
  */
 function GroupSelector(props: any) {
   const { data, isLoading } = useGetList('forces', {
@@ -41,15 +37,16 @@ function GroupSelector(props: any) {
   })) || [];
 
   return (
-    <SelectArrayInput
+    <AutocompleteArrayInput
       {...props}
       choices={choices}
+      filterToQuery={(searchText: string) => ({ name: searchText })}
     />
   );
 }
 
 /**
- * Dynamic user selector - fetches current users
+ * Dynamic user selector with search - fetches current users
  */
 function UserSelector(props: any) {
   const { data, isLoading } = useGetList('users', {
@@ -65,9 +62,10 @@ function UserSelector(props: any) {
   })) || [];
 
   return (
-    <SelectArrayInput
+    <AutocompleteArrayInput
       {...props}
       choices={choices}
+      filterToQuery={(searchText: string) => ({ username: searchText })}
     />
   );
 }
@@ -78,7 +76,7 @@ export const RoomList = () => (
       <TextField source="roomName" label="Room Name" />
       <TextField source="naturalName" label="Display Name" />
       <TextField source="description" label="Description" />
-      <BooleanField source="persistent" label="Persistent" />
+      <BooleanField source="publicRoom" label="Public" />
       <BooleanField source="membersOnly" label="Members Only" />
     </Datagrid>
   </List>
@@ -90,21 +88,9 @@ export const RoomEdit = () => (
       <TextInput source="roomName" label="Room Name" disabled />
       <TextInput source="naturalName" label="Display Name" required />
       <TextInput source="description" label="Description" multiline rows={3} />
-      <TextInput source="subject" label="Subject" />
       <NumberInput source="maxUsers" label="Max Users" defaultValue={50} />
-      <BooleanInput source="persistent" label="Persistent" defaultValue={true} />
       <BooleanInput source="publicRoom" label="Public Room" defaultValue={false} />
       <BooleanInput source="membersOnly" label="Members Only" defaultValue={true} />
-      <BooleanInput source="moderated" label="Moderated" defaultValue={false} />
-
-      {/* Metadata Section */}
-      <TextInput
-        source="metadata.description"
-        label="Extended Description"
-        multiline
-        rows={2}
-        helperText="Additional room description visible in metadata"
-      />
 
       <GroupSelector
         source="metadata.allowedGroups"
@@ -127,7 +113,8 @@ export const RoomEdit = () => (
       <TextInput
         source="metadata.theme.palette.primary.main"
         label="Primary Theme Color"
-        placeholder="#1976D2"
+        type="color"
+        defaultValue="#1976D2"
         helperText="Primary color for this room's theme"
       />
     </SimpleForm>
@@ -140,21 +127,9 @@ export const RoomCreate = () => (
       <TextInput source="roomName" label="Room Name" required />
       <TextInput source="naturalName" label="Display Name" required />
       <TextInput source="description" label="Description" multiline rows={3} />
-      <TextInput source="subject" label="Subject" />
       <NumberInput source="maxUsers" label="Max Users" defaultValue={50} />
-      <BooleanInput source="persistent" label="Persistent" defaultValue={true} />
       <BooleanInput source="publicRoom" label="Public Room" defaultValue={false} />
       <BooleanInput source="membersOnly" label="Members Only" defaultValue={true} />
-      <BooleanInput source="moderated" label="Moderated" defaultValue={false} />
-
-      {/* Metadata Section */}
-      <TextInput
-        source="metadata.description"
-        label="Extended Description"
-        multiline
-        rows={2}
-        helperText="Additional room description visible in metadata"
-      />
 
       <GroupSelector
         source="metadata.allowedGroups"
@@ -177,7 +152,7 @@ export const RoomCreate = () => (
       <TextInput
         source="metadata.theme.palette.primary.main"
         label="Primary Theme Color"
-        placeholder="#1976D2"
+        type="color"
         defaultValue="#1976D2"
         helperText="Primary color for this room's theme"
       />
@@ -185,65 +160,3 @@ export const RoomCreate = () => (
   </Create>
 );
 
-export const RoomShow = () => (
-  <Show>
-    <SimpleShowLayout>
-      <TextField source="roomName" label="Room Name" />
-      <TextField source="naturalName" label="Display Name" />
-      <TextField source="description" label="Description" />
-      <TextField source="subject" label="Subject" />
-      <TextField source="maxUsers" label="Max Users" />
-      <BooleanField source="persistent" label="Persistent" />
-      <BooleanField source="publicRoom" label="Public Room" />
-      <BooleanField source="membersOnly" label="Members Only" />
-      <BooleanField source="moderated" label="Moderated" />
-
-      {/* Metadata Display */}
-      <TextField source="metadata.description" label="Extended Description" />
-
-      <FunctionField
-        label="Allowed Groups"
-        render={(record: any) => (
-          <span>{record.metadata?.allowedGroups?.join(', ') || 'N/A'}</span>
-        )}
-      />
-
-      <FunctionField
-        label="Room Members"
-        render={(record: any) => (
-          <span>{record.metadata?.members?.join(', ') || 'N/A'}</span>
-        )}
-      />
-
-      <FunctionField
-        label="Form Templates"
-        render={(record: any) => (
-          <span>{record.metadata?.formTemplates?.join(', ') || 'N/A'}</span>
-        )}
-      />
-
-      <FunctionField
-        label="Theme Color"
-        render={(record: any) => {
-          const color = record.metadata?.theme?.palette?.primary?.main;
-          return color ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 1,
-                  backgroundColor: color,
-                  border: '1px solid rgba(0,0,0,0.2)',
-                }}
-              />
-              <span>{color}</span>
-            </Box>
-          ) : (
-            <span>N/A</span>
-          );
-        }}
-      />
-    </SimpleShowLayout>
-  </Show>
-);

@@ -23,7 +23,6 @@ import {
   RoomList,
   RoomEdit,
   RoomCreate,
-  RoomShow,
 } from './resources/rooms';
 
 // Templates resource (placeholder)
@@ -63,7 +62,6 @@ export default function AdminApp() {
         list={RoomList}
         edit={RoomEdit}
         create={RoomCreate}
-        show={RoomShow}
         recordRepresentation="naturalName"
       />
 

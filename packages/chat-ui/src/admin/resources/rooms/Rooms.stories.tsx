@@ -3,7 +3,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { RoomList, RoomEdit, RoomCreate, RoomShow } from './index';
+import { RoomList, RoomEdit, RoomCreate } from './index';
 import { AdminContext } from 'react-admin';
 import { createMemoryHistory } from 'history';
 
@@ -150,9 +150,3 @@ export const Edit: StoryObj = {
   render: () => <RoomEdit />,
 };
 
-/**
- * Room Show view - readonly display of room information
- */
-export const Show: StoryObj = {
-  render: () => <RoomShow />,
-};
