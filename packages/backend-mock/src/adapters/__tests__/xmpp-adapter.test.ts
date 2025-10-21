@@ -12,7 +12,7 @@ import {
   seedTestWargame,
   createTestUser,
   createTestRoom,
-} from './test-fixtures';
+} from '../test-fixtures';
 
 describe('XMPPAdapter', () => {
   let storage: Storage;

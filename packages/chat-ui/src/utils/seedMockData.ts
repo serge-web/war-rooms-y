@@ -1,26 +1,22 @@
 /**
  * Seed Mock Data Utility
- * Populate mock backend with fixture data for development
+ * Populate mock backend with unified storage for development
  */
 
-import { createStorage } from '@war-rooms/backend-mock';
-import { seedAll } from '@war-rooms/backend-mock';
+import { createStorage, seedTestWargame } from '@war-rooms/backend-mock';
 
 export async function seedMockData() {
-  // Create storage instance with unified namespace (T027)
+  // Create storage instance with unified namespace
   const storage = createStorage({
     backend: 'localStorage',
     debug: true,
     namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
   });
 
-  // Seed all fixture data including REST representations (T032)
-  await seedAll(storage, {
-    rest: true,
-    domain: import.meta.env.VITE_MOCK_DOMAIN || 'wargame.local',
-    conferenceService: import.meta.env.VITE_MOCK_CONFERENCE || 'conference.wargame.local',
-  });
-  console.info('✅ Mock data seeded successfully (XMPP + REST)!');
+  // Seed unified wargame data (entities/* storage)
+  await seedTestWargame(storage);
+
+  console.info('✅ Mock data seeded successfully (Unified Storage)!');
   console.info('Available users:');
   console.info('  - commander.red (Red Force Commander)');
   console.info('  - commander.blue (Blue Force Commander)');

@@ -16,7 +16,7 @@ import {
   addPlayerToForce,
   createTestRoomInWargame,
   getTestWargameStats,
-} from './test-fixtures';
+} from '../test-fixtures';
 
 describe('Cross-Adapter Integration', () => {
   let storage: Storage;

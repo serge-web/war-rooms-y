@@ -12,7 +12,7 @@ import {
   seedTestWargame,
   createTestRoom,
   createTestForce,
-} from './test-fixtures';
+} from '../test-fixtures';
 
 describe('PubSubAdapter', () => {
   let storage: Storage;

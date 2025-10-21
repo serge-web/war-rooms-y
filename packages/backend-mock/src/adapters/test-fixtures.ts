@@ -309,7 +309,7 @@ export const TEST_TEMPLATES: UnifiedFormTemplate[] = [
 // Test Wargame Setup
 // ============================================================================
 
-import type { Storage } from '../../storage';
+import type { Storage } from '../storage';
 
 /**
  * Seed the test wargame scenario into storage

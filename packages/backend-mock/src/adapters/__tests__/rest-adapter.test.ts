@@ -13,7 +13,7 @@ import {
   createTestUser,
   createTestRoom,
   createTestForce,
-} from './test-fixtures';
+} from '../test-fixtures';
 
 describe('RESTAdapter', () => {
   let storage: Storage;
