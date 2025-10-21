@@ -3,30 +3,61 @@
  * Pre-fills gamemaster/admin123 for development convenience
  */
 
-import { Login, LoginForm } from 'react-admin';
-import { useEffect } from 'react';
+import { Login, useLogin, useNotify } from 'react-admin';
+import { Box, Button, Card, CardContent, TextField, Typography } from '@mui/material';
+import { useForm } from 'react-hook-form';
 
 export const LoginPage = () => {
-  useEffect(() => {
-    // Pre-fill form fields for development
-    const usernameField = document.querySelector('input[name="username"]') as HTMLInputElement;
-    const passwordField = document.querySelector('input[name="password"]') as HTMLInputElement;
+  const login = useLogin();
+  const notify = useNotify();
 
-    if (usernameField && !usernameField.value) {
-      usernameField.value = 'gamemaster';
-      // Dispatch input event so React-Admin recognizes the change
-      usernameField.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+  const { register, handleSubmit } = useForm({
+    defaultValues: {
+      username: 'gamemaster',
+      password: 'admin123',
+    },
+  });
 
-    if (passwordField && !passwordField.value) {
-      passwordField.value = 'admin123';
-      passwordField.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  }, []);
+  const onSubmit = (data: { username: string; password: string }) => {
+    login(data).catch(() => notify('Invalid credentials', { type: 'error' }));
+  };
 
   return (
     <Login>
-      <LoginForm />
+      <Card sx={{ minWidth: 300, marginTop: '6em' }}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            War Rooms Y - Admin
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              mt: 2,
+            }}
+          >
+            <TextField
+              {...register('username')}
+              label="Username"
+              fullWidth
+              autoComplete="username"
+            />
+            <TextField
+              {...register('password')}
+              label="Password"
+              type="password"
+              fullWidth
+              autoComplete="current-password"
+            />
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              Sign in
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
     </Login>
   );
 };
