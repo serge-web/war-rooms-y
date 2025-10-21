@@ -48,6 +48,30 @@ function GroupSelector(props: any) {
   );
 }
 
+/**
+ * Dynamic user selector - fetches current users
+ */
+function UserSelector(props: any) {
+  const { data, isLoading } = useGetList('users', {
+    pagination: { page: 1, perPage: 1000 },
+    sort: { field: 'username', order: 'ASC' },
+  });
+
+  if (isLoading) return <Loading />;
+
+  const choices = data?.map((user) => ({
+    id: user.username,
+    name: `${user.name || user.username} (${user.username})`,
+  })) || [];
+
+  return (
+    <SelectArrayInput
+      {...props}
+      choices={choices}
+    />
+  );
+}
+
 export const RoomList = () => (
   <List>
     <Datagrid rowClick="edit">
@@ -86,6 +110,12 @@ export const RoomEdit = () => (
         source="metadata.allowedGroups"
         label="Allowed Groups"
         helperText="Groups allowed to access this room"
+      />
+
+      <UserSelector
+        source="metadata.members"
+        label="Room Members"
+        helperText="Individual users allowed to access this room"
       />
 
       <ArrayInput source="metadata.formTemplates" label="Form Templates">
@@ -132,6 +162,12 @@ export const RoomCreate = () => (
         helperText="Groups allowed to access this room"
       />
 
+      <UserSelector
+        source="metadata.members"
+        label="Room Members"
+        helperText="Individual users allowed to access this room"
+      />
+
       <ArrayInput source="metadata.formTemplates" label="Form Templates">
         <SimpleFormIterator inline>
           <TextInput source="" label="Template ID" helperText="" placeholder="sitrep" />
@@ -169,6 +205,13 @@ export const RoomShow = () => (
         label="Allowed Groups"
         render={(record: any) => (
           <span>{record.metadata?.allowedGroups?.join(', ') || 'N/A'}</span>
+        )}
+      />
+
+      <FunctionField
+        label="Room Members"
+        render={(record: any) => (
+          <span>{record.metadata?.members?.join(', ') || 'N/A'}</span>
         )}
       />
 
