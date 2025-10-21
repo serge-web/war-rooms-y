@@ -4,8 +4,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { ForceList, ForceEdit, ForceCreate, ForceShow } from './index';
-import { AdminContext } from 'react-admin';
-import { createMemoryHistory } from 'history';
+import { AdminContext, type DataProvider } from 'react-admin';
 
 // Mock data provider
 const mockDataProvider = {
@@ -62,12 +61,12 @@ const mockDataProvider = {
   }),
   getMany: async () => ({ data: [] }),
   getManyReference: async () => ({ data: [], total: 0 }),
-  create: async (resource: string, params: any) => ({ data: { ...params.data, id: params.data.name } }),
-  update: async (resource: string, params: any) => ({ data: params.data }),
+  create: async (_resource: string, params: any) => ({ data: { ...params.data, id: params.data.name } }),
+  update: async (_resource: string, params: any) => ({ data: params.data }),
   updateMany: async () => ({ data: [] }),
-  delete: async () => ({ data: {} }),
+  delete: async () => ({ data: { id: 'deleted' } }),
   deleteMany: async () => ({ data: [] }),
-};
+} as any as DataProvider;
 
 const meta = {
   title: 'Admin/Forces',
@@ -76,14 +75,11 @@ const meta = {
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => {
-      const history = createMemoryHistory();
-      return (
-        <AdminContext dataProvider={mockDataProvider} history={history}>
-          <Story />
-        </AdminContext>
-      );
-    },
+    (Story) => (
+      <AdminContext dataProvider={mockDataProvider}>
+        <Story />
+      </AdminContext>
+    ),
   ],
 } satisfies Meta;
 

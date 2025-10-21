@@ -35,16 +35,6 @@ const mockDataProvider = {
   updateMany: fn(),
 };
 
-// Mock notify
-const mockNotify = fn((message: string, options?: any) => {
-  console.log('Notify:', message, options);
-});
-
-// Mock refresh
-const mockRefresh = fn(() => {
-  console.log('Refresh called');
-});
-
 const WithProviders = ({ record, children }: any) => (
   <DataProviderContext.Provider value={mockDataProvider}>
     <RecordContextProvider value={record}>
