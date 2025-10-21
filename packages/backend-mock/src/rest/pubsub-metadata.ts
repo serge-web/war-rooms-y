@@ -4,27 +4,11 @@
  */
 
 import type { Storage } from '../storage';
-import type { Theme } from '@mui/material/styles';
+import { PubSubAdapter } from '../adapters/pubsub-adapter';
+import type { ForceMetadata, RoomMetadata } from '../adapters/pubsub-adapter';
 
-// ============================================================================
-// Types (from contracts/admin-rest-api.md)
-// ============================================================================
-
-export interface ForceMetadata {
-  color: string;
-  icon: string;
-  objectives: string[];
-  description: string;
-}
-
-export interface RoomMetadata {
-  theme?: Partial<Theme>;
-  description?: string;
-  allowedGroups?: string[];
-  members?: string[]; // Individual user members (synced to XMPP)
-  formTemplates?: string[];
-  maxOccupants?: number;
-}
+// Re-export types from adapter
+export type { ForceMetadata, RoomMetadata };
 
 export interface GameOverview {
   title: string;
@@ -37,36 +21,32 @@ export interface GameOverview {
 }
 
 // ============================================================================
-// Storage Keys
-// ============================================================================
-
-const KEYS = {
-  FORCE: (groupName: string) => `pubsub:force:${groupName}`,
-  ROOM: (roomName: string) => `pubsub:room:${roomName}`,
-  GAME_OVERVIEW: 'pubsub:game:overview',
-};
-
-// ============================================================================
 // Mock PubSub Metadata API
 // ============================================================================
 
 export class MockPubSubMetadata {
-  constructor(private storage: Storage) {}
+  private adapter: PubSubAdapter;
+  private storage: Storage;
+
+  constructor(storage: Storage) {
+    this.storage = storage;
+    this.adapter = new PubSubAdapter(storage);
+  }
 
   // ==========================================================================
   // Force Metadata
   // ==========================================================================
 
   async getForceMetadata(groupName: string): Promise<ForceMetadata | null> {
-    return await this.storage.getItem<ForceMetadata>(KEYS.FORCE(groupName));
+    return await this.adapter.getForceMetadata(groupName);
   }
 
   async setForceMetadata(groupName: string, metadata: ForceMetadata): Promise<void> {
-    await this.storage.setItem(KEYS.FORCE(groupName), metadata);
+    await this.adapter.setForceMetadata(groupName, metadata);
   }
 
   async deleteForceMetadata(groupName: string): Promise<void> {
-    await this.storage.removeItem(KEYS.FORCE(groupName));
+    await this.adapter.deleteForceMetadata(groupName);
   }
 
   // ==========================================================================
@@ -74,15 +54,15 @@ export class MockPubSubMetadata {
   // ==========================================================================
 
   async getRoomMetadata(roomName: string): Promise<RoomMetadata | null> {
-    return await this.storage.getItem<RoomMetadata>(KEYS.ROOM(roomName));
+    return await this.adapter.getRoomMetadata(roomName);
   }
 
   async setRoomMetadata(roomName: string, metadata: RoomMetadata): Promise<void> {
-    await this.storage.setItem(KEYS.ROOM(roomName), metadata);
+    await this.adapter.setRoomMetadata(roomName, metadata);
   }
 
   async deleteRoomMetadata(roomName: string): Promise<void> {
-    await this.storage.removeItem(KEYS.ROOM(roomName));
+    await this.adapter.deleteRoomMetadata(roomName);
   }
 
   // ==========================================================================
@@ -90,14 +70,14 @@ export class MockPubSubMetadata {
   // ==========================================================================
 
   async getGameOverview(): Promise<GameOverview | null> {
-    return await this.storage.getItem<GameOverview>(KEYS.GAME_OVERVIEW);
+    return await this.storage.getItem<GameOverview>('entities/game-overview');
   }
 
   async setGameOverview(overview: GameOverview): Promise<void> {
-    await this.storage.setItem(KEYS.GAME_OVERVIEW, overview);
+    await this.storage.setItem('entities/game-overview', overview);
   }
 
   async deleteGameOverview(): Promise<void> {
-    await this.storage.removeItem(KEYS.GAME_OVERVIEW);
+    await this.storage.removeItem('entities/game-overview');
   }
 }

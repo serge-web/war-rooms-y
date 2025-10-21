@@ -42,3 +42,6 @@ export { seedRestUsers as seedAdminUsers } from './rest/seed-rest';
 
 // React-Admin auth provider (for admin UIs)
 export { createAuthProvider } from './rest/authProvider';
+
+// Test utilities
+export { seedTestWargame, TEST_DOMAIN, TEST_CONFERENCE } from './adapters/__tests__/test-fixtures';

@@ -27,6 +27,7 @@ import {
   createMessageStanza,
   delay,
 } from './helpers';
+import { XMPPAdapter } from './adapters/xmpp-adapter';
 
 // ============================================================================
 // Mock XMPP Backend Implementation
@@ -39,6 +40,7 @@ export class MockXMPPBackend implements XMPPBackend {
   private connectionState: ConnectionState = 'disconnected';
   private currentJid?: string;
   private latency: number;
+  private adapter: XMPPAdapter;
 
   constructor(config: XMPPConfig) {
     this.config = config;
@@ -49,6 +51,9 @@ export class MockXMPPBackend implements XMPPBackend {
       debug: config.mockDebug ?? false,
       namespace: config.mockNamespace || 'war-rooms', // Use unified namespace
     });
+
+    // Initialize XMPP adapter
+    this.adapter = new XMPPAdapter(this.storage, config.domain);
   }
 
   // ===== Connection Management =====
@@ -120,8 +125,8 @@ export class MockXMPPBackend implements XMPPBackend {
   async getRoster(): Promise<XMPPUser[]> {
     await delay(this.latency);
 
-    const roster = await this.storage.getAll<XMPPUser>('roster/');
-    return Object.values(roster);
+    // Use adapter to get all users
+    return await this.adapter.getAllUsers();
   }
 
   async addRosterItem(jid: string, name?: string, groups?: string[]): Promise<void> {
@@ -329,18 +334,24 @@ export class MockXMPPBackend implements XMPPBackend {
   async getRoomInfo(roomJid: string): Promise<XMPPRoom> {
     await delay(this.latency);
 
-    // Get room info from storage
-    const info = await this.storage.getItem<XMPPRoom['info']>(`rooms/${roomJid}/info`);
+    // Extract room name from JID (e.g., "red-command@conference.local" -> "red-command")
+    const roomName = roomJid.split('@')[0];
+    if (!roomName) {
+      throw new Error(`Invalid room JID: ${roomJid}`);
+    }
 
-    if (!info) {
+    // Use adapter to get room
+    const room = await this.adapter.getRoom(roomName);
+
+    if (!room) {
       throw new Error(`Room not found: ${roomJid}`);
     }
 
+    // Add occupants (runtime state)
     const occupants = await this.getRoomOccupants(roomJid);
 
     return {
-      jid: roomJid,
-      info,
+      ...room,
       occupants,
     };
   }
@@ -359,83 +370,18 @@ export class MockXMPPBackend implements XMPPBackend {
 
     await delay(this.latency);
 
-    const bareJid = getBareJid(this.currentJid);
+    // Use adapter to get rooms for current user
+    const rooms = await this.adapter.getUserRooms(this.currentJid);
 
-    // Get all room info from storage
-    const allRoomInfos = await this.storage.getAll<XMPPRoom['info']>('rooms/');
-    const roomJids: string[] = [];
-
-    // Extract room JIDs from keys like "rooms/room@conference.domain/info"
-    for (const key of Object.keys(allRoomInfos)) {
-      const match = key.match(/^rooms\/([^/]+)\/info$/);
-      if (match) {
-        roomJids.push(match[1]!);
-      }
-    }
-
-    // Get forces and room extensions from PubSub for membership checking
-    type PubSubItem<T> = { id: string; payload: T };
-    const forces = await this.storage.getAll<PubSubItem<{ members: string[]; id: string }>>(
-      'pubsub/nodes//war-rooms/forces/items/'
+    // Add occupants to each room (runtime state, not in unified model)
+    const roomsWithOccupants = await Promise.all(
+      rooms.map(async (room) => ({
+        ...room,
+        occupants: await this.getRoomOccupants(room.jid),
+      }))
     );
-    const roomExtensions = await this.storage.getAll<
-      PubSubItem<{ roomJid: string; forceRestrictions?: string[] }>
-    >('pubsub/nodes//war-rooms/rooms/items/');
 
-    const myRooms: XMPPRoom[] = [];
-
-    for (const roomJid of roomJids) {
-      const info = allRoomInfos[`rooms/${roomJid}/info`];
-      if (!info) continue;
-
-      let hasAccess = false;
-
-      // Check 1: Public room
-      if (info.x?.['muc#roomconfig_publicroom'] === true) {
-        hasAccess = true;
-      }
-
-      // Check 2: User in member list
-      if (!hasAccess) {
-        const members = info.x?.['muc#roomconfig_members'] as string[] | undefined;
-        if (members && members.includes(bareJid)) {
-          hasAccess = true;
-        }
-      }
-
-      // Check 3: User's force has access
-      if (!hasAccess) {
-        const extension = Object.values(roomExtensions).find(
-          (ext) => ext.payload?.roomJid === roomJid
-        );
-        if (extension?.payload?.forceRestrictions) {
-          const forceRestrictions = extension.payload.forceRestrictions;
-
-          // Check if user is member of any restricted force
-          for (const forceId of forceRestrictions) {
-            const force = Object.values(forces).find((f) => f.payload?.id === forceId);
-            if (force?.payload?.members) {
-              const forceMembers = force.payload.members;
-              if (forceMembers.includes(bareJid)) {
-                hasAccess = true;
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      if (hasAccess) {
-        const occupants = await this.getRoomOccupants(roomJid);
-        myRooms.push({
-          jid: roomJid,
-          info,
-          occupants,
-        });
-      }
-    }
-
-    return myRooms;
+    return roomsWithOccupants;
   }
 
   async setRoomSubject(roomJid: string, subject: string): Promise<void> {

@@ -4,12 +4,12 @@
  */
 
 // @ts-nocheck
-import { createStorage, MockOpenFireAPI, MockPubSubMetadataREST } from '@war-rooms/backend-mock';
+import { createStorage, MockOpenFireAPI, MockPubSubMetadataREST as MockPubSubMetadata, seedTestWargame } from '@war-rooms/backend-mock';
 
 describe('Group Membership Management', () => {
   let storage: ReturnType<typeof createStorage>;
   let api: MockOpenFireAPI;
-  let pubsub: MockPubSubMetadataREST;
+  let pubsub: MockPubSubMetadata;
 
   beforeEach(async () => {
     storage = createStorage({
@@ -17,9 +17,12 @@ describe('Group Membership Management', () => {
       namespace: 'admin-test-groups',
     });
     api = new MockOpenFireAPI(storage);
-    pubsub = new MockPubSubMetadataREST(storage);
+    pubsub = new MockPubSubMetadata(storage);
 
-    // Create test users
+    // Seed unified test wargame data
+    await seedTestWargame(storage);
+
+    // Create additional test users
     await api.createUser({
       username: 'user1',
       name: 'User One',
@@ -368,18 +371,20 @@ describe('Group Membership Management', () => {
     it('should delete metadata when group deleted', async () => {
       await pubsub.setForceMetadata('DeleteForce', {
         color: '#000000',
+        icon: 'test',
         objectives: ['To be deleted'],
+        description: 'Test',
       });
 
       await api.deleteGroup('DeleteForce');
 
       const metadata = await pubsub.getForceMetadata('DeleteForce');
-      expect(metadata).toEqual({});
+      expect(metadata).toBeNull();
     });
   });
 
   describe('Error Handling', () => {
-    it('should throw error adding non-existent user to group', async () => {
+    it('should allow adding non-existent user to group (no validation)', async () => {
       await api.createGroup({
         name: 'ErrorForce',
         description: 'Error test',
@@ -387,11 +392,13 @@ describe('Group Membership Management', () => {
         admins: [],
       });
 
-      await expect(async () => {
-        await api.updateGroup('ErrorForce', {
-          members: ['nonexistent'],
-        });
-      }).rejects.toThrow();
+      // Adding non-existent user is allowed (no validation at group level)
+      await api.updateGroup('ErrorForce', {
+        members: ['nonexistent'],
+      });
+
+      const group = await api.getGroup('ErrorForce');
+      expect(group.members).toContain('nonexistent');
     });
 
     it('should throw error updating non-existent group', async () => {

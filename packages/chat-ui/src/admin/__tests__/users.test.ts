@@ -4,7 +4,7 @@
  */
 
 // @ts-nocheck
-import { createStorage, MockOpenFireAPI, seedRestUsers } from '@war-rooms/backend-mock';
+import { createStorage, MockOpenFireAPI, seedTestWargame } from '@war-rooms/backend-mock';
 
 describe('Admin User CRUD Operations', () => {
   let storage: ReturnType<typeof createStorage>;
@@ -17,8 +17,8 @@ describe('Admin User CRUD Operations', () => {
     });
     api = new MockOpenFireAPI(storage);
 
-    // Seed default admin users
-    await seedRestUsers(storage);
+    // Seed unified test wargame data
+    await seedTestWargame(storage);
   });
 
   describe('User Creation', () => {
@@ -101,8 +101,8 @@ describe('Admin User CRUD Operations', () => {
 
     it('should list all users', async () => {
       const users = await api.getUsers();
-      expect(users.length).toBeGreaterThanOrEqual(4); // 2 seeded + 2 created
-      expect(users.some((u: any) => u.username === 'admin')).toBe(true);
+      expect(users.length).toBeGreaterThanOrEqual(7); // 5 seeded + 2 created
+      expect(users.some((u: any) => u.username === 'gamemaster')).toBe(true);
       expect(users.some((u: any) => u.username === 'user1')).toBe(true);
       expect(users.some((u: any) => u.username === 'user2')).toBe(true);
     });
@@ -114,10 +114,9 @@ describe('Admin User CRUD Operations', () => {
       expect(user.email).toBe('user1@test.local');
     });
 
-    it('should throw error for non-existent user', async () => {
-      await expect(async () => {
-        await api.getUser('nonexistent');
-      }).rejects.toThrow('User not found');
+    it('should return null for non-existent user', async () => {
+      const user = await api.getUser('nonexistent');
+      expect(user).toBeNull();
     });
   });
 
@@ -187,9 +186,8 @@ describe('Admin User CRUD Operations', () => {
     it('should delete a user', async () => {
       await api.deleteUser('deleteuser');
 
-      await expect(async () => {
-        await api.getUser('deleteuser');
-      }).rejects.toThrow('User not found');
+      const user = await api.getUser('deleteuser');
+      expect(user).toBeNull();
     });
 
     it('should remove user from groups when deleted', async () => {
@@ -218,34 +216,34 @@ describe('Admin User CRUD Operations', () => {
       expect(group.members).not.toContain('deleteuser');
     });
 
-    it('should throw error when deleting non-existent user', async () => {
-      await expect(async () => {
-        await api.deleteUser('nonexistent');
-      }).rejects.toThrow();
+    it('should not throw when deleting non-existent user', async () => {
+      // Delete is idempotent - no error for non-existent user
+      await api.deleteUser('nonexistent');
+      const user = await api.getUser('nonexistent');
+      expect(user).toBeNull();
     });
   });
 
-  describe('Seeded Admin Users', () => {
-    it('should have admin user with admin group', async () => {
-      const admin = await api.getUser('admin');
-      expect(admin.username).toBe('admin');
-      expect(admin.name).toBe('System Administrator');
-      expect(admin.properties?.sharedGroups).toContain('admins');
-    });
-
-    it('should have gamemaster user with admin group', async () => {
+  describe('Seeded Test Users', () => {
+    it('should have gamemaster user', async () => {
       const gm = await api.getUser('gamemaster');
       expect(gm.username).toBe('gamemaster');
       expect(gm.name).toBe('Game Master');
-      expect(gm.properties?.sharedGroups).toContain('admins');
+      expect(gm.properties?.sharedGroups).toContain('Game Masters');
     });
 
-    it('should have admins group created', async () => {
-      const adminsGroup = await api.getGroup('admins');
-      expect(adminsGroup.name).toBe('admins');
-      expect(adminsGroup.description).toBe('System administrators');
-      expect(adminsGroup.members).toContain('admin');
-      expect(adminsGroup.members).toContain('gamemaster');
+    it('should have commander.red user', async () => {
+      const cmd = await api.getUser('commander.red');
+      expect(cmd.username).toBe('commander.red');
+      expect(cmd.name).toBe('Red Commander');
+      expect(cmd.properties?.sharedGroups).toContain('force-red');
+    });
+
+    it('should have force groups created', async () => {
+      const redForce = await api.getGroup('force-red');
+      expect(redForce.name).toBe('force-red');
+      expect(redForce.members).toContain('commander.red');
+      expect(redForce.members).toContain('analyst.red1');
     });
   });
 });

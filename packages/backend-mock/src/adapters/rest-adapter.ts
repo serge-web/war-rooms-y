@@ -214,6 +214,88 @@ export class RESTAdapter {
     return this.projectUserToREST(userWithoutPassword as UnifiedUser);
   }
 
+  /**
+   * Update user
+   */
+  async updateUser(username: string, updates: Partial<OpenFireUser>): Promise<OpenFireUser | null> {
+    const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+    if (!user) return null;
+
+    const oldGroups = user.groups;
+
+    // Apply updates
+    if (updates.name !== undefined) user.name = updates.name;
+    if (updates.email !== undefined) user.email = updates.email;
+    if (updates.password !== undefined) user.password = updates.password;
+    if (updates.properties?.sharedGroups !== undefined) {
+      user.groups = updates.properties.sharedGroups;
+      user.isGameMaster = updates.properties.sharedGroups.includes('Game Masters');
+    }
+
+    user.modifiedAt = new Date().toISOString();
+
+    await this.storage.setItem(`entities/users/${username}`, user);
+
+    // Update force membership if groups changed
+    if (updates.properties?.sharedGroups) {
+      const newGroups = updates.properties.sharedGroups;
+
+      // Remove from old groups
+      for (const groupName of oldGroups) {
+        if (!newGroups.includes(groupName)) {
+          const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
+          if (force) {
+            force.members = force.members.filter(m => m !== username);
+            await this.storage.setItem(`entities/forces/${groupName}`, force);
+          }
+        }
+      }
+
+      // Add to new groups
+      for (const groupName of newGroups) {
+        if (!oldGroups.includes(groupName)) {
+          const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
+          if (force && !force.members.includes(username)) {
+            force.members.push(username);
+            await this.storage.setItem(`entities/forces/${groupName}`, force);
+          }
+        }
+      }
+    }
+
+    // Don't return password
+    const { password, ...userWithoutPassword } = user;
+    return this.projectUserToREST(userWithoutPassword as UnifiedUser);
+  }
+
+  /**
+   * Delete user
+   */
+  async deleteUser(username: string): Promise<void> {
+    const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+    if (!user) return;
+
+    // Remove from all forces
+    for (const groupName of user.groups) {
+      const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
+      if (force) {
+        force.members = force.members.filter(m => m !== username);
+        await this.storage.setItem(`entities/forces/${groupName}`, force);
+      }
+    }
+
+    // Delete user
+    await this.storage.removeItem(`entities/users/${username}`);
+
+    // Update index
+    const usernames = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const index = usernames.indexOf(username);
+    if (index > -1) {
+      usernames.splice(index, 1);
+      await this.storage.setItem('entities/users/_index', usernames);
+    }
+  }
+
   // ============================================================================
   // Group Operations
   // ============================================================================
@@ -253,6 +335,163 @@ export class RESTAdapter {
     });
 
     return groups;
+  }
+
+  /**
+   * Create group (force)
+   */
+  async createGroup(restGroup: OpenFireGroup): Promise<OpenFireGroup> {
+    const unified: UnifiedForce = {
+      id: restGroup.name,
+      name: restGroup.name,
+      ...(restGroup.description ? { description: restGroup.description } : {}),
+      color: '#000000',
+      icon: 'group',
+      members: restGroup.members || [],
+      ...(restGroup.admins ? { admins: restGroup.admins } : {}),
+      createdAt: new Date().toISOString(),
+      createdBy: 'admin',
+    };
+
+    await this.storage.setItem(`entities/forces/${unified.id}`, unified);
+
+    // Update index
+    const forceIds = await this.storage.getItem<string[]>('entities/forces/_index') || [];
+    if (!forceIds.includes(unified.id)) {
+      forceIds.push(unified.id);
+      await this.storage.setItem('entities/forces/_index', forceIds);
+    }
+
+    // Update user group membership
+    for (const username of unified.members) {
+      const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+      if (user && !user.groups.includes(unified.id)) {
+        user.groups.push(unified.id);
+        await this.storage.setItem(`entities/users/${username}`, user);
+      }
+    }
+
+    return this.projectForceToGroup(unified);
+  }
+
+  /**
+   * Update group (force)
+   */
+  async updateGroup(groupName: string, updates: Partial<OpenFireGroup>): Promise<OpenFireGroup | null> {
+    const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
+    if (!force) return null;
+
+    const oldMembers = force.members;
+
+    // Apply updates
+    if (updates.description !== undefined) force.description = updates.description;
+    if (updates.members !== undefined) {
+      // Deduplicate members
+      force.members = Array.from(new Set(updates.members));
+    }
+    if (updates.admins !== undefined) {
+      // Deduplicate admins
+      force.admins = Array.from(new Set(updates.admins));
+    }
+
+    force.modifiedAt = new Date().toISOString();
+
+    await this.storage.setItem(`entities/forces/${groupName}`, force);
+
+    // Sync user groups if members changed
+    if (updates.members !== undefined) {
+      const newMembers = updates.members;
+
+      // Remove groupName from users no longer in the group
+      for (const username of oldMembers) {
+        if (!newMembers.includes(username)) {
+          const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+          if (user) {
+            user.groups = user.groups.filter(g => g !== groupName);
+            await this.storage.setItem(`entities/users/${username}`, user);
+          }
+        }
+      }
+
+      // Add groupName to new users
+      for (const username of newMembers) {
+        if (!oldMembers.includes(username)) {
+          const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+          if (user && !user.groups.includes(groupName)) {
+            user.groups.push(groupName);
+            await this.storage.setItem(`entities/users/${username}`, user);
+          }
+        }
+      }
+    }
+
+    return this.projectForceToGroup(force);
+  }
+
+  /**
+   * Delete group (force)
+   */
+  async deleteGroup(groupName: string): Promise<void> {
+    const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
+    if (!force) return;
+
+    // Remove group from all user memberships
+    for (const username of force.members) {
+      const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+      if (user) {
+        user.groups = user.groups.filter(g => g !== groupName);
+        await this.storage.setItem(`entities/users/${username}`, user);
+      }
+    }
+
+    // Delete force
+    await this.storage.removeItem(`entities/forces/${groupName}`);
+
+    // Update index
+    const forceIds = await this.storage.getItem<string[]>('entities/forces/_index') || [];
+    const index = forceIds.indexOf(groupName);
+    if (index > -1) {
+      forceIds.splice(index, 1);
+      await this.storage.setItem('entities/forces/_index', forceIds);
+    }
+  }
+
+  /**
+   * Add member to group (force)
+   */
+  async addGroupMember(groupName: string, username: string): Promise<void> {
+    const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
+    if (!force) return;
+
+    if (!force.members.includes(username)) {
+      force.members.push(username);
+      await this.storage.setItem(`entities/forces/${groupName}`, force);
+
+      // Update user
+      const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+      if (user && !user.groups.includes(groupName)) {
+        user.groups.push(groupName);
+        await this.storage.setItem(`entities/users/${username}`, user);
+      }
+    }
+  }
+
+  /**
+   * Remove member from group (force)
+   */
+  async removeGroupMember(groupName: string, username: string): Promise<void> {
+    const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
+    if (!force) return;
+
+    force.members = force.members.filter(m => m !== username);
+    await this.storage.setItem(`entities/forces/${groupName}`, force);
+
+    // Update user
+    const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
+    if (user) {
+      user.groups = user.groups.filter(g => g !== groupName);
+      await this.storage.setItem(`entities/users/${username}`, user);
+    }
   }
 
   // ============================================================================

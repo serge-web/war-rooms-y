@@ -4,12 +4,12 @@
  */
 
 // @ts-nocheck
-import { createStorage, MockOpenFireAPI, MockPubSubMetadataREST } from '@war-rooms/backend-mock';
+import { createStorage, MockOpenFireAPI, MockPubSubMetadataREST as MockPubSubMetadata, seedTestWargame } from '@war-rooms/backend-mock';
 
 describe('Admin Room CRUD Operations', () => {
   let storage: ReturnType<typeof createStorage>;
   let api: MockOpenFireAPI;
-  let pubsub: MockPubSubMetadataREST;
+  let pubsub: MockPubSubMetadata;
 
   beforeEach(async () => {
     storage = createStorage({
@@ -17,7 +17,10 @@ describe('Admin Room CRUD Operations', () => {
       namespace: 'admin-test-rooms',
     });
     api = new MockOpenFireAPI(storage);
-    pubsub = new MockPubSubMetadataREST(storage);
+    pubsub = new MockPubSubMetadata(storage);
+
+    // Seed unified test wargame data
+    await seedTestWargame(storage);
   });
 
   describe('Room Creation', () => {
@@ -122,10 +125,9 @@ describe('Admin Room CRUD Operations', () => {
       expect(room.description).toBe('First room');
     });
 
-    it('should throw error for non-existent room', async () => {
-      await expect(async () => {
-        await api.getRoom('nonexistent');
-      }).rejects.toThrow('Room not found');
+    it('should return null for non-existent room', async () => {
+      const room = await api.getRoom('nonexistent');
+      expect(room).toBeNull();
     });
 
     it('should get room with metadata', async () => {
@@ -241,9 +243,8 @@ describe('Admin Room CRUD Operations', () => {
     it('should delete a room', async () => {
       await api.deleteRoom('deleteroom');
 
-      await expect(async () => {
-        await api.getRoom('deleteroom');
-      }).rejects.toThrow('Room not found');
+      const room = await api.getRoom('deleteroom');
+      expect(room).toBeNull();
     });
 
     it('should delete room metadata when room deleted', async () => {
@@ -254,9 +255,9 @@ describe('Admin Room CRUD Operations', () => {
       // Delete room
       await api.deleteRoom('deleteroom');
 
-      // Verify metadata is also deleted (or empty)
+      // Verify metadata is also deleted
       const metadataAfter = await pubsub.getRoomMetadata('deleteroom');
-      expect(metadataAfter).toEqual({});
+      expect(metadataAfter).toBeNull();
     });
 
     it('should throw error when deleting non-existent room', async () => {
