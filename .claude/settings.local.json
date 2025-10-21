@@ -28,7 +28,12 @@
       "Bash(then echo \"EXISTS\")",
       "Bash(else echo \"NOT_FOUND\")",
       "Bash(fi)",
-      "Bash(/Users/ian/git/war-rooms-y/.specify/scripts/bash/update-agent-context.sh claude)"
+      "Bash(pushd packages/backend-interface)",
+      "Bash(popd)",
+      "Bash(cat package.json)",
+      "Bash(cat ../../jest.config.js)",
+      "Bash(cat ../../packages/state/package.json)",
+      "Bash(lsof -ti:5173)"
     ],
     "deny": [],
     "ask": []
