@@ -54,6 +54,37 @@ export function createDataProvider(): DataProvider {
   const restApi = new MockOpenFireAPI(storage);
   const pubsubApi = new MockPubSubMetadataREST(storage);
 
+  // Configuration
+  const DOMAIN = import.meta.env.VITE_MOCK_DOMAIN || 'wargame.local';
+  const CONFERENCE_SERVICE = import.meta.env.VITE_MOCK_CONFERENCE || 'conference.wargame.local';
+
+  /**
+   * Sync REST room data to XMPP storage
+   * Converts usernames to JIDs for XMPP compatibility
+   */
+  async function syncRoomToXmpp(roomName: string, members?: string[]): Promise<void> {
+    const roomJid = `${roomName}@${CONFERENCE_SERVICE}`;
+    const roomInfoKey = `rooms/${roomJid}/info`;
+
+    // Get existing room info
+    const existingInfo = await storage.getItem<any>(roomInfoKey);
+    if (!existingInfo) return;
+
+    // Convert usernames to JIDs
+    const memberJids = members?.map(username => `${username}@${DOMAIN}`) || [];
+
+    // Update room info with member JIDs (using MUC standard field name)
+    const updatedInfo = {
+      ...existingInfo,
+      x: {
+        ...existingInfo.x,
+        'muc#roomconfig_members': memberJids,
+      },
+    };
+
+    await storage.setItem(roomInfoKey, updatedInfo);
+  }
+
   return {
     // ========================================================================
     // Overview Resource (single record)
@@ -223,11 +254,20 @@ export function createDataProvider(): DataProvider {
 
       if (resource === 'rooms') {
         const { metadata, ...roomData } = params.data;
+
+        // Sync metadata.members to room.members (for XMPP room membership)
+        if (metadata?.members) {
+          roomData.members = metadata.members;
+        }
+
         const room = await restApi.createRoom(roomData as OpenFireRoom);
 
         if (metadata) {
           await pubsubApi.setRoomMetadata(room.roomName, metadata as RoomMetadata);
         }
+
+        // Sync to XMPP storage for chat-ui
+        await syncRoomToXmpp(room.roomName, metadata?.members);
 
         return {
           data: {
@@ -271,11 +311,20 @@ export function createDataProvider(): DataProvider {
 
       if (resource === 'rooms') {
         const { metadata, id, ...roomData } = params.data;
+
+        // Sync metadata.members to room.members (for XMPP room membership)
+        if (metadata?.members) {
+          roomData.members = metadata.members;
+        }
+
         const room = await restApi.updateRoom(params.id as string, roomData as Partial<OpenFireRoom>);
 
         if (metadata) {
           await pubsubApi.setRoomMetadata(room.roomName, metadata as RoomMetadata);
         }
+
+        // Sync to XMPP storage for chat-ui
+        await syncRoomToXmpp(room.roomName, metadata?.members);
 
         return {
           data: {

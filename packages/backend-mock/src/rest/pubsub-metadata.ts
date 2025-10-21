@@ -21,7 +21,7 @@ export interface RoomMetadata {
   theme?: Partial<Theme>;
   description?: string;
   allowedGroups?: string[];
-  allowedUsers?: string[];
+  members?: string[]; // Individual user members (synced to XMPP)
   formTemplates?: string[];
   maxOccupants?: number;
 }

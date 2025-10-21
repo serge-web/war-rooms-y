@@ -35,6 +35,7 @@ function getBackendConfig(): XMPPConfig {
         'localStorage',
       mockLatency: Number(import.meta.env.VITE_MOCK_LATENCY || 100),
       mockDebug: import.meta.env.VITE_MOCK_DEBUG === 'true',
+      mockNamespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms', // Use unified namespace
     };
   }
 

@@ -260,7 +260,7 @@ export async function seedMockData(
       // Store room info
       await storage.setItem(`rooms/${room.jid}/info`, room.info);
 
-      // Store room extension if present
+      // Store room extension if present (for XMPP)
       if (room.extension) {
         const itemId = room.extension.roomJid.replace(/@/g, '_at_').replace(/\//g, '_slash_');
         await storage.setItem(`pubsub/nodes//war-rooms/rooms/items/${itemId}`, {
@@ -269,6 +269,26 @@ export async function seedMockData(
           publishedAt: room.extension.createdAt,
           publisher: room.extension.createdBy,
         });
+
+        // Also create RoomMetadata for admin UI (convert forceRestrictions -> allowedGroups)
+        const roomName = room.jid.split('@')[0];
+        if (roomName) {
+          const metadata: any = {};
+
+          if (room.extension.forceRestrictions) {
+            metadata.allowedGroups = room.extension.forceRestrictions;
+          }
+          if (room.extension.formSchemaIds) {
+            metadata.formTemplates = room.extension.formSchemaIds;
+          }
+          if (room.extension.theme) {
+            metadata.theme = room.extension.theme;
+          }
+
+          if (Object.keys(metadata).length > 0) {
+            await storage.setItem(`pubsub:room:${roomName}`, metadata);
+          }
+        }
       }
 
       // Seed initial occupants with presence for demonstration

@@ -21,15 +21,20 @@ export function createAuthProvider(namespace = 'war-rooms'): AuthProvider {
 
   const restApi = new MockOpenFireAPI(storage);
 
+  // Track seeding completion
+  let seedingPromise: Promise<void> | null = null;
+
   // Auto-seed Game Masters passwords on first run
-  (async () => {
+  const initSeeding = async () => {
     const gameMastersGroup = await restApi.getGroup('Game Masters');
     if (gameMastersGroup) {
       console.log('[Admin Auth] Seeding Game Masters passwords...');
       await seedRestUsers(storage);
       console.log('[Admin Auth] Passwords added for Game Masters');
     }
-  })();
+  };
+
+  seedingPromise = initSeeding();
 
   // Store current user
   let currentUser: { username: string; isAdmin: boolean } | null = null;
@@ -41,18 +46,23 @@ export function createAuthProvider(namespace = 'war-rooms'): AuthProvider {
     async login(params: { username: string; password: string }): Promise<void> {
       const { username, password } = params;
 
+      // Wait for seeding to complete
+      if (seedingPromise) {
+        await seedingPromise;
+        seedingPromise = null;
+      }
+
       // 1. Check if user exists and password matches
       const user = await restApi.getUser(username);
       if (!user) {
-        throw new Error('Invalid credentials 3');
+        throw new Error('Invalid credentials');
       }
-      console.log('user', user);
 
       // In mock, we need to check stored password
       // (In real OpenFire, XMPP auth would handle this)
       const storedUser = await storage.getItem<{ password?: string }>(`rest:user:${username}`);
       if (storedUser?.password !== password) {
-        throw new Error('Invalid credentials 4');
+        throw new Error('Invalid credentials');
       }
 
       // 2. Check Game Masters group membership

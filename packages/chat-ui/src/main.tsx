@@ -4,11 +4,13 @@ import { CssBaseline } from '@mui/material';
 import App from './App';
 import { seedMockData } from './utils/seedMockData';
 
-// Seed mock data on first load
-const hasSeeded = localStorage.getItem('war-rooms-mock-seeded');
+// Seed mock data on first load (T032)
+const STORAGE_NAMESPACE = import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms';
+const hasSeeded = localStorage.getItem(`${STORAGE_NAMESPACE}:seeded`);
 if (!hasSeeded) {
   void seedMockData().then(() => {
-    localStorage.setItem('war-rooms-mock-seeded', 'true');
+    localStorage.setItem(`${STORAGE_NAMESPACE}:seeded`, 'true');
+    console.info('✅ Chat UI: Mock data seeded (XMPP + REST)');
   });
 }
 

@@ -70,6 +70,7 @@ export interface XMPPConfig {
   mockPersistence?: 'localStorage' | 'indexedDB' | 'memory';
   mockLatency?: number; // Simulate network delay (ms)
   mockDebug?: boolean;
+  mockNamespace?: string; // Storage namespace (default: 'war-rooms')
 }
 
 // ============================================================================

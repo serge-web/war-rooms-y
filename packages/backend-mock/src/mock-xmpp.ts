@@ -47,7 +47,7 @@ export class MockXMPPBackend implements XMPPBackend {
     this.storage = createStorage({
       backend: config.mockPersistence || 'localStorage',
       debug: config.mockDebug ?? false,
-      namespace: 'war-rooms-mock',
+      namespace: config.mockNamespace || 'war-rooms', // Use unified namespace
     });
   }
 
