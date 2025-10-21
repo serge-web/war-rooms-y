@@ -6,6 +6,7 @@
 import { Admin, Resource } from 'react-admin';
 import { createDataProvider } from './providers/dataProvider';
 import { createAuthProvider } from '@war-rooms/backend-mock';
+import { LoginPage } from './components/LoginPage';
 
 // Overview resource (single game record)
 import { OverviewEdit, OverviewShow } from './resources/overview';
@@ -39,6 +40,7 @@ export default function AdminApp() {
     <Admin
       dataProvider={createDataProvider()}
       authProvider={createAuthProvider(namespace)}
+      loginPage={LoginPage}
       title="War Rooms Y - Admin"
     >
       <Resource
