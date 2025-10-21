@@ -13,7 +13,8 @@ War Rooms Y is a multi-room wargaming chat application with XMPP protocol suppor
 ```bash
 npm install                          # Install all dependencies
 npm run dev                          # Start dev server (localhost:5173)
-# Login: commander.red / any (pre-populated)
+# Access chat at http://localhost:5173/ (login: commander.red / any)
+# Access admin at http://localhost:5173/admin (login: gamemaster / admin123)
 ```
 
 ### Build & Test Commands
@@ -63,7 +64,9 @@ packages/backend-mock (Mock Implementation)
     ↓
 packages/state (State Management)
     ↓
-packages/chat-ui (React Frontend)
+packages/chat-ui (React Frontend - Single App with Two UIs)
+    ├── /src/          → Chat UI (route: /)
+    └── /src/admin/    → Admin UI (route: /admin)
 ```
 
 **Key Packages:**
@@ -71,7 +74,9 @@ packages/chat-ui (React Frontend)
 - **backend-interface**: XMPP protocol type definitions (XMPPUser, XMPPRoom, XMPPMessage)
 - **backend-mock**: Mock XMPP backend using localStorage, pre-seeded with fixtures
 - **state**: Jotai atoms for messages, Zustand store for rooms/presence
-- **chat-ui**: React app with Material UI and flexlayout-react for resizable panes
+- **chat-ui**: Single React app running on port 5173 with two routes:
+  - `/` - Chat UI with Material UI and flexlayout-react for resizable panes
+  - `/admin` - Admin UI using React-Admin for managing users, forces, rooms, and templates
 
 ### Mock Backend System
 
@@ -81,37 +86,46 @@ The application uses a sophisticated mock backend (`packages/backend-mock`) that
 - Uses localStorage for persistence (MemoryStorage fallback)
 - Pre-seeded with realistic wargaming data (users, forces, rooms, messages)
 - Configured via environment variables (VITE_BACKEND_MODE, VITE_MOCK_DOMAIN, etc.)
-- **Unified Data Layer**: Both chat-ui (XMPP) and admin-ui (REST) share the same storage namespace
+- **Unified Data Layer**: Chat UI (XMPP, route `/`) and Admin UI (REST, route `/admin`) run in the same app and share the same storage namespace
 
 Key files:
 
 - `packages/backend-mock/src/fixtures.ts` - Mock data (users, rooms, forces, messages)
 - `packages/backend-mock/src/mock-xmpp.ts` - XMPP protocol simulation
 - `packages/backend-mock/src/storage.ts` - Storage abstraction with unified namespace
-- `packages/backend-mock/src/rest/transformers.ts` - Bidirectional XMPP ↔ REST transformers
-- `packages/backend-mock/src/seed.ts` - Unified seeding (creates both XMPP and REST entities)
+- `packages/backend-mock/src/adapters/*` - Protocol adapters (XMPP, REST, PubSub) that project unified data
+- `packages/backend-mock/src/seed.ts` - Unified seeding using new adapter-based architecture
 
-#### Unified Data Layer Architecture
+#### Unified Data Layer Architecture (NEW - Adapter Pattern)
 
-Both UIs share a single `war-rooms` localStorage namespace but use different key prefixes:
+**Single Source of Truth**: Unified entities stored under `entities/*` keys:
 
-**XMPP Keys** (chat-ui):
-- `roster/*` → XMPP user roster entries
-- `rooms/*` → XMPP MUC room info
-- `messages/*` → Message archives
-- `pubsub/nodes/*` → PubSub metadata
+**Unified Keys**:
+- `entities/users/{username}` → UnifiedUser records
+- `entities/users/_index` → Array of usernames (index)
+- `entities/forces/{forceId}` → UnifiedForce records
+- `entities/forces/_index` → Array of force IDs (index)
+- `entities/rooms/{roomId}` → UnifiedRoom records
+- `entities/rooms/_index` → Array of room IDs (index)
+- `entities/templates/{templateId}` → UnifiedFormTemplate records
+- `entities/templates/_index` → Array of template IDs (index)
 
-**REST Keys** (admin-ui):
-- `rest:user:*` → OpenFire users
-- `rest:group:*` → OpenFire groups
-- `rest:room:*` → OpenFire rooms
-- `rest:users:list`, `rest:groups:list`, `rest:rooms:list` → Index arrays
+**Protocol Adapters** (project unified data to protocol-specific formats):
+- **XMPPAdapter** - Chat UI reads via XMPP-formatted views
+- **RESTAdapter** - Admin UI reads via OpenFire REST-formatted views
+- **PubSubAdapter** - Both UIs access metadata via PubSub
+
+**Transient Data** (not projected, session-specific):
+- `rooms/{roomJid}/occupants/*` → Real-time room occupants
+- `archive/rooms/{roomJid}/*` → Message history
+- `presence/self` → Current user presence
+- `session` → Current XMPP session info
 
 This enables:
-- ✅ Admin creates user → Chat UI sees user instantly
+- ✅ Admin creates user at `/admin` → Chat UI at `/` sees user instantly
 - ✅ Admin creates room → Chat UI can join room
 - ✅ Chat sends message → Admin UI sees count update
-- ✅ Simulates production architecture (OpenFire serves both XMPP and REST)
+- ✅ Both UIs in same Vite app, single deployment, shared storage
 
 ### Room Access Control
 
@@ -220,7 +234,9 @@ VITE_MOCK_LATENCY=100               # Simulated network delay
 **Completed:**
 
 - Mock XMPP backend with localStorage persistence
-- Multi-room chat UI with flexlayout-react
+- Multi-room chat UI with flexlayout-react (route `/`)
+- Admin UI with React-Admin (route `/admin`) - manages users, forces, rooms, templates
+- Unified data layer with adapter pattern (entities/* keys)
 - Force-based room access control
 - Jotai/Zustand state management
 - CI/CD pipeline with GitHub Actions
@@ -229,9 +245,8 @@ VITE_MOCK_LATENCY=100               # Simulated network delay
 **Not Yet Implemented:**
 
 - Real Openfire backend integration (`packages/backend-openfire`)
-- Admin console (`packages/admin-ui`)
-- Form submissions with RJSF
-- PubSub metadata publishing
+- Form submissions with RJSF in chat UI
+- PubSub metadata publishing from chat UI
 - Full test coverage (currently ~10%)
 
 ## Common Tasks

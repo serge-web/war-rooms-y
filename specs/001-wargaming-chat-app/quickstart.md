@@ -6,22 +6,22 @@
 
 ## Overview
 
-This guide shows how the unified mock data layer enables seamless data sharing between chat-ui and admin-ui. After implementation, **changes in admin UI immediately appear in chat UI** and vice versa.
+This guide shows how the unified mock data layer enables seamless data sharing between the chat UI (route `/`) and admin UI (route `/admin`). Both UIs run in the same app on port 5173. **Changes in admin UI immediately appear in chat UI** and vice versa.
 
 ---
 
 ## Before: Separate Data Silos
 
 ```typescript
-// ❌ OLD: chat-ui and admin-ui use separate namespaces
+// ❌ OLD: Multiple packages with separate namespaces
 
-// chat-ui/src/main.tsx
+// packages/chat-ui/src/main.tsx
 const chatStorage = createStorage({
   backend: 'localStorage',
   namespace: 'war-rooms',  // Default namespace
 });
 
-// admin-ui/src/providers/dataProvider.ts
+// packages/admin-ui/src/providers/dataProvider.ts (OLD - DELETED)
 const adminStorage = createStorage({
   backend: 'localStorage',
   namespace: 'war-rooms-admin',  // Different namespace!
@@ -35,21 +35,23 @@ const adminStorage = createStorage({
 ## After: Unified Data Layer
 
 ```typescript
-// ✅ NEW: Both UIs share same namespace
+// ✅ NEW: Single app with both UIs sharing same namespace
 
-// chat-ui/src/main.tsx
-const chatStorage = createStorage({
+// packages/chat-ui/src/main.tsx (single entry point)
+const storage = createStorage({
   backend: 'localStorage',
-  namespace: process.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
+  namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
 });
 
-// admin-ui/src/main.tsx
-const adminStorage = createStorage({
-  backend: 'localStorage',
-  namespace: process.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
-});
+// packages/chat-ui/src/App.tsx (routes both UIs)
+<BrowserRouter>
+  <Routes>
+    <Route path="/" element={<ChatApp />} />        {/* Chat UI */}
+    <Route path="/admin/*" element={<AdminApp />} /> {/* Admin UI */}
+  </Routes>
+</BrowserRouter>
 
-// Result: admin creates user → chat UI sees it instantly
+// Result: Both UIs in same app, same namespace → instant sync
 ```
 
 ---
@@ -58,27 +60,31 @@ const adminStorage = createStorage({
 
 ### Scenario 1: Admin Creates User
 
-**Admin UI Flow**:
+**Admin UI Flow** (route: `/admin`):
 
 ```typescript
-// packages/admin-ui/src/resources/users.tsx
+// packages/chat-ui/src/admin/resources/forces/index.tsx
 import { Create, SimpleForm, TextInput } from 'react-admin';
 
-export const UserCreate = () => (
+export const ForceCreate = () => (
   <Create>
     <SimpleForm>
-      <TextInput source="username" />
       <TextInput source="name" />
-      <TextInput source="email" />
+      <TextInput source="description" />
+      <ArrayInput source="members">
+        <SimpleFormIterator>
+          <TextInput source="" label="Username" />
+        </SimpleFormIterator>
+      </ArrayInput>
     </SimpleForm>
   </Create>
 );
 
-// When user submits form:
-// 1. dataProvider.create('users', { username: 'newuser', ... })
-// 2. MockOpenFireAPI.createUser() writes to rest:user:newuser
-// 3. Transformer writes to roster/newuser@wargame.local
-// 4. Both representations in shared storage
+// When admin submits form at /admin:
+// 1. dataProvider.create('forces', { name: 'Red Force', ... })
+// 2. RESTAdapter writes to entities/forces/Red Force
+// 3. XMPPAdapter reads unified data for chat UI at /
+// 4. Single source of truth in shared storage
 ```
 
 **Chat UI Result**:
@@ -107,10 +113,10 @@ export const RosterPanel = () => {
 
 ### Scenario 2: Admin Creates Room
 
-**Admin UI Flow**:
+**Admin UI Flow** (route: `/admin`):
 
 ```typescript
-// packages/admin-ui/src/resources/rooms.tsx
+// packages/chat-ui/src/admin/resources/rooms/index.tsx
 import { Create, SimpleForm, TextInput, SelectInput } from 'react-admin';
 
 export const RoomCreate = () => (
@@ -119,18 +125,18 @@ export const RoomCreate = () => (
       <TextInput source="roomName" />
       <TextInput source="naturalName" />
       <SelectInput source="forceRestrictions" choices={[
-        { id: 'force-red', name: 'Red Force' },
-        { id: 'force-blue', name: 'Blue Force' },
+        { id: 'Red Force', name: 'Red Force' },
+        { id: 'Blue Force', name: 'Blue Force' },
       ]} />
     </SimpleForm>
   </Create>
 );
 
-// When admin creates room:
+// When admin creates room at /admin:
 // 1. dataProvider.create('rooms', { roomName: 'ops-center', ... })
-// 2. MockOpenFireAPI.createRoom() → rest:room:ops-center
-// 3. Transformer creates rooms/ops-center@conference.wargame.local
-// 4. Room appears in both UIs
+// 2. RESTAdapter writes to entities/rooms/ops-center
+// 3. XMPPAdapter projects to XMPP format for chat UI at /
+// 4. Room appears in both routes instantly
 ```
 
 **Chat UI Result**:
@@ -179,23 +185,23 @@ const handleSend = async (body: string) => {
 };
 ```
 
-**Admin UI Result**:
+**Admin UI Result** (route: `/admin`):
 
 ```typescript
-// packages/admin-ui/src/resources/rooms.tsx
+// packages/chat-ui/src/admin/resources/rooms/index.tsx
 import { Show, SimpleShowLayout, TextField, FunctionField } from 'react-admin';
 
 export const RoomShow = () => (
   <Show>
     <SimpleShowLayout>
       <TextField source="roomName" />
-      <FunctionField 
-        label="Message Count" 
+      <FunctionField
+        label="Message Count"
         render={(record) => {
-          // Reads messages/${roomJid}/index from shared storage
+          // Reads archive/rooms/${roomJid}/* from shared storage
           const count = getMessageCount(record.roomName);
-          return count;  // ✅ Shows updated count
-        }} 
+          return count;  // ✅ Shows updated count from chat UI at /
+        }}
       />
     </SimpleShowLayout>
   </Show>
@@ -206,27 +212,28 @@ export const RoomShow = () => (
 
 ### Scenario 4: Admin Updates Force Metadata
 
-**Admin UI Flow**:
+**Admin UI Flow** (route: `/admin`):
 
 ```typescript
-// packages/admin-ui/src/resources/forces.tsx
-import { Edit, SimpleForm, TextInput, ColorInput } from 'react-admin';
+// packages/chat-ui/src/admin/resources/forces/index.tsx
+import { Edit, SimpleForm, TextInput } from 'react-admin';
 
 export const ForceEdit = () => (
   <Edit>
     <SimpleForm>
       <TextInput source="name" />
       <TextInput source="description" />
-      <TextInput source="color" type="color" />
-      <TextInput source="icon" />
+      <TextInput source="metadata.color" type="color" />
+      <TextInput source="metadata.icon" />
     </SimpleForm>
   </Edit>
 );
 
-// When admin updates force:
-// 1. dataProvider.update('forces', { color: '#FF0000', ... })
-// 2. MockPubSubMetadataREST.setForceMetadata()
-// 3. Writes to pubsub/nodes//war-rooms/forces/items/force-red
+// When admin updates force at /admin:
+// 1. dataProvider.update('forces', { metadata: { color: '#FF0000' }, ... })
+// 2. RESTAdapter writes to entities/forces/Red Force
+// 3. PubSubAdapter projects metadata for both UIs
+// 4. Chat UI at / sees color update instantly
 ```
 
 **Chat UI Result**:
@@ -265,42 +272,25 @@ VITE_STORAGE_NAMESPACE=war-rooms
 VITE_STORAGE_NAMESPACE=test-war-rooms-${DATE_NOW}
 ```
 
-### Chat UI Setup
+### Single App Setup (Both UIs)
 
 ```typescript
-// packages/chat-ui/src/main.tsx
-import { createStorage } from '@war-rooms/backend-mock';
+// packages/chat-ui/src/main.tsx (single entry point for both UIs)
+import { createStorage, seedTestWargame } from '@war-rooms/backend-mock';
 
 const storage = createStorage({
   backend: 'localStorage',
   namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
 });
 
-// Seed unified fixtures on first load
-if (await storage.keys().length === 0) {
-  await seedAll(storage, DEFAULT_SEED_OPTIONS);
-}
-```
-
-### Admin UI Setup
-
-```typescript
-// packages/admin-ui/src/main.tsx
-import { createStorage } from '@war-rooms/backend-mock';
-import { createDataProvider } from './providers/dataProvider';
-
-const storage = createStorage({
-  backend: 'localStorage',
-  namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
-});
-
-// Seed unified fixtures on first load
-if (await storage.keys().length === 0) {
-  await seedAll(storage, DEFAULT_SEED_OPTIONS);
+// Seed unified fixtures on first load (using adapter pattern)
+const keys = await storage.keys();
+if (keys.length === 0) {
+  await seedTestWargame(storage);
 }
 
-// Create data provider with shared storage
-const dataProvider = createDataProvider(storage);
+// App renders both Chat UI (/) and Admin UI (/admin) via react-router
+// Both UIs share same storage instance, same namespace
 ```
 
 ---
@@ -537,9 +527,12 @@ npm test
 # Run E2E tests
 npm run test:e2e
 
-# Start both UIs
-npm run dev  # Chat UI on :5173
-cd packages/admin-ui && npm run dev  # Admin UI on :5174
+# Start the application (single app on port 5173)
+npm run dev
+
+# Access:
+# - Chat UI: http://localhost:5173/
+# - Admin UI: http://localhost:5173/admin
 
 # Verify:
 # 1. Create user in admin → appears in chat roster
