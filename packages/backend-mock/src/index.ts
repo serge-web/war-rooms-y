@@ -36,3 +36,6 @@ export type {
   RoomMetadata,
   GameOverview,
 } from './rest/pubsub-metadata';
+
+// Admin user seeding (separate from unified seeding)
+export { seedRestUsers as seedAdminUsers } from './rest/seed-rest';

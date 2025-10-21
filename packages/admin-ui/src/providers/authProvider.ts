@@ -11,10 +11,10 @@ import { MockOpenFireAPI, createStorage } from '@war-rooms/backend-mock';
 // ============================================================================
 
 export function createAuthProvider(): AuthProvider {
-  // Initialize storage and API
+  // Initialize storage and API (unified namespace)
   const storage = createStorage({
     backend: 'localStorage',
-    namespace: 'war-rooms-admin',
+    namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
   });
 
   const restApi = new MockOpenFireAPI(storage);
