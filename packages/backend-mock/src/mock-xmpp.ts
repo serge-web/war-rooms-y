@@ -133,18 +133,30 @@ export class MockXMPPBackend implements XMPPBackend {
     await delay(this.latency);
 
     const bareJid = getBareJid(jid);
-    const item: XMPPUser = {
-      jid,
-      bare_jid: bareJid,
-      subscription: 'both',
+    const username = bareJid.split('@')[0];
+    if (!username) {
+      throw new Error('Invalid JID format');
+    }
+
+    // Create UnifiedUser in unified storage
+    const unifiedUser = {
+      username,
+      jid: bareJid,
+      name: name || username,
       groups: groups || [],
+      createdAt: new Date().toISOString(),
     };
 
-    if (name !== undefined) item.name = name;
+    await this.storage.setItem(`entities/users/${username}`, unifiedUser);
 
-    await this.storage.setItem(`roster/${bareJid}`, item);
+    // Update user index
+    const userIndex = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    if (!userIndex.includes(username)) {
+      userIndex.push(username);
+      await this.storage.setItem('entities/users/_index', userIndex);
+    }
 
-    // Trigger roster update
+    // Trigger roster update (adapter will project from unified storage)
     this.handlers.onRosterUpdate?.(await this.getRoster());
   }
 
@@ -152,7 +164,18 @@ export class MockXMPPBackend implements XMPPBackend {
     await delay(this.latency);
 
     const bareJid = getBareJid(jid);
-    await this.storage.removeItem(`roster/${bareJid}`);
+    const username = bareJid.split('@')[0];
+    if (!username) {
+      throw new Error('Invalid JID format');
+    }
+
+    // Remove from unified storage
+    await this.storage.removeItem(`entities/users/${username}`);
+
+    // Update user index
+    const userIndex = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const newIndex = userIndex.filter(u => u !== username);
+    await this.storage.setItem('entities/users/_index', newIndex);
 
     // Trigger roster update
     this.handlers.onRosterUpdate?.(await this.getRoster());
@@ -162,24 +185,28 @@ export class MockXMPPBackend implements XMPPBackend {
     await delay(this.latency);
 
     const bareJid = getBareJid(jid);
-    const existing = await this.storage.getItem<XMPPUser>(`roster/${bareJid}`);
+    const username = bareJid.split('@')[0];
+    if (!username) {
+      throw new Error('Invalid JID format');
+    }
+
+    // Get existing from unified storage
+    const existing = await this.storage.getItem<any>(`entities/users/${username}`);
 
     if (!existing) {
       throw new Error(`Roster item not found: ${jid}`);
     }
 
-    const updated: XMPPUser = {
+    // Update in unified storage
+    const updated = {
       ...existing,
       groups: groups ?? existing.groups,
+      name: name !== undefined ? name : existing.name,
     };
 
-    if (name !== undefined) {
-      updated.name = name;
-    }
+    await this.storage.setItem(`entities/users/${username}`, updated);
 
-    await this.storage.setItem(`roster/${bareJid}`, updated);
-
-    // Trigger roster update
+    // Trigger roster update (adapter will project from unified storage)
     this.handlers.onRosterUpdate?.(await this.getRoster());
   }
 
@@ -222,14 +249,20 @@ export class MockXMPPBackend implements XMPPBackend {
   async subscribePresence(jid: string): Promise<void> {
     await delay(this.latency);
 
-    // In mock, we auto-approve subscriptions
+    // In mock, presence subscriptions are automatically approved
+    // Unified storage doesn't track subscription state separately
+    // (all roster items are considered 'both' subscription)
     const bareJid = getBareJid(jid);
-    const existing = await this.storage.getItem<XMPPUser>(`roster/${bareJid}`);
+    const username = bareJid.split('@')[0];
 
-    if (existing) {
-      existing.subscription = 'both';
-      await this.storage.setItem(`roster/${bareJid}`, existing);
+    // Verify user exists in unified storage
+    const user = await this.storage.getItem(`entities/users/${username}`);
+    if (!user) {
+      throw new Error(`User not found: ${jid}`);
     }
+
+    // In unified storage, subscription state is implicit (all users have 'both')
+    // No update needed
   }
 
   // ===== Direct Messaging =====

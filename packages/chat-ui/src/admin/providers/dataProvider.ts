@@ -35,7 +35,6 @@ import {
 // Resource Types
 // ============================================================================
 
-type OverviewRecord = GameOverview & { id: string };
 type ForceRecord = OpenFireGroup & { id: string; metadata?: ForceMetadata };
 type RoomRecord = OpenFireRoom & { id: string; metadata?: RoomMetadata };
 type UserRecord = OpenFireUser & { id: string };
@@ -115,7 +114,7 @@ export function createDataProvider(): DataProvider {
           data.push({
             ...group,
             id: group.name,
-            metadata: metadata || undefined,
+            ...(metadata ? { metadata } : {}),
           });
         }
 
@@ -135,7 +134,7 @@ export function createDataProvider(): DataProvider {
           data.push({
             ...room,
             id: room.roomName,
-            metadata: metadata || undefined,
+            ...(metadata ? { metadata } : {}),
           });
         }
 
@@ -147,7 +146,15 @@ export function createDataProvider(): DataProvider {
       // ======================================================================
 
       if (resource === 'users') {
-        const users = await restApi.getUsers(params.pagination);
+        // Transform react-admin pagination to PaginationParams
+        const pagination = params.pagination
+          ? {
+              startIndex: (params.pagination.page - 1) * params.pagination.perPage,
+              count: params.pagination.perPage,
+            }
+          : undefined;
+
+        const users = await restApi.getUsers(pagination);
         const data: UserRecord[] = users.map((u) => ({ ...u, id: u.username }));
         return { data, total: data.length };
       }

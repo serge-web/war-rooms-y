@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { createStorage, seedAll, seedAdminUsers } from '@war-rooms/backend-mock';
+import { createStorage, seedTestWargame } from '@war-rooms/backend-mock';
 
-// Seed unified mock data on first load (T033)
+// Seed unified mock data on first load
 const STORAGE_NAMESPACE = import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms';
 const hasSeededAdmin = localStorage.getItem(`${STORAGE_NAMESPACE}:admin-seeded`);
 
@@ -13,18 +13,10 @@ if (!hasSeededAdmin) {
     namespace: STORAGE_NAMESPACE,
   });
 
-  void Promise.all([
-    // Seed unified XMPP + REST data
-    seedAll(storage, {
-      rest: true,
-      domain: import.meta.env.VITE_MOCK_DOMAIN || 'wargame.local',
-      conferenceService: import.meta.env.VITE_MOCK_CONFERENCE || 'conference.wargame.local',
-    }),
-    // Also seed admin users with passwords for admin UI login
-    seedAdminUsers(storage),
-  ]).then(() => {
+  // Seed unified wargame data (includes users with passwords)
+  void seedTestWargame(storage).then(() => {
     localStorage.setItem(`${STORAGE_NAMESPACE}:admin-seeded`, 'true');
-    console.info('✅ Admin UI: Mock data seeded (XMPP + REST + Admin users)');
+    console.info('✅ Admin UI: Unified wargame data seeded');
   });
 }
 

@@ -21,7 +21,7 @@ import {
   FunctionField,
   SimpleForm,
 } from 'react-admin';
-import { Box, Chip } from '@mui/material';
+import { Box } from '@mui/material';
 import { MembershipManager } from './MembershipManager';
 
 export const ForceList = () => (

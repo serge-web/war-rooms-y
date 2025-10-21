@@ -2,7 +2,7 @@
  * Mock Storage Layer
  * Abstraction over localStorage, indexedDB (via localforage), and memory
  *
- * ## Unified Data Layer
+ * ## Unified Storage Architecture
  *
  * **CRITICAL**: Both chat-ui and admin-ui MUST use the SAME namespace for unified data.
  *
@@ -12,42 +12,45 @@
  * - **Testing**: Use `test-war-rooms` or unique test ID for isolation
  * - **Configuration**: Set via `VITE_STORAGE_NAMESPACE` environment variable
  *
- * ### Key Prefixes (Protocol Separation)
+ * ### Unified Storage Keys (Single Source of Truth)
  *
- * Both XMPP and REST protocols share the same namespace but use different key prefixes:
+ * All data is stored in a unified format under `entities/*`. Protocol adapters
+ * (XMPPAdapter, RESTAdapter, PubSubAdapter) project this data to protocol-specific formats.
  *
- * **XMPP Keys**:
- * - `roster/` → XMPP user roster entries (XMPPUser)
- * - `rooms/` → XMPP MUC room info (XMPPRoom)
- * - `messages/` → Message archives (XMPPMessage)
- * - `pubsub/nodes/` → PubSub node data (metadata)
+ * **Unified Keys**:
+ * - `entities/users/{username}` → UnifiedUser records
+ * - `entities/users/_index` → Array of usernames (index)
+ * - `entities/forces/{forceId}` → UnifiedForce records
+ * - `entities/forces/_index` → Array of force IDs (index)
+ * - `entities/rooms/{roomId}` → UnifiedRoom records
+ * - `entities/rooms/_index` → Array of room IDs (index)
+ * - `entities/templates/{templateId}` → UnifiedFormTemplate records
+ * - `entities/templates/_index` → Array of template IDs (index)
  *
- * **REST Keys**:
- * - `rest:user:` → OpenFire users (OpenFireUser)
- * - `rest:group:` → OpenFire groups (OpenFireGroup)
- * - `rest:room:` → OpenFire rooms (OpenFireRoom)
- * - `rest:users:list` → Array of usernames (index)
- * - `rest:groups:list` → Array of group names (index)
- * - `rest:rooms:list` → Array of room names (index)
+ * **Transient Data** (not projected, session-specific):
+ * - `rooms/{roomJid}/occupants/*` → Real-time room occupants
+ * - `archive/rooms/{roomJid}/*` → Message history
+ * - `presence/self` → Current user presence
+ * - `session` → Current XMPP session info
  *
  * ### Example Usage
  *
  * ```typescript
- * // Chat UI - uses XMPP keys
+ * // All UIs use unified storage
  * const storage = createStorage({
  *   backend: 'localStorage',
  *   namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
  * });
- * const user = await storage.getItem('roster/commander.red@wargame.local');
  *
- * // Admin UI - uses REST keys (SAME namespace!)
- * const storage = createStorage({
- *   backend: 'localStorage',
- *   namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
- * });
- * const restUser = await storage.getItem('rest:user:commander.red');
+ * // Read unified user data
+ * const user = await storage.getItem<UnifiedUser>('entities/users/gamemaster');
  *
- * // Both refer to the same underlying user, just different protocol representations
+ * // Adapters project to protocol-specific formats:
+ * const xmppAdapter = new XMPPAdapter(storage, 'wargame.local');
+ * const xmppUser = await xmppAdapter.getUser('gamemaster'); // Returns XMPPUser
+ *
+ * const restAdapter = new RESTAdapter(storage, 'wargame.local', 'conference.wargame.local');
+ * const restUser = await restAdapter.getUser('gamemaster'); // Returns OpenFireUser
  * ```
  */
 

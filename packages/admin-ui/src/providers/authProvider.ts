@@ -4,7 +4,8 @@
  */
 
 import type { AuthProvider } from 'react-admin';
-import { MockOpenFireAPI, createStorage } from '@war-rooms/backend-mock';
+import { MockOpenFireAPI, createStorage, seedTestWargame } from '@war-rooms/backend-mock';
+import type { UnifiedUser } from '@war-rooms/backend-interface';
 
 // ============================================================================
 // Auth Provider Implementation
@@ -19,6 +20,21 @@ export function createAuthProvider(): AuthProvider {
 
   const restApi = new MockOpenFireAPI(storage);
 
+  // Auto-seed unified data on first run
+  let seedingPromise: Promise<void> | null = null;
+
+  const initSeeding = async () => {
+    // Check if data exists
+    const users = await storage.getItem('entities/users/_index');
+    if (!users) {
+      console.log('[Admin Auth] Seeding unified wargame data...');
+      await seedTestWargame(storage);
+      console.log('[Admin Auth] Unified data seeded');
+    }
+  };
+
+  seedingPromise = initSeeding();
+
   // Store current user
   let currentUser: { username: string; isAdmin: boolean } | null = null;
 
@@ -29,28 +45,31 @@ export function createAuthProvider(): AuthProvider {
     async login(params: { username: string; password: string }): Promise<void> {
       const { username, password } = params;
 
-      // 1. Check if user exists and password matches
-      const user = await restApi.getUser(username);
-      if (!user) {
-        throw new Error('User not found');
+      // Wait for seeding to complete
+      if (seedingPromise) {
+        await seedingPromise;
+        seedingPromise = null;
       }
 
-      // In mock, we need to check stored password
-      // (In real OpenFire, XMPP auth would handle this)
-      const storedUser = await storage.getItem<{ password?: string }>(`rest:user:${username}`);
-      if (storedUser?.password !== password) {
-        throw new Error('Invalid credentials 2');
+      // 1. Check if user exists via unified storage
+      const unifiedUser = await storage.getItem<UnifiedUser>(`entities/users/${username}`);
+      if (!unifiedUser) {
+        throw new Error('Invalid credentials');
       }
 
-      // 2. Check Game Masters group membership
-      const sharedGroups = user.properties?.sharedGroups || [];
-      const isGameMaster = sharedGroups.includes('Game Masters');
+      // 2. Check password (in unified storage)
+      if (unifiedUser.password !== password) {
+        throw new Error('Invalid credentials');
+      }
+
+      // 3. Check Game Masters group membership
+      const isGameMaster = unifiedUser.groups?.includes('Game Masters') || unifiedUser.isGameMaster;
 
       if (!isGameMaster) {
         throw new Error('Unauthorized: Game Master access required');
       }
 
-      // 3. Store authenticated admin user
+      // 4. Store authenticated admin user
       currentUser = { username, isAdmin: true };
       localStorage.setItem('admin-auth', JSON.stringify(currentUser));
     },
