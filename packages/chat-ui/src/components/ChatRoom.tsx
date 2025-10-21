@@ -24,8 +24,9 @@ import {
   sortMessages,
   getMessageSender,
   markRoomAsReadAtom,
+  isOwnMessage,
 } from '@war-rooms/state';
-import { useRoomsStore, selectRoomOccupants, type RoomsStore } from '@war-rooms/state';
+import { useRoomsStore, selectRoomOccupants, selectRoom, type RoomsStore } from '@war-rooms/state';
 import type { XMPPMessage } from '@war-rooms/backend-interface';
 import { ParticipantList } from './ParticipantList';
 
@@ -43,8 +44,9 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
   const loadArchived = useSetAtom(loadArchivedMessagesAtom);
   const markAsRead = useSetAtom(markRoomAsReadAtom);
 
-  // Get room occupants
+  // Get room occupants and current user's nickname
   const occupants = useRoomsStore(selectRoomOccupants(roomJid));
+  const currentNickname = useRoomsStore(selectRoom(roomJid))?.nickname;
 
   // Send message action from rooms store
   const sendMessage = useRoomsStore((state: RoomsStore) => state.sendMessage);
@@ -112,33 +114,84 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
           bgcolor: 'background.paper',
         }}
       >
-        <List>
-          {sortedMessages.map((message: XMPPMessage, index: number) => (
-            <React.Fragment key={message.id}>
-              <ListItem sx={{ alignItems: 'flex-start', px: 0 }}>
-                <Box sx={{ width: '100%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                    <Typography variant="subtitle2" component="span" color="text.primary">
-                      {getMessageSender(message)}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {message.delay?.stamp
-                        ? new Date(message.delay.stamp).toLocaleTimeString()
-                        : 'now'}
-                    </Typography>
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    color="text.primary"
-                    sx={{ mt: 0.5, whiteSpace: 'pre-wrap' }}
+        <List sx={{ py: 1 }}>
+          {sortedMessages.map((message: XMPPMessage) => {
+            const isOwn = isOwnMessage(message, currentNickname);
+            const sender = getMessageSender(message);
+            const timestamp = message.delay?.stamp
+              ? new Date(message.delay.stamp).toLocaleTimeString()
+              : 'now';
+
+            return (
+              <ListItem
+                key={message.id}
+                sx={{
+                  display: 'flex',
+                  justifyContent: isOwn ? 'flex-end' : 'flex-start',
+                  px: 1,
+                  py: 0.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    maxWidth: '70%',
+                    minWidth: '20%',
+                    ml: isOwn ? 8 : 0,
+                    mr: isOwn ? 0 : 8,
+                  }}
+                >
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                      bgcolor: isOwn ? 'primary.main' : 'background.default',
+                      color: isOwn ? 'primary.contrastText' : 'text.primary',
+                    }}
                   >
-                    {message.body}
-                  </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'baseline',
+                        gap: 1,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 600,
+                          opacity: isOwn ? 0.9 : 1,
+                        }}
+                      >
+                        {sender}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          opacity: isOwn ? 0.7 : 0.6,
+                          fontSize: '0.7rem',
+                        }}
+                      >
+                        {timestamp}
+                      </Typography>
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {message.body}
+                    </Typography>
+                  </Paper>
                 </Box>
               </ListItem>
-              {index < sortedMessages.length - 1 && <Divider component="li" />}
-            </React.Fragment>
-          ))}
+            );
+          })}
         </List>
         <div ref={messagesEndRef} />
       </Box>

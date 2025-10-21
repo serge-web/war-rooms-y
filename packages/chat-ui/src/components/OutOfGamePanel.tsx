@@ -5,15 +5,29 @@
  */
 
 import { Box, Paper, Typography, Divider } from '@mui/material';
-import { useConnectionStore, selectJid, selectBareJid } from '@war-rooms/state';
+import { useEffect } from 'react';
+import { useConnectionStore, selectJid, selectBareJid, useRoomsStore, selectIsJoined, type RoomsStore } from '@war-rooms/state';
 import { ChatRoom } from './ChatRoom';
+
+const ALL_HANDS_JID = 'all-hands@conference.wargame.local';
 
 export function OutOfGamePanel() {
   const jid = useConnectionStore(selectJid);
   const bareJid = useConnectionStore(selectBareJid);
+  const isJoined = useRoomsStore(selectIsJoined(ALL_HANDS_JID));
+  const joinRoom = useRoomsStore((state: RoomsStore) => state.joinRoom);
 
   // Extract username from JID (e.g., "commander.red@wargame.local" -> "commander.red")
   const username = bareJid?.split('@')[0] || 'Unknown';
+
+  // Auto-join all-hands room when component mounts
+  useEffect(() => {
+    if (username && username !== 'Unknown' && !isJoined) {
+      joinRoom(ALL_HANDS_JID, username).catch((err) => {
+        console.error('[OutOfGamePanel] Failed to join all-hands:', err);
+      });
+    }
+  }, [username, isJoined, joinRoom]);
 
   return (
     <Box
@@ -49,7 +63,20 @@ export function OutOfGamePanel() {
 
       {/* All Hands Room - takes remaining space */}
       <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <ChatRoom roomJid="all-hands@conference.wargame.local" />
+        <Paper
+          elevation={2}
+          sx={{
+            p: 1.5,
+            borderRadius: 0,
+            borderBottom: 1,
+            borderColor: 'divider',
+          }}
+        >
+          <Typography variant="h6">All Hands</Typography>
+        </Paper>
+        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+          <ChatRoom roomJid={ALL_HANDS_JID} />
+        </Box>
       </Box>
 
       <Divider />

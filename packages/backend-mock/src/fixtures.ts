@@ -394,6 +394,7 @@ export const MOCK_ROOMS: Array<{
 // ============================================================================
 
 export const MOCK_MESSAGES: XMPPMessage[] = [
+  // All-Hands messages
   {
     id: generateMessageId(),
     from: `${buildJid('all-hands', MOCK_CONFERENCE)}/GM`,
@@ -426,12 +427,176 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
   },
   {
     id: generateMessageId(),
+    from: `${buildJid('all-hands', MOCK_CONFERENCE)}/GM`,
+    to: buildJid('all-hands', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Exercise is now LIVE. All forces proceed with initial objectives.',
+    delay: {
+      stamp: '2025-01-20T09:00:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('all-hands', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('all-hands', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Roger that. Beginning reconnaissance operations.',
+    delay: {
+      stamp: '2025-01-20T09:01:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('all-hands', MOCK_CONFERENCE)}/BlueA1`,
+    to: buildJid('all-hands', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Blue analyst standing by for intelligence updates.',
+    delay: {
+      stamp: '2025-01-20T09:02:00.000Z',
+    },
+  },
+  // Red Command messages
+  {
+    id: generateMessageId(),
     from: `${buildJid('red-command', MOCK_CONFERENCE)}/RedCmd`,
     to: buildJid('red-command', MOCK_CONFERENCE),
     type: 'groupchat',
     body: 'RedA1, prepare initial SITREP for T+30 minutes.',
     delay: {
       stamp: '2025-01-20T09:05:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-command', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('red-command', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Understood, Commander. Working on initial assessment now.',
+    delay: {
+      stamp: '2025-01-20T09:06:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-command', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('red-command', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Priority is to establish situational awareness before H+1.',
+    delay: {
+      stamp: '2025-01-20T09:10:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-command', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('red-command', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'SITREP: All units in position. No hostile contact yet.',
+    delay: {
+      stamp: '2025-01-20T09:30:00.000Z',
+    },
+  },
+  // Red Media messages
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-media', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('red-media', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Media team, prepare for initial press release at H+2.',
+    delay: {
+      stamp: '2025-01-20T09:15:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-media', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('red-media', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Monitoring social media channels. No significant activity detected.',
+    delay: {
+      stamp: '2025-01-20T09:20:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-media', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('red-media', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Good. Keep tracking Blue Force information operations.',
+    delay: {
+      stamp: '2025-01-20T09:21:00.000Z',
+    },
+  },
+  // Red Logistics messages
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-logistics', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('red-logistics', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Supply status: All units at 100% fuel and ammunition.',
+    delay: {
+      stamp: '2025-01-20T09:08:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-logistics', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('red-logistics', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Excellent. Maintain readiness for extended operations.',
+    delay: {
+      stamp: '2025-01-20T09:09:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-logistics', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('red-logistics', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Medical supplies confirmed available at all forward positions.',
+    delay: {
+      stamp: '2025-01-20T09:25:00.000Z',
+    },
+  },
+  // Red HQ messages
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-HQ', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('red-HQ', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'HQ team, I need eyes on all operational channels.',
+    delay: {
+      stamp: '2025-01-20T09:03:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-HQ', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('red-HQ', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Monitoring command, media, and logistics channels now.',
+    delay: {
+      stamp: '2025-01-20T09:04:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-HQ', MOCK_CONFERENCE)}/RedCmd`,
+    to: buildJid('red-HQ', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Report any anomalies immediately.',
+    delay: {
+      stamp: '2025-01-20T09:12:00.000Z',
+    },
+  },
+  {
+    id: generateMessageId(),
+    from: `${buildJid('red-HQ', MOCK_CONFERENCE)}/RedA1`,
+    to: buildJid('red-HQ', MOCK_CONFERENCE),
+    type: 'groupchat',
+    body: 'Understood. All channels nominal so far.',
+    delay: {
+      stamp: '2025-01-20T09:13:00.000Z',
     },
   },
 ];
