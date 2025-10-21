@@ -9,9 +9,8 @@ import { PubSubAdapter } from '../pubsub-adapter';
 import { createStorage } from '../../storage';
 import type { Storage } from '../../storage';
 import type { Theme } from '@mui/material/styles';
+import { MOCK_DOMAIN, MOCK_CONFERENCE } from '../../fixtures';
 import {
-  TEST_DOMAIN,
-  TEST_CONFERENCE,
   seedTestWargame,
   addPlayerToForce,
   createTestRoomInWargame,
@@ -32,8 +31,8 @@ describe('Cross-Adapter Integration', () => {
     });
 
     // Initialize all adapters with shared storage
-    xmppAdapter = new XMPPAdapter(storage, TEST_DOMAIN);
-    restAdapter = new RESTAdapter(storage, TEST_DOMAIN, TEST_CONFERENCE);
+    xmppAdapter = new XMPPAdapter(storage, MOCK_DOMAIN);
+    restAdapter = new RESTAdapter(storage, MOCK_DOMAIN, MOCK_CONFERENCE);
     pubsubAdapter = new PubSubAdapter(storage);
 
     // Seed the test wargame scenario
@@ -45,18 +44,18 @@ describe('Cross-Adapter Integration', () => {
       // Add commander.blue to intel-room via REST
       const updatedRoom = await restAdapter.updateRoom('intel-room', {
         members: [
-          `analyst.red1@${TEST_DOMAIN}`,
-          `analyst.blue1@${TEST_DOMAIN}`,
-          `gamemaster@${TEST_DOMAIN}`,
-          `commander.blue@${TEST_DOMAIN}`, // Adding new member
+          `analyst.red1@${MOCK_DOMAIN}`,
+          `analyst.blue1@${MOCK_DOMAIN}`,
+          `gamemaster@${MOCK_DOMAIN}`,
+          `commander.blue@${MOCK_DOMAIN}`, // Adding new member
         ],
       });
 
-      expect(updatedRoom?.members).toContain(`commander.blue@${TEST_DOMAIN}`);
+      expect(updatedRoom?.members).toContain(`commander.blue@${MOCK_DOMAIN}`);
 
       // Verify commander.blue can see the room via XMPP
-      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${TEST_DOMAIN}`);
-      const intelRoom = blueRooms.find(r => r.jid === `intel-room@${TEST_CONFERENCE}`);
+      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
+      const intelRoom = blueRooms.find(r => r.jid === `intel-room@${MOCK_CONFERENCE}`);
       expect(intelRoom).toBeDefined();
       expect(intelRoom?.info.identity.name).toBe('Intelligence Room');
     });
@@ -65,17 +64,17 @@ describe('Cross-Adapter Integration', () => {
       // Remove analyst.red1 from intel-room via REST
       const updatedRoom = await restAdapter.updateRoom('intel-room', {
         members: [
-          `analyst.blue1@${TEST_DOMAIN}`,
-          `gamemaster@${TEST_DOMAIN}`,
+          `analyst.blue1@${MOCK_DOMAIN}`,
+          `gamemaster@${MOCK_DOMAIN}`,
           // analyst.red1 removed
         ],
       });
 
-      expect(updatedRoom?.members).not.toContain(`analyst.red1@${TEST_DOMAIN}`);
+      expect(updatedRoom?.members).not.toContain(`analyst.red1@${MOCK_DOMAIN}`);
 
       // Verify analyst.red1 can no longer see the room via XMPP
-      const redRooms = await xmppAdapter.getUserRooms(`analyst.red1@${TEST_DOMAIN}`);
-      const intelRoom = redRooms.find(r => r.jid === `intel-room@${TEST_CONFERENCE}`);
+      const redRooms = await xmppAdapter.getUserRooms(`analyst.red1@${MOCK_DOMAIN}`);
+      const intelRoom = redRooms.find(r => r.jid === `intel-room@${MOCK_CONFERENCE}`);
       expect(intelRoom).toBeUndefined();
     });
 
@@ -90,9 +89,9 @@ describe('Cross-Adapter Integration', () => {
       // Verify via REST
       const room = await restAdapter.getRoom('planning');
       expect(room?.members).toEqual([
-        `commander.red@${TEST_DOMAIN}`,
-        `commander.blue@${TEST_DOMAIN}`,
-        `gamemaster@${TEST_DOMAIN}`,
+        `commander.red@${MOCK_DOMAIN}`,
+        `commander.blue@${MOCK_DOMAIN}`,
+        `gamemaster@${MOCK_DOMAIN}`,
       ]);
     });
   });
@@ -116,21 +115,21 @@ describe('Cross-Adapter Integration', () => {
       const restRoom = await restAdapter.getRoom('all-hands');
       expect(restRoom?.maxUsers).toBe(150);
       expect(restRoom?.members).toEqual([
-        `observer1@${TEST_DOMAIN}`,
-        `observer2@${TEST_DOMAIN}`,
+        `observer1@${MOCK_DOMAIN}`,
+        `observer2@${MOCK_DOMAIN}`,
       ]);
 
       // Verify via XMPP
       const xmppRoom = await xmppAdapter.getRoom('all-hands');
       expect(xmppRoom?.info.x?.['muc#roomconfig_maxusers']).toBe(150);
       expect(xmppRoom?.info.x?.['muc#roomconfig_members']).toEqual([
-        `observer1@${TEST_DOMAIN}`,
-        `observer2@${TEST_DOMAIN}`,
+        `observer1@${MOCK_DOMAIN}`,
+        `observer2@${MOCK_DOMAIN}`,
       ]);
 
       // Verify observer1 can see the room via XMPP
-      const observer1Rooms = await xmppAdapter.getUserRooms(`observer1@${TEST_DOMAIN}`);
-      const allHands = observer1Rooms.find(r => r.jid === `all-hands@${TEST_CONFERENCE}`);
+      const observer1Rooms = await xmppAdapter.getUserRooms(`observer1@${MOCK_DOMAIN}`);
+      const allHands = observer1Rooms.find(r => r.jid === `all-hands@${MOCK_CONFERENCE}`);
       expect(allHands).toBeDefined();
     });
 
@@ -141,7 +140,7 @@ describe('Cross-Adapter Integration', () => {
         naturalName: 'Integration Test Room',
         description: 'Room for integration testing',
         maxUsers: 30,
-        members: [`commander.red@${TEST_DOMAIN}`, `commander.blue@${TEST_DOMAIN}`],
+        members: [`commander.red@${MOCK_DOMAIN}`, `commander.blue@${MOCK_DOMAIN}`],
       });
 
       expect(newRoom.roomName).toBe('test-integration');
@@ -154,11 +153,11 @@ describe('Cross-Adapter Integration', () => {
       expect(metadata?.maxOccupants).toBe(30);
 
       // Verify both commanders can see the room via XMPP
-      const redRooms = await xmppAdapter.getUserRooms(`commander.red@${TEST_DOMAIN}`);
-      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${TEST_DOMAIN}`);
+      const redRooms = await xmppAdapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
+      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
 
-      expect(redRooms.some(r => r.jid === `test-integration@${TEST_CONFERENCE}`)).toBe(true);
-      expect(blueRooms.some(r => r.jid === `test-integration@${TEST_CONFERENCE}`)).toBe(true);
+      expect(redRooms.some(r => r.jid === `test-integration@${MOCK_CONFERENCE}`)).toBe(true);
+      expect(blueRooms.some(r => r.jid === `test-integration@${MOCK_CONFERENCE}`)).toBe(true);
     });
   });
 
@@ -176,8 +175,8 @@ describe('Cross-Adapter Integration', () => {
       expect(xmppUser?.groups).toEqual(['force-red']);
 
       // Verify the new player can see force-red rooms
-      const playerRooms = await xmppAdapter.getUserRooms(`new.player@${TEST_DOMAIN}`);
-      const redCommand = playerRooms.find(r => r.jid === `red-command@${TEST_CONFERENCE}`);
+      const playerRooms = await xmppAdapter.getUserRooms(`new.player@${MOCK_DOMAIN}`);
+      const redCommand = playerRooms.find(r => r.jid === `red-command@${MOCK_CONFERENCE}`);
       expect(redCommand).toBeDefined();
       expect(redCommand?.info.identity.name).toBe('Red Command Center');
     });
@@ -200,14 +199,14 @@ describe('Cross-Adapter Integration', () => {
       expect(group?.members).toContain('integration.user');
 
       // Verify room access via XMPP
-      const userRooms = await xmppAdapter.getUserRooms(`integration.user@${TEST_DOMAIN}`);
+      const userRooms = await xmppAdapter.getUserRooms(`integration.user@${MOCK_DOMAIN}`);
 
       // Should see force-blue rooms
-      const planning = userRooms.find(r => r.jid === `planning@${TEST_CONFERENCE}`);
+      const planning = userRooms.find(r => r.jid === `planning@${MOCK_CONFERENCE}`);
       expect(planning).toBeDefined();
 
       // Should NOT see force-red rooms
-      const redCommand = userRooms.find(r => r.jid === `red-command@${TEST_CONFERENCE}`);
+      const redCommand = userRooms.find(r => r.jid === `red-command@${MOCK_CONFERENCE}`);
       expect(redCommand).toBeUndefined();
     });
   });
@@ -240,7 +239,7 @@ describe('Cross-Adapter Integration', () => {
       await restAdapter.createRoom({
         roomName: 'mixed-access',
         naturalName: 'Mixed Access Room',
-        members: [`gamemaster@${TEST_DOMAIN}`, `analyst.red1@${TEST_DOMAIN}`],
+        members: [`gamemaster@${MOCK_DOMAIN}`, `analyst.red1@${MOCK_DOMAIN}`],
       });
 
       // Add group restrictions via PubSub
@@ -250,16 +249,16 @@ describe('Cross-Adapter Integration', () => {
       });
 
       // Verify force-blue members can access
-      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${TEST_DOMAIN}`);
-      expect(blueRooms.some(r => r.jid === `mixed-access@${TEST_CONFERENCE}`)).toBe(true);
+      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
+      expect(blueRooms.some(r => r.jid === `mixed-access@${MOCK_CONFERENCE}`)).toBe(true);
 
       // Verify individual member can access
-      const analystRooms = await xmppAdapter.getUserRooms(`analyst.red1@${TEST_DOMAIN}`);
-      expect(analystRooms.some(r => r.jid === `mixed-access@${TEST_CONFERENCE}`)).toBe(true);
+      const analystRooms = await xmppAdapter.getUserRooms(`analyst.red1@${MOCK_DOMAIN}`);
+      expect(analystRooms.some(r => r.jid === `mixed-access@${MOCK_CONFERENCE}`)).toBe(true);
 
       // Verify force-red commander (not individual member) cannot access
-      const redRooms = await xmppAdapter.getUserRooms(`commander.red@${TEST_DOMAIN}`);
-      expect(redRooms.some(r => r.jid === `mixed-access@${TEST_CONFERENCE}`)).toBe(false);
+      const redRooms = await xmppAdapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
+      expect(redRooms.some(r => r.jid === `mixed-access@${MOCK_CONFERENCE}`)).toBe(false);
     });
 
     it('should properly handle room deletion across adapters', async () => {
@@ -279,8 +278,8 @@ describe('Cross-Adapter Integration', () => {
       expect(metadata).toBeNull();
 
       // Verify users no longer see the room
-      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${TEST_DOMAIN}`);
-      expect(blueRooms.some(r => r.jid === `planning@${TEST_CONFERENCE}`)).toBe(false);
+      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
+      expect(blueRooms.some(r => r.jid === `planning@${MOCK_CONFERENCE}`)).toBe(false);
     });
   });
 
@@ -308,13 +307,13 @@ describe('Cross-Adapter Integration', () => {
       expect(metadata?.members).toEqual(['gamemaster']);
 
       // Verify access control
-      const redRooms = await xmppAdapter.getUserRooms(`commander.red@${TEST_DOMAIN}`);
-      const gmRooms = await xmppAdapter.getUserRooms(`gamemaster@${TEST_DOMAIN}`);
-      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${TEST_DOMAIN}`);
+      const redRooms = await xmppAdapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
+      const gmRooms = await xmppAdapter.getUserRooms(`gamemaster@${MOCK_DOMAIN}`);
+      const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
 
-      expect(redRooms.some(r => r.jid === `dynamic-room@${TEST_CONFERENCE}`)).toBe(true);
-      expect(gmRooms.some(r => r.jid === `dynamic-room@${TEST_CONFERENCE}`)).toBe(true);
-      expect(blueRooms.some(r => r.jid === `dynamic-room@${TEST_CONFERENCE}`)).toBe(false);
+      expect(redRooms.some(r => r.jid === `dynamic-room@${MOCK_CONFERENCE}`)).toBe(true);
+      expect(gmRooms.some(r => r.jid === `dynamic-room@${MOCK_CONFERENCE}`)).toBe(true);
+      expect(blueRooms.some(r => r.jid === `dynamic-room@${MOCK_CONFERENCE}`)).toBe(false);
     });
 
     it('should maintain data integrity across multiple updates', async () => {

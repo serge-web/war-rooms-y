@@ -3,7 +3,7 @@
  * Populate mock backend with unified storage for development
  */
 
-import { createStorage, seedTestWargame, MOCK_MESSAGES } from '@war-rooms/backend-mock';
+import { createStorage, seedMockWargame, MOCK_MESSAGES } from '@war-rooms/backend-mock';
 
 export async function seedMockData() {
   // Create storage instance with unified namespace
@@ -13,8 +13,8 @@ export async function seedMockData() {
     namespace: import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms',
   });
 
-  // Seed unified wargame data (entities/* storage)
-  await seedTestWargame(storage);
+  // Seed unified wargame data (entities/* storage) using MOCK fixtures
+  await seedMockWargame(storage);
 
   // Seed archived messages
   for (const message of MOCK_MESSAGES) {

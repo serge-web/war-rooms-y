@@ -10,10 +10,7 @@ import type {
   UnifiedFormTemplate,
 } from '@war-rooms/backend-interface';
 import type { Theme } from '@mui/material/styles';
-
-// Test configuration
-export const TEST_DOMAIN = 'test.local';
-export const TEST_CONFERENCE = 'conference.test.local';
+import { MOCK_DOMAIN, MOCK_CONFERENCE } from '../fixtures';
 
 // ============================================================================
 // Test Users
@@ -22,7 +19,7 @@ export const TEST_CONFERENCE = 'conference.test.local';
 export const TEST_USERS: UnifiedUser[] = [
   {
     username: 'commander.red',
-    jid: `commander.red@${TEST_DOMAIN}/resource`,
+    jid: `commander.red@${MOCK_DOMAIN}/resource`,
     name: 'Red Commander',
     email: 'red.commander@test.local',
     password: 'test123',
@@ -43,7 +40,7 @@ export const TEST_USERS: UnifiedUser[] = [
   },
   {
     username: 'commander.blue',
-    jid: `commander.blue@${TEST_DOMAIN}/resource`,
+    jid: `commander.blue@${MOCK_DOMAIN}/resource`,
     name: 'Blue Commander',
     email: 'blue.commander@test.local',
     password: 'test123',
@@ -59,7 +56,7 @@ export const TEST_USERS: UnifiedUser[] = [
   },
   {
     username: 'gamemaster',
-    jid: `gamemaster@${TEST_DOMAIN}/resource`,
+    jid: `gamemaster@${MOCK_DOMAIN}/resource`,
     name: 'Game Master',
     email: 'gm@test.local',
     password: 'admin123',
@@ -74,7 +71,7 @@ export const TEST_USERS: UnifiedUser[] = [
   },
   {
     username: 'analyst.red1',
-    jid: `analyst.red1@${TEST_DOMAIN}/resource`,
+    jid: `analyst.red1@${MOCK_DOMAIN}/resource`,
     name: 'Red Analyst 1',
     email: 'analyst1@red.test.local',
     password: 'test123',
@@ -84,7 +81,7 @@ export const TEST_USERS: UnifiedUser[] = [
   },
   {
     username: 'analyst.blue1',
-    jid: `analyst.blue1@${TEST_DOMAIN}/resource`,
+    jid: `analyst.blue1@${MOCK_DOMAIN}/resource`,
     name: 'Blue Analyst 1',
     email: 'analyst1@blue.test.local',
     password: 'test123',
@@ -141,7 +138,7 @@ export const TEST_ROOMS: UnifiedRoom[] = [
   {
     // Public room - everyone can access
     id: 'all-hands',
-    jid: `all-hands@${TEST_CONFERENCE}`,
+    jid: `all-hands@${MOCK_CONFERENCE}`,
     name: 'All Hands',
     description: 'Main coordination room for all participants',
     xmpp: {
@@ -165,12 +162,12 @@ export const TEST_ROOMS: UnifiedRoom[] = [
       } as Partial<Theme>,
     },
     createdAt: '2024-01-01T00:00:00Z',
-    createdBy: `gamemaster@${TEST_DOMAIN}`,
+    createdBy: `gamemaster@${MOCK_DOMAIN}`,
   },
   {
     // Force-restricted room
     id: 'red-command',
-    jid: `red-command@${TEST_CONFERENCE}`,
+    jid: `red-command@${MOCK_CONFERENCE}`,
     name: 'Red Command Center',
     description: 'Red Force command and control',
     xmpp: {
@@ -196,12 +193,12 @@ export const TEST_ROOMS: UnifiedRoom[] = [
       } as Partial<Theme>,
     },
     createdAt: '2024-01-01T00:00:00Z',
-    createdBy: `gamemaster@${TEST_DOMAIN}`,
+    createdBy: `gamemaster@${MOCK_DOMAIN}`,
   },
   {
     // Individual member room
     id: 'intel-room',
-    jid: `intel-room@${TEST_CONFERENCE}`,
+    jid: `intel-room@${MOCK_CONFERENCE}`,
     name: 'Intelligence Room',
     description: 'Intelligence sharing and analysis',
     xmpp: {
@@ -217,12 +214,12 @@ export const TEST_ROOMS: UnifiedRoom[] = [
       formTemplates: ['intrep'],
     },
     createdAt: '2024-01-01T00:00:00Z',
-    createdBy: `gamemaster@${TEST_DOMAIN}`,
+    createdBy: `gamemaster@${MOCK_DOMAIN}`,
   },
   {
     // Mixed access room (force + individuals)
     id: 'planning',
-    jid: `planning@${TEST_CONFERENCE}`,
+    jid: `planning@${MOCK_CONFERENCE}`,
     name: 'Joint Planning',
     description: 'Joint planning and coordination',
     xmpp: {
@@ -239,7 +236,7 @@ export const TEST_ROOMS: UnifiedRoom[] = [
       formTemplates: ['plan', 'rfi'],
     },
     createdAt: '2024-01-01T00:00:00Z',
-    createdBy: `gamemaster@${TEST_DOMAIN}`,
+    createdBy: `gamemaster@${MOCK_DOMAIN}`,
   },
 ];
 
@@ -412,7 +409,7 @@ export async function createTestRoomInWargame(
 ): Promise<UnifiedRoom> {
   const room: UnifiedRoom = {
     id,
-    jid: `${id}@${TEST_CONFERENCE}`,
+    jid: `${id}@${MOCK_CONFERENCE}`,
     name: options.name || id,
     xmpp: {
       persistent: true,
@@ -426,7 +423,7 @@ export async function createTestRoomInWargame(
       ...(options.individualAccess ? { individualMembers: options.individualAccess } : {}),
     },
     createdAt: new Date().toISOString(),
-    createdBy: `gamemaster@${TEST_DOMAIN}`,
+    createdBy: `gamemaster@${MOCK_DOMAIN}`,
   };
 
   await storage.setItem(`entities/rooms/${id}`, room);
@@ -464,7 +461,7 @@ export function createTestUser(username: string, groups: string[] = []): Unified
 export function createTestRoom(id: string, options: Partial<UnifiedRoom> = {}): UnifiedRoom {
   return {
     id,
-    jid: `${id}@${TEST_CONFERENCE}`,
+    jid: `${id}@${MOCK_CONFERENCE}`,
     name: options.name || id,
     ...(options.description ? { description: options.description } : {}),
     xmpp: {
@@ -479,7 +476,7 @@ export function createTestRoom(id: string, options: Partial<UnifiedRoom> = {}): 
       ...options.wargaming,
     },
     createdAt: new Date().toISOString(),
-    createdBy: `gamemaster@${TEST_DOMAIN}`,
+    createdBy: `gamemaster@${MOCK_DOMAIN}`,
     ...options,
   };
 }

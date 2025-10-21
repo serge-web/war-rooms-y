@@ -7,8 +7,8 @@ import { createStorage } from '../../storage';
 import type { Storage } from '../../storage';
 import type { UnifiedRoom, UnifiedForce } from '@war-rooms/backend-interface';
 import type { Theme } from '@mui/material/styles';
+import { MOCK_CONFERENCE } from '../../fixtures';
 import {
-  TEST_CONFERENCE,
   seedTestWargame,
   createTestRoom,
   createTestForce,
@@ -123,16 +123,16 @@ describe('PubSubAdapter', () => {
   describe('Room Extension Operations (XMPP PubSub)', () => {
     describe('getRoomExtension', () => {
       it('should get room extension for XMPP PubSub', async () => {
-        const extension = await adapter.getRoomExtension(`red-command@${TEST_CONFERENCE}`);
+        const extension = await adapter.getRoomExtension(`red-command@${MOCK_CONFERENCE}`);
         expect(extension).toBeDefined();
-        expect(extension?.roomJid).toBe(`red-command@${TEST_CONFERENCE}`);
+        expect(extension?.roomJid).toBe(`red-command@${MOCK_CONFERENCE}`);
         expect(extension?.type).toBe('command');
         expect(extension?.forceRestrictions).toEqual(['force-red']);
         expect(extension?.formSchemaIds).toEqual(['oporder', 'sitrep']);
       });
 
       it('should extract room name from JID', async () => {
-        const extension = await adapter.getRoomExtension(`planning@${TEST_CONFERENCE}`);
+        const extension = await adapter.getRoomExtension(`planning@${MOCK_CONFERENCE}`);
         expect(extension).toBeDefined();
         expect(extension?.forceRestrictions).toEqual(['force-blue']);
       });
@@ -143,7 +143,7 @@ describe('PubSubAdapter', () => {
       });
 
       it('should return null for non-existent room', async () => {
-        const extension = await adapter.getRoomExtension(`non-existent@${TEST_CONFERENCE}`);
+        const extension = await adapter.getRoomExtension(`non-existent@${MOCK_CONFERENCE}`);
         expect(extension).toBeNull();
       });
     });
@@ -156,17 +156,17 @@ describe('PubSubAdapter', () => {
 
         const roomJids = extensions.map(e => e.roomJid).sort();
         expect(roomJids).toEqual([
-          `planning@${TEST_CONFERENCE}`,
-          `red-command@${TEST_CONFERENCE}`,
+          `planning@${MOCK_CONFERENCE}`,
+          `red-command@${MOCK_CONFERENCE}`,
         ]);
       });
 
       it('should not include rooms without group restrictions', async () => {
         const extensions = await adapter.getAllRoomExtensions();
-        const allHands = extensions.find(e => e.roomJid === `all-hands@${TEST_CONFERENCE}`);
+        const allHands = extensions.find(e => e.roomJid === `all-hands@${MOCK_CONFERENCE}`);
         expect(allHands).toBeUndefined();
 
-        const intelRoom = extensions.find(e => e.roomJid === `intel-room@${TEST_CONFERENCE}`);
+        const intelRoom = extensions.find(e => e.roomJid === `intel-room@${MOCK_CONFERENCE}`);
         expect(intelRoom).toBeUndefined();
       });
     });

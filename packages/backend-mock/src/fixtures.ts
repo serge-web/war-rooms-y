@@ -34,7 +34,7 @@ export const MOCK_USERS: XMPPUser[] = [
     bare_jid: buildJid('commander.red', MOCK_DOMAIN),
     name: 'Red Force Commander',
     subscription: 'both',
-    groups: ['Red Force', 'Commanders'],
+    groups: ['force-red', 'Commanders'],
     vcard: {
       fn: 'Commander Red',
       nickname: 'RedCmd',
@@ -47,7 +47,7 @@ export const MOCK_USERS: XMPPUser[] = [
     bare_jid: buildJid('commander.blue', MOCK_DOMAIN),
     name: 'Blue Force Commander',
     subscription: 'both',
-    groups: ['Blue Force', 'Commanders'],
+    groups: ['force-blue', 'Commanders'],
     vcard: {
       fn: 'Commander Blue',
       nickname: 'BlueCmd',
@@ -60,7 +60,7 @@ export const MOCK_USERS: XMPPUser[] = [
     bare_jid: buildJid('analyst.red1', MOCK_DOMAIN),
     name: 'Red Analyst 1',
     subscription: 'both',
-    groups: ['Red Force', 'Analysts'],
+    groups: ['force-red', 'Analysts'],
     vcard: {
       fn: 'Analyst Red 1',
       nickname: 'RedA1',
@@ -73,7 +73,7 @@ export const MOCK_USERS: XMPPUser[] = [
     bare_jid: buildJid('analyst.blue1', MOCK_DOMAIN),
     name: 'Blue Analyst 1',
     subscription: 'both',
-    groups: ['Blue Force', 'Analysts'],
+    groups: ['force-blue', 'Analysts'],
     vcard: {
       fn: 'Analyst Blue 1',
       nickname: 'BlueA1',
@@ -600,6 +600,147 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     },
   },
 ];
+
+// ============================================================================
+// Form Schemas (RJSF)
+// ============================================================================
+
+// ============================================================================
+// Seed Function for MOCK Data
+// ============================================================================
+
+import type { Storage } from './storage';
+import type { UnifiedUser, UnifiedForce, UnifiedRoom, UnifiedFormTemplate } from '@war-rooms/backend-interface';
+
+/**
+ * Convert MOCK fixtures to unified storage format and seed
+ */
+export async function seedMockWargame(storage: Storage): Promise<void> {
+  // Convert MOCK_USERS to UnifiedUser format
+  const unifiedUsers: UnifiedUser[] = MOCK_USERS.map(user => {
+    const baseUser: UnifiedUser = {
+      username: user.jid.split('@')[0] || '',
+      jid: user.jid,
+      name: user.name || user.jid.split('@')[0] || '',
+      email: `${user.jid.split('@')[0]}@${MOCK_DOMAIN}`,
+      password: user.jid.split('@')[0] || '', // username as password
+      groups: user.groups,
+      isGameMaster: user.groups.includes('Game Masters'),
+      createdAt: '2025-01-15T08:00:00.000Z',
+    };
+    if (user.vcard) {
+      baseUser.vcard = user.vcard;
+    }
+    return baseUser;
+  });
+
+  // Seed users
+  for (const user of unifiedUsers) {
+    await storage.setItem(`entities/users/${user.username}`, user);
+  }
+  await storage.setItem('entities/users/_index', unifiedUsers.map(u => u.username));
+
+  // Convert MOCK_FORCES to UnifiedForce format
+  const unifiedForces: UnifiedForce[] = MOCK_FORCES.map(force => {
+    const baseForce: UnifiedForce = {
+      id: force.id,
+      name: force.name,
+      color: force.color || '#000000',
+      icon: 'military_tech',
+      members: force.members.map(jid => jid.split('@')[0] || ''),
+      admins: force.commander ? [force.commander.split('@')[0] || ''] : [],
+      objectives: [],
+      createdAt: force.createdAt,
+      createdBy: force.createdBy.split('@')[0] || '',
+    };
+    if (force.description) {
+      baseForce.description = force.description;
+    }
+    return baseForce;
+  });
+
+  // Seed forces
+  for (const force of unifiedForces) {
+    await storage.setItem(`entities/forces/${force.id}`, force);
+  }
+  await storage.setItem('entities/forces/_index', unifiedForces.map(f => f.id));
+
+  // Convert MOCK_ROOMS to UnifiedRoom format
+  const unifiedRooms: UnifiedRoom[] = MOCK_ROOMS.map(room => {
+    const baseRoom: UnifiedRoom = {
+      id: room.jid.split('@')[0] || '',
+      jid: room.jid,
+      name: room.info.identity.name,
+      xmpp: {
+        persistent: room.info.x?.['muc#roomconfig_persistentroom'] ?? true,
+        publicRoom: room.info.x?.['muc#roomconfig_publicroom'] ?? false,
+        membersOnly: room.info.x?.['muc#roomconfig_membersonly'] ?? false,
+        moderated: room.info.x?.['muc#roomconfig_moderatedroom'] ?? false,
+        maxUsers: room.info.x?.['muc#roomconfig_maxusers'] ?? 100,
+        changeSubject: room.info.x?.['muc#roomconfig_changesubject'] ?? false,
+      },
+      wargaming: {
+        type: room.extension?.type || 'standard',
+      },
+      createdAt: room.extension?.createdAt || '2025-01-15T08:00:00.000Z',
+      createdBy: room.extension?.createdBy.split('@')[0] || 'gamemaster',
+    };
+    if (room.info.x?.description) {
+      baseRoom.description = room.info.x.description;
+    }
+    if (room.info.x?.subject) {
+      baseRoom.xmpp.subject = room.info.x.subject;
+    }
+    if (room.info.x?.['muc#roomconfig_roomsecret']) {
+      baseRoom.xmpp.password = room.info.x['muc#roomconfig_roomsecret'];
+    }
+    if (room.extension?.forceRestrictions) {
+      baseRoom.wargaming.groupMembers = room.extension.forceRestrictions;
+    }
+    if (room.extension?.formSchemaIds) {
+      baseRoom.wargaming.formTemplates = room.extension.formSchemaIds;
+    }
+    if (room.extension?.theme) {
+      baseRoom.wargaming.theme = room.extension.theme;
+    }
+    return baseRoom;
+  });
+
+  // Seed rooms
+  for (const room of unifiedRooms) {
+    await storage.setItem(`entities/rooms/${room.id}`, room);
+  }
+  await storage.setItem('entities/rooms/_index', unifiedRooms.map(r => r.id));
+
+  // Convert MOCK_FORM_SCHEMAS to UnifiedFormTemplate format
+  const unifiedTemplates: UnifiedFormTemplate[] = MOCK_FORM_SCHEMAS.map(schema => {
+    const baseTemplate: UnifiedFormTemplate = {
+      id: schema.id,
+      name: schema.title,
+      schema: schema.schema,
+      category: (schema.tags && schema.tags[0]) || 'general',
+      allowedForces: [],
+      createdAt: schema.createdAt,
+      createdBy: schema.createdBy.split('@')[0] || '',
+      version: 1,
+    };
+    if (schema.description) {
+      baseTemplate.description = schema.description;
+    }
+    if (schema.uiSchema) {
+      baseTemplate.uiSchema = schema.uiSchema;
+    }
+    return baseTemplate;
+  });
+
+  // Seed templates
+  for (const template of unifiedTemplates) {
+    await storage.setItem(`entities/templates/${template.id}`, template);
+  }
+  await storage.setItem('entities/templates/_index', unifiedTemplates.map(t => t.id));
+
+  console.info(`✅ Seeded ${unifiedUsers.length} users, ${unifiedForces.length} forces, ${unifiedRooms.length} rooms, ${unifiedTemplates.length} templates`);
+}
 
 // ============================================================================
 // Form Schemas (RJSF)

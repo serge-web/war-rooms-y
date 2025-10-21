@@ -6,9 +6,8 @@ import { RESTAdapter } from '../rest-adapter';
 import { createStorage } from '../../storage';
 import type { Storage } from '../../storage';
 import type { UnifiedRoom, UnifiedUser, OpenFireRoom } from '@war-rooms/backend-interface';
+import { MOCK_DOMAIN, MOCK_CONFERENCE } from '../../fixtures';
 import {
-  TEST_DOMAIN,
-  TEST_CONFERENCE,
   seedTestWargame,
   createTestUser,
   createTestRoom,
@@ -26,7 +25,7 @@ describe('RESTAdapter', () => {
       namespace: 'test',
     });
 
-    adapter = new RESTAdapter(storage, TEST_DOMAIN, TEST_CONFERENCE);
+    adapter = new RESTAdapter(storage, MOCK_DOMAIN, MOCK_CONFERENCE);
 
     // Seed the test wargame scenario
     await seedTestWargame(storage);
@@ -48,9 +47,9 @@ describe('RESTAdapter', () => {
       it('should convert individual members to JIDs', async () => {
         const room = await adapter.getRoom('intel-room');
         expect(room?.members).toEqual([
-          `analyst.red1@${TEST_DOMAIN}`,
-          `analyst.blue1@${TEST_DOMAIN}`,
-          `gamemaster@${TEST_DOMAIN}`,
+          `analyst.red1@${MOCK_DOMAIN}`,
+          `analyst.blue1@${MOCK_DOMAIN}`,
+          `gamemaster@${MOCK_DOMAIN}`,
         ]);
       });
 
@@ -90,19 +89,19 @@ describe('RESTAdapter', () => {
           publicRoom: false,
           membersOnly: true,
           maxUsers: 25,
-          members: [`test.user@${TEST_DOMAIN}`],
+          members: [`test.user@${MOCK_DOMAIN}`],
         };
 
         const created = await adapter.createRoom(newRoom);
         expect(created.roomName).toBe('new-room');
         expect(created.naturalName).toBe('New Room');
-        expect(created.members).toEqual([`test.user@${TEST_DOMAIN}`]);
+        expect(created.members).toEqual([`test.user@${MOCK_DOMAIN}`]);
 
         // Verify stored in unified format
         const unified = await storage.getItem<UnifiedRoom>('entities/rooms/new-room');
         expect(unified).toBeDefined();
         expect(unified?.id).toBe('new-room');
-        expect(unified?.jid).toBe(`new-room@${TEST_CONFERENCE}`);
+        expect(unified?.jid).toBe(`new-room@${MOCK_CONFERENCE}`);
         expect(unified?.name).toBe('New Room');
         expect(unified?.xmpp.maxUsers).toBe(25);
         expect(unified?.wargaming.individualMembers).toEqual(['test.user']);
@@ -156,12 +155,12 @@ describe('RESTAdapter', () => {
 
       it('should update members list', async () => {
         const updated = await adapter.updateRoom('intel-room', {
-          members: [`commander.red@${TEST_DOMAIN}`, `commander.blue@${TEST_DOMAIN}`],
+          members: [`commander.red@${MOCK_DOMAIN}`, `commander.blue@${MOCK_DOMAIN}`],
         });
 
         expect(updated?.members).toEqual([
-          `commander.red@${TEST_DOMAIN}`,
-          `commander.blue@${TEST_DOMAIN}`,
+          `commander.red@${MOCK_DOMAIN}`,
+          `commander.blue@${MOCK_DOMAIN}`,
         ]);
 
         const unified = await storage.getItem<UnifiedRoom>('entities/rooms/intel-room');
@@ -365,8 +364,8 @@ describe('RESTAdapter', () => {
         roomName: 'jid-test',
         naturalName: 'JID Test',
         members: [
-          `user1@${TEST_DOMAIN}`,
-          `user2@${TEST_DOMAIN}/resource`,
+          `user1@${MOCK_DOMAIN}`,
+          `user2@${MOCK_DOMAIN}/resource`,
           'user3', // Should handle plain username
         ],
       });

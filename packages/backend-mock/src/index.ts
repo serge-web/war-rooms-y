@@ -33,4 +33,4 @@ export { seedRestUsers as seedAdminUsers } from './rest/seed-rest';
 export { createAuthProvider } from './rest/authProvider';
 
 // Test utilities (unified storage seeding)
-export { seedTestWargame, TEST_DOMAIN, TEST_CONFERENCE } from './adapters/test-fixtures';
+export { seedTestWargame } from './adapters/test-fixtures';
