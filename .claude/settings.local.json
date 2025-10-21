@@ -33,7 +33,8 @@
       "Bash(cat package.json)",
       "Bash(cat ../../jest.config.js)",
       "Bash(cat ../../packages/state/package.json)",
-      "Bash(lsof -ti:5173)"
+      "Bash(lsof -ti:5173)",
+      "Bash(npx tsc --noEmit)"
     ],
     "deny": [],
     "ask": []
