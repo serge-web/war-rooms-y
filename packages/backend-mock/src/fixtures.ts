@@ -148,21 +148,15 @@ export const MOCK_ROOMS: Array<{
   {
     jid: buildJid('all-hands', MOCK_CONFERENCE),
     info: {
-      identity: {
-        category: 'conference',
-        type: 'text',
-        name: 'All Hands',
-      },
+      type: 'info',
+      identities: [
+        {
+          category: 'conference',
+          type: 'text',
+          name: 'All Hands',
+        },
+      ],
       features: ['http://jabber.org/protocol/muc', 'muc_public', 'muc_persistent', 'muc_open'],
-      x: {
-        description: 'Main coordination room for all participants',
-        'muc#roomconfig_roomname': 'All Hands',
-        'muc#roomconfig_roomdesc': 'Main coordination room',
-        'muc#roomconfig_persistentroom': true,
-        'muc#roomconfig_publicroom': true,
-        'muc#roomconfig_membersonly': false,
-        'muc#roomconfig_moderatedroom': false,
-      },
     },
     extension: {
       roomJid: buildJid('all-hands', MOCK_CONFERENCE),
@@ -175,21 +169,15 @@ export const MOCK_ROOMS: Array<{
   {
     jid: buildJid('red-command', MOCK_CONFERENCE),
     info: {
-      identity: {
-        category: 'conference',
-        type: 'text',
-        name: 'Red Force Command',
-      },
+      type: 'info',
+      identities: [
+        {
+          category: 'conference',
+          type: 'text',
+          name: 'Red Force Command',
+        },
+      ],
       features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
-      x: {
-        description: 'Red Force command and control room',
-        'muc#roomconfig_roomname': 'Red Force Command',
-        'muc#roomconfig_roomdesc': 'Red Force C2',
-        'muc#roomconfig_persistentroom': true,
-        'muc#roomconfig_publicroom': false,
-        'muc#roomconfig_membersonly': true,
-        'muc#roomconfig_moderatedroom': false,
-      },
     },
     extension: {
       roomJid: buildJid('red-command', MOCK_CONFERENCE),
@@ -210,21 +198,15 @@ export const MOCK_ROOMS: Array<{
   {
     jid: buildJid('blue-command', MOCK_CONFERENCE),
     info: {
-      identity: {
-        category: 'conference',
-        type: 'text',
-        name: 'Blue Force Command',
-      },
+      type: 'info',
+      identities: [
+        {
+          category: 'conference',
+          type: 'text',
+          name: 'Blue Force Command',
+        },
+      ],
       features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
-      x: {
-        description: 'Blue Force command and control room',
-        'muc#roomconfig_roomname': 'Blue Force Command',
-        'muc#roomconfig_roomdesc': 'Blue Force C2',
-        'muc#roomconfig_persistentroom': true,
-        'muc#roomconfig_publicroom': false,
-        'muc#roomconfig_membersonly': true,
-        'muc#roomconfig_moderatedroom': false,
-      },
     },
     extension: {
       roomJid: buildJid('blue-command', MOCK_CONFERENCE),
@@ -245,21 +227,15 @@ export const MOCK_ROOMS: Array<{
   {
     jid: buildJid('red-media', MOCK_CONFERENCE),
     info: {
-      identity: {
-        category: 'conference',
-        type: 'text',
-        name: 'Red Force Media',
-      },
+      type: 'info',
+      identities: [
+        {
+          category: 'conference',
+          type: 'text',
+          name: 'Red Force Media',
+        },
+      ],
       features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
-      x: {
-        description: 'Red Force media operations room',
-        'muc#roomconfig_roomname': 'Red Force Media',
-        'muc#roomconfig_roomdesc': 'Red Force Media Ops',
-        'muc#roomconfig_persistentroom': true,
-        'muc#roomconfig_publicroom': false,
-        'muc#roomconfig_membersonly': true,
-        'muc#roomconfig_moderatedroom': false,
-      },
     },
     extension: {
       roomJid: buildJid('red-media', MOCK_CONFERENCE),
@@ -280,21 +256,15 @@ export const MOCK_ROOMS: Array<{
   {
     jid: buildJid('red-logistics', MOCK_CONFERENCE),
     info: {
-      identity: {
-        category: 'conference',
-        type: 'text',
-        name: 'Red Force Logistics',
-      },
+      type: 'info',
+      identities: [
+        {
+          category: 'conference',
+          type: 'text',
+          name: 'Red Force Logistics',
+        },
+      ],
       features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
-      x: {
-        description: 'Red Force logistics coordination room',
-        'muc#roomconfig_roomname': 'Red Force Logistics',
-        'muc#roomconfig_roomdesc': 'Red Force Logistics',
-        'muc#roomconfig_persistentroom': true,
-        'muc#roomconfig_publicroom': false,
-        'muc#roomconfig_membersonly': true,
-        'muc#roomconfig_moderatedroom': false,
-      },
     },
     extension: {
       roomJid: buildJid('red-logistics', MOCK_CONFERENCE),
@@ -315,21 +285,15 @@ export const MOCK_ROOMS: Array<{
   {
     jid: buildJid('red-HQ', MOCK_CONFERENCE),
     info: {
-      identity: {
-        category: 'conference',
-        type: 'text',
-        name: 'Red Force HQ',
-      },
+      type: 'info',
+      identities: [
+        {
+          category: 'conference',
+          type: 'text',
+          name: 'Red Force HQ',
+        },
+      ],
       features: ['http://jabber.org/protocol/muc', 'muc_persistent', 'muc_membersonly'],
-      x: {
-        description: 'Red Force headquarters coordination room',
-        'muc#roomconfig_roomname': 'Red Force HQ',
-        'muc#roomconfig_roomdesc': 'Red Force HQ',
-        'muc#roomconfig_persistentroom': true,
-        'muc#roomconfig_publicroom': false,
-        'muc#roomconfig_membersonly': true,
-        'muc#roomconfig_moderatedroom': false,
-      },
     },
     extension: {
       roomJid: buildJid('red-HQ', MOCK_CONFERENCE),
@@ -362,7 +326,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Welcome to Winter Exercise 2025. Exercise start time is 0900Z.',
     delay: {
-      timestamp: '2025-01-20T08:55:00.000Z',
+      timestamp: new Date('2025-01-20T08:55:00.000Z'),
     },
   },
   {
@@ -372,7 +336,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Red Force standing by.',
     delay: {
-      timestamp: '2025-01-20T08:56:00.000Z',
+      timestamp: new Date('2025-01-20T08:56:00.000Z'),
     },
   },
   {
@@ -382,7 +346,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Blue Force ready.',
     delay: {
-      timestamp: '2025-01-20T08:57:00.000Z',
+      timestamp: new Date('2025-01-20T08:57:00.000Z'),
     },
   },
   {
@@ -392,7 +356,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Exercise is now LIVE. All forces proceed with initial objectives.',
     delay: {
-      timestamp: '2025-01-20T09:00:00.000Z',
+      timestamp: new Date('2025-01-20T09:00:00.000Z'),
     },
   },
   {
@@ -402,7 +366,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Roger that. Beginning reconnaissance operations.',
     delay: {
-      timestamp: '2025-01-20T09:01:00.000Z',
+      timestamp: new Date('2025-01-20T09:01:00.000Z'),
     },
   },
   {
@@ -412,7 +376,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Blue analyst standing by for intelligence updates.',
     delay: {
-      timestamp: '2025-01-20T09:02:00.000Z',
+      timestamp: new Date('2025-01-20T09:02:00.000Z'),
     },
   },
   // Red Command messages
@@ -423,7 +387,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'RedA1, prepare initial SITREP for T+30 minutes.',
     delay: {
-      timestamp: '2025-01-20T09:05:00.000Z',
+      timestamp: new Date('2025-01-20T09:05:00.000Z'),
     },
   },
   {
@@ -433,7 +397,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Understood, Commander. Working on initial assessment now.',
     delay: {
-      timestamp: '2025-01-20T09:06:00.000Z',
+      timestamp: new Date('2025-01-20T09:06:00.000Z'),
     },
   },
   {
@@ -443,7 +407,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Priority is to establish situational awareness before H+1.',
     delay: {
-      timestamp: '2025-01-20T09:10:00.000Z',
+      timestamp: new Date('2025-01-20T09:10:00.000Z'),
     },
   },
   {
@@ -453,7 +417,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'SITREP: All units in position. No hostile contact yet.',
     delay: {
-      timestamp: '2025-01-20T09:30:00.000Z',
+      timestamp: new Date('2025-01-20T09:30:00.000Z'),
     },
   },
   // Red Media messages
@@ -464,7 +428,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Media team, prepare for initial press release at H+2.',
     delay: {
-      timestamp: '2025-01-20T09:15:00.000Z',
+      timestamp: new Date('2025-01-20T09:15:00.000Z'),
     },
   },
   {
@@ -474,7 +438,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Monitoring social media channels. No significant activity detected.',
     delay: {
-      timestamp: '2025-01-20T09:20:00.000Z',
+      timestamp: new Date('2025-01-20T09:20:00.000Z'),
     },
   },
   {
@@ -484,7 +448,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Good. Keep tracking Blue Force information operations.',
     delay: {
-      timestamp: '2025-01-20T09:21:00.000Z',
+      timestamp: new Date('2025-01-20T09:21:00.000Z'),
     },
   },
   // Red Logistics messages
@@ -495,7 +459,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Supply status: All units at 100% fuel and ammunition.',
     delay: {
-      timestamp: '2025-01-20T09:08:00.000Z',
+      timestamp: new Date('2025-01-20T09:08:00.000Z'),
     },
   },
   {
@@ -505,7 +469,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Excellent. Maintain readiness for extended operations.',
     delay: {
-      timestamp: '2025-01-20T09:09:00.000Z',
+      timestamp: new Date('2025-01-20T09:09:00.000Z'),
     },
   },
   {
@@ -515,7 +479,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Medical supplies confirmed available at all forward positions.',
     delay: {
-      timestamp: '2025-01-20T09:25:00.000Z',
+      timestamp: new Date('2025-01-20T09:25:00.000Z'),
     },
   },
   // Red HQ messages
@@ -526,7 +490,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'HQ team, I need eyes on all operational channels.',
     delay: {
-      timestamp: '2025-01-20T09:03:00.000Z',
+      timestamp: new Date('2025-01-20T09:03:00.000Z'),
     },
   },
   {
@@ -536,7 +500,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Monitoring command, media, and logistics channels now.',
     delay: {
-      timestamp: '2025-01-20T09:04:00.000Z',
+      timestamp: new Date('2025-01-20T09:04:00.000Z'),
     },
   },
   {
@@ -546,7 +510,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Report any anomalies immediately.',
     delay: {
-      timestamp: '2025-01-20T09:12:00.000Z',
+      timestamp: new Date('2025-01-20T09:12:00.000Z'),
     },
   },
   {
@@ -556,7 +520,7 @@ export const MOCK_MESSAGES: Message[] = [
     type: 'groupchat',
     body: 'Understood. All channels nominal so far.',
     delay: {
-      timestamp: '2025-01-20T09:13:00.000Z',
+      timestamp: new Date('2025-01-20T09:13:00.000Z'),
     },
   },
 ];
@@ -586,16 +550,13 @@ export async function seedMockWargame(storage: Storage): Promise<void> {
     const baseUser: UnifiedUser = {
       username: user.jid.split('@')[0] || '',
       jid: user.jid,
-      name: user.name || user.jid.split('@')[0] || '',
+      name: user.displayName || user.jid.split('@')[0] || '',
       email: `${user.jid.split('@')[0]}@${MOCK_DOMAIN}`,
       password: user.jid.split('@')[0] || '', // username as password
       groups: user.groups,
       isGameMaster: user.groups.includes('Game Masters'),
       createdAt: '2025-01-15T08:00:00.000Z',
     };
-    if (user.vcard) {
-      baseUser.vcard = user.vcard;
-    }
     return baseUser;
   });
 
@@ -641,14 +602,14 @@ export async function seedMockWargame(storage: Storage): Promise<void> {
     const baseRoom: UnifiedRoom = {
       id: room.jid.split('@')[0] || '',
       jid: room.jid,
-      name: room.info.identity.name,
+      name: room.info.identities?.[0]?.name || '',
       xmpp: {
-        persistent: room.info.x?.['muc#roomconfig_persistentroom'] ?? true,
-        publicRoom: room.info.x?.['muc#roomconfig_publicroom'] ?? false,
-        membersOnly: room.info.x?.['muc#roomconfig_membersonly'] ?? false,
-        moderated: room.info.x?.['muc#roomconfig_moderatedroom'] ?? false,
-        maxUsers: room.info.x?.['muc#roomconfig_maxusers'] ?? 100,
-        changeSubject: room.info.x?.['muc#roomconfig_changesubject'] ?? false,
+        persistent: true,
+        publicRoom: false,
+        membersOnly: false,
+        moderated: false,
+        maxUsers: 100,
+        changeSubject: false,
       },
       wargaming: {
         type: room.extension?.type || 'standard',
@@ -656,15 +617,6 @@ export async function seedMockWargame(storage: Storage): Promise<void> {
       createdAt: room.extension?.createdAt || '2025-01-15T08:00:00.000Z',
       createdBy: room.extension?.createdBy.split('@')[0] || 'gamemaster',
     };
-    if (room.info.x?.description) {
-      baseRoom.description = room.info.x.description;
-    }
-    if (room.info.x?.subject) {
-      baseRoom.xmpp.subject = room.info.x.subject;
-    }
-    if (room.info.x?.['muc#roomconfig_roomsecret']) {
-      baseRoom.xmpp.password = room.info.x['muc#roomconfig_roomsecret'];
-    }
     if (room.extension?.forceRestrictions) {
       baseRoom.wargaming.groupMembers = room.extension.forceRestrictions;
     }
