@@ -85,120 +85,49 @@ export interface XMPPConfig extends Partial<AgentConfig> {
 /**
  * XMPP Backend Interface
  *
- * Extends Stanza.js Agent with app-specific methods.
- * All backend implementations (mock, OpenFire) must implement this contract.
+ * Extends Stanza.js Agent with app-specific helper methods.
+ * Core XMPP operations use Agent's standard methods.
+ *
+ * NOTE: Agent provides standard methods:
+ * - connect(opts?: AgentConfig): void
+ * - disconnect(): void
+ * - sendMessage(msg: Message): string
+ * - sendPresence(pres?: Presence): string
+ * - And MUC/PubSub methods via plugins
  */
 export interface XMPPBackend extends Agent {
   // ===== Connection Management =====
 
   /**
-   * Get current connection state
+   * Get current connection state (app-specific helper)
    */
   getConnectionInfo(): ConnectionInfo;
 
   /**
-   * Register event handlers
+   * Register app event handlers
    * NOTE: Named setEventHandlers to avoid conflict with Agent's on() method from EventEmitter
    */
   setEventHandlers(handlers: XMPPEventHandlers): void;
 
-  // ===== Multi-User Chat Operations (XEP-0045) =====
+  // ===== App-Specific Helper Methods =====
 
   /**
-   * Get room information (disco#info)
+   * Get room information (helper wrapping disco)
    */
   getRoomInfo(roomJid: string): Promise<DiscoInfo>;
 
   /**
-   * Get room occupants
+   * Get room occupants (helper)
    */
   getRoomOccupants(roomJid: string): Promise<MUCUserItem[]>;
 
   /**
-   * Get all rooms the current user is a member of
-   * Returns rooms where:
-   * - Room is public (all-hands), OR
-   * - User JID is in room member list, OR
-   * - User's groups overlap with room's assigned groups
+   * Get all rooms the current user can access (app-specific logic)
    */
   getMyRooms(): Promise<DiscoInfo[]>;
 
   /**
-   * Change room subject
+   * Query message archive (helper wrapping MAM)
    */
-  setRoomSubject(roomJid: string, subject: string): Promise<void>;
-
-  /**
-   * Get room configuration form
-   */
-  getRoomConfig(roomJid: string): Promise<Record<string, unknown>>;
-
-  /**
-   * Update room configuration
-   */
-  setRoomConfig(roomJid: string, config: Record<string, unknown>): Promise<void>;
-
-  /**
-   * Grant/revoke room affiliation
-   */
-  setAffiliation(
-    roomJid: string,
-    jid: string,
-    affiliation: 'owner' | 'admin' | 'member' | 'none' | 'outcast',
-    reason?: string
-  ): Promise<void>;
-
-  /**
-   * Grant/revoke room role
-   */
-  setRole(
-    roomJid: string,
-    nickname: string,
-    role: 'moderator' | 'participant' | 'visitor' | 'none',
-    reason?: string
-  ): Promise<void>;
-
-  // ===== Message Archive Management (XEP-0313) =====
-
-  /**
-   * Query message archive
-   */
-  queryArchive(roomJid: string, query: MAMQuery): Promise<MAMResult>;
-
-  // ===== PubSub Operations (XEP-0060) =====
-
-  /**
-   * Subscribe to PubSub node
-   */
-  subscribePubSub(node: string): Promise<void>;
-
-  /**
-   * Unsubscribe from PubSub node
-   */
-  unsubscribePubSub(node: string): Promise<void>;
-
-  /**
-   * Publish item to PubSub node
-   */
-  publishPubSub(node: string, payload: unknown, itemId?: string): Promise<string>;
-
-  /**
-   * Retrieve items from PubSub node
-   */
-  retrievePubSub(node: string, maxItems?: number): Promise<Array<{ id: string; payload: unknown }>>;
-
-  /**
-   * Delete item from PubSub node
-   */
-  deletePubSubItem(node: string, itemId: string): Promise<void>;
-
-  /**
-   * Create PubSub node
-   */
-  createPubSubNode(node: string, config?: Record<string, unknown>): Promise<void>;
-
-  /**
-   * Delete PubSub node
-   */
-  deletePubSubNode(node: string): Promise<void>;
+  queryArchive(roomJid: string, query: Partial<MAMQuery>): Promise<MAMResult>;
 }

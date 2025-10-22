@@ -43,6 +43,17 @@ import type {
   DiscoItem,
   DiscoInfoIdentity,
 
+  // Roster (RFC 6121)
+  RosterResult,
+  RosterItem,
+  Roster,
+
+  // Received stanzas
+  ReceivedMessage,
+  ReceivedPresence,
+  ReceivedMUCPresence,
+  ReceivedIQ,
+
   // Delay (XEP-0203)
   Delay,
 } from 'stanza/protocol';
@@ -76,6 +87,15 @@ export type {
   DiscoInfo,
   DiscoItem,
   DiscoInfoIdentity,
+
+  RosterResult,
+  RosterItem,
+  Roster,
+
+  ReceivedMessage,
+  ReceivedPresence,
+  ReceivedMUCPresence,
+  ReceivedIQ,
 
   Delay,
 };

@@ -9,13 +9,19 @@ import type {
   ConnectionInfo,
   ConnectionState,
   XMPPEventHandlers,
-  XMPPUser,
-  XMPPMessage,
-  XMPPRoom,
-  XMPPOccupant,
+  UserInfo,
+  Message,
+  DiscoInfo,
+  MUCUserItem,
   MAMQuery,
   MAMResult,
   UnifiedUser,
+  Presence,
+  PresenceShow,
+  RosterResult,
+  RosterItem,
+  ReceivedMUCPresence,
+  ReceivedPresence,
 } from '@war-rooms/backend-interface';
 
 import { Storage, createStorage } from './storage';
@@ -59,49 +65,60 @@ export class MockXMPPBackend implements XMPPBackend {
 
   // ===== Connection Management =====
 
-  async connect(username: string, _password: string): Promise<string> {
+  connect(opts?: AgentConfig): void {
+    // Extract credentials from opts or config
+    const username = opts?.jid?.split('@')[0] || this.config.username;
+    const password = opts?.password || this.config.password;
+
+    if (!username) {
+      throw new Error('Username required for connection');
+    }
+
     this.updateConnectionState('connecting');
-    await delay(this.latency);
 
-    // Simulate authentication
-    this.updateConnectionState('authenticating');
-    await delay(this.latency);
+    // Async connection in background
+    delay(this.latency).then(async () => {
+      this.updateConnectionState('authenticating');
+      await delay(this.latency);
 
-    // Build full JID with resource
-    const resource = this.config.resource || 'web';
-    const fullJid = buildJid(username, this.config.domain, resource);
-    const bareJid = getBareJid(fullJid);
+      // Build full JID with resource
+      const resource = opts?.resource || this.config.resource || 'web';
+      const fullJid = buildJid(username, this.config.domain, resource);
+      const bareJid = getBareJid(fullJid);
 
-    this.currentJid = fullJid;
+      this.currentJid = fullJid;
 
-    // Store session
-    await this.storage.setItem('session', {
-      jid: fullJid,
-      bareJid,
-      username,
-      connectedAt: getISOTimestamp(),
+      // Store session
+      await this.storage.setItem('session', {
+        jid: fullJid,
+        bareJid,
+        username,
+        connectedAt: getISOTimestamp(),
+      });
+
+      this.updateConnectionState('authenticated');
+
+      // Send initial presence
+      this.sendPresence();
+
+      // Emit session:started event (Stanza convention)
+      this.handlers.onConnectionStateChange?.(this.getConnectionInfo());
     });
-
-    this.updateConnectionState('authenticated');
-
-    // Send initial presence
-    await this.sendPresence();
-
-    return fullJid;
   }
 
-  async disconnect(): Promise<void> {
+  disconnect(): void {
     this.updateConnectionState('disconnecting');
-    await delay(this.latency);
 
-    // Send unavailable presence
-    await this.sendUnavailable();
+    delay(this.latency).then(async () => {
+      // Send unavailable presence
+      await this.sendUnavailable();
 
-    // Clear session
-    await this.storage.removeItem('session');
-    delete this.currentJid;
+      // Clear session
+      await this.storage.removeItem('session');
+      delete this.currentJid;
 
-    this.updateConnectionState('disconnected');
+      this.updateConnectionState('disconnected');
+    });
   }
 
   getConnectionInfo(): ConnectionInfo {
@@ -117,48 +134,69 @@ export class MockXMPPBackend implements XMPPBackend {
     return info;
   }
 
-  on(handlers: XMPPEventHandlers): void {
+  setEventHandlers(handlers: XMPPEventHandlers): void {
     this.handlers = { ...this.handlers, ...handlers };
   }
 
   // ===== Roster Operations =====
 
-  async getRoster(): Promise<XMPPUser[]> {
+  async getRoster(): Promise<RosterResult> {
     await delay(this.latency);
 
     // Use adapter to get all users
-    return await this.adapter.getAllUsers();
+    const users = await this.adapter.getAllUsers();
+
+    // Convert UserInfo[] to RosterResult format
+    const items: RosterItem[] = users.map((user) => ({
+      jid: user.jid,
+      name: user.displayName,
+      subscription: 'both' as const, // Mock: all users have mutual subscription
+      groups: user.groups,
+    }));
+
+    return { items };
   }
 
-  async addRosterItem(jid: string, name?: string, groups?: string[]): Promise<void> {
+  async updateRosterItem(item: RosterItem): Promise<void> {
     await delay(this.latency);
 
-    const bareJid = getBareJid(jid);
+    const bareJid = getBareJid(item.jid);
     const username = bareJid.split('@')[0];
     if (!username) {
       throw new Error('Invalid JID format');
     }
 
-    // Create UnifiedUser in unified storage
-    const unifiedUser = {
-      username,
-      jid: bareJid,
-      name: name || username,
-      groups: groups || [],
-      createdAt: new Date().toISOString(),
-    };
+    // Get existing from unified storage
+    const existing = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
 
-    await this.storage.setItem(`entities/users/${username}`, unifiedUser);
+    if (!existing) {
+      // Create new if doesn't exist
+      const unifiedUser: UnifiedUser = {
+        username,
+        jid: bareJid,
+        name: item.name || username,
+        groups: item.groups || [],
+        createdAt: new Date().toISOString(),
+      };
 
-    // Update user index
-    const userIndex = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
-    if (!userIndex.includes(username)) {
-      userIndex.push(username);
-      await this.storage.setItem('entities/users/_index', userIndex);
+      await this.storage.setItem(`entities/users/${username}`, unifiedUser);
+
+      // Update user index
+      const userIndex = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
+      if (!userIndex.includes(username)) {
+        userIndex.push(username);
+        await this.storage.setItem('entities/users/_index', userIndex);
+      }
+    } else {
+      // Update existing
+      const updated = {
+        ...existing,
+        groups: item.groups ?? existing.groups,
+        name: item.name !== undefined ? item.name : existing.name,
+      };
+
+      await this.storage.setItem(`entities/users/${username}`, updated);
     }
-
-    // Trigger roster update (adapter will project from unified storage)
-    this.handlers.onRosterUpdate?.(await this.getRoster());
   }
 
   async removeRosterItem(jid: string): Promise<void> {
@@ -177,65 +215,39 @@ export class MockXMPPBackend implements XMPPBackend {
     const userIndex = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
     const newIndex = userIndex.filter((u) => u !== username);
     await this.storage.setItem('entities/users/_index', newIndex);
-
-    // Trigger roster update
-    this.handlers.onRosterUpdate?.(await this.getRoster());
-  }
-
-  async updateRosterItem(jid: string, name?: string, groups?: string[]): Promise<void> {
-    await delay(this.latency);
-
-    const bareJid = getBareJid(jid);
-    const username = bareJid.split('@')[0];
-    if (!username) {
-      throw new Error('Invalid JID format');
-    }
-
-    // Get existing from unified storage
-    const existing = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
-
-    if (!existing) {
-      throw new Error(`Roster item not found: ${jid}`);
-    }
-
-    // Update in unified storage
-    const updated = {
-      ...existing,
-      groups: groups ?? existing.groups,
-      name: name !== undefined ? name : existing.name,
-    };
-
-    await this.storage.setItem(`entities/users/${username}`, updated);
-
-    // Trigger roster update (adapter will project from unified storage)
-    this.handlers.onRosterUpdate?.(await this.getRoster());
   }
 
   // ===== Presence Operations =====
 
-  async sendPresence(
-    show?: 'away' | 'chat' | 'dnd' | 'xa',
-    status?: string,
-    priority?: number
-  ): Promise<void> {
+  sendPresence(pres?: Presence): string {
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
 
-    await delay(this.latency);
+    const presence: Presence = pres || {
+      from: this.currentJid,
+    };
 
-    const options: Parameters<typeof createPresenceStanza>[1] = {};
-    if (show !== undefined) options.show = show;
-    if (status !== undefined) options.status = status;
-    if (priority !== undefined) options.priority = priority;
+    // Generate ID if not provided
+    if (!presence.id) {
+      presence.id = generateMessageId();
+    }
 
-    const presence = createPresenceStanza(this.currentJid, options);
+    // Set from if not provided
+    if (!presence.from) {
+      presence.from = this.currentJid;
+    }
 
-    // Store own presence
-    await this.storage.setItem('presence/self', presence);
+    // Async operations in background
+    delay(this.latency).then(() => {
+      // Store own presence
+      this.storage.setItem('presence/self', presence);
+    });
 
     // Broadcast to contacts (simulated)
     // In real XMPP, server broadcasts to subscribed contacts
+
+    return presence.id;
   }
 
   async sendUnavailable(): Promise<void> {
@@ -268,32 +280,38 @@ export class MockXMPPBackend implements XMPPBackend {
 
   // ===== Direct Messaging =====
 
-  async sendMessage(to: string, body: string, thread?: string): Promise<string> {
+  sendMessage(msg: Message): string {
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
 
-    await delay(this.latency);
-
-    const messageOpts: Parameters<typeof createMessageStanza>[0] = {
-      from: this.currentJid,
-      to,
-      type: 'chat',
-      body,
+    const message: Message = {
+      ...msg,
+      id: msg.id || generateMessageId(),
+      from: msg.from || this.currentJid,
+      type: msg.type || 'chat',
     };
-    if (thread !== undefined) messageOpts.thread = thread;
 
-    const message = createMessageStanza(messageOpts);
+    // Async operations in background
+    delay(this.latency).then(() => {
+      // Store in archive based on type
+      if (message.type === 'groupchat') {
+        const roomJid = getBareJid(message.to || '');
+        this.storage.setItem(`archive/rooms/${roomJid}/${message.id}`, message);
+      } else {
+        this.storage.setItem(`archive/direct/${message.id}`, message);
+      }
 
-    // Store in archive
-    await this.storage.setItem(`archive/direct/${message.id}`, message);
+      // Trigger message handler
+      this.handlers.onMessage?.(message);
+    });
 
     return message.id;
   }
 
   // ===== Multi-User Chat Operations =====
 
-  async joinRoom(roomJid: string, nickname: string, _password?: string): Promise<void> {
+  async joinRoom(jid: string, nick: string, opts?: Presence): Promise<ReceivedMUCPresence> {
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -301,44 +319,69 @@ export class MockXMPPBackend implements XMPPBackend {
     await delay(this.latency);
 
     // Store room membership
-    await this.storage.setItem(`rooms/${roomJid}/joined`, {
-      nickname,
+    await this.storage.setItem(`rooms/${jid}/joined`, {
+      nickname: nick,
       joinedAt: getISOTimestamp(),
     });
 
     // Add self as occupant
-    const occupant: XMPPOccupant = {
-      nick: nickname,
+    const occupant: MUCUserItem = {
+      nick,
       jid: this.currentJid,
       affiliation: 'member',
       role: 'participant',
-      presence: {},
     };
 
-    await this.storage.setItem(`rooms/${roomJid}/occupants/${nickname}`, occupant);
+    await this.storage.setItem(`rooms/${jid}/occupants/${nick}`, occupant);
+
+    // Return MUC presence (self-presence confirming join)
+    const mucPresence: ReceivedMUCPresence = {
+      from: `${jid}/${nick}`,
+      to: this.currentJid,
+      type: undefined, // available presence
+      muc: {
+        statusCodes: [110], // self-presence code
+        affiliation: 'member',
+        role: 'participant',
+        jid: this.currentJid,
+      },
+    };
+
+    return mucPresence;
   }
 
-  async leaveRoom(roomJid: string): Promise<void> {
+  async leaveRoom(jid: string, nick?: string, opts?: Presence): Promise<ReceivedPresence> {
     await delay(this.latency);
 
-    // Get nickname
-    const membership = await this.storage.getItem<{ nickname: string }>(`rooms/${roomJid}/joined`);
+    // Get nickname - use provided or lookup stored
+    let nickname = nick;
+    if (!nickname) {
+      const membership = await this.storage.getItem<{ nickname: string }>(`rooms/${jid}/joined`);
+      nickname = membership?.nickname;
+    }
 
-    if (membership) {
+    if (nickname) {
       // Remove self as occupant
-      await this.storage.removeItem(`rooms/${roomJid}/occupants/${membership.nickname}`);
+      await this.storage.removeItem(`rooms/${jid}/occupants/${nickname}`);
     }
 
     // Remove room membership
-    await this.storage.removeItem(`rooms/${roomJid}/joined`);
+    await this.storage.removeItem(`rooms/${jid}/joined`);
+
+    // Return unavailable presence
+    const presence: ReceivedPresence = {
+      from: `${jid}/${nickname}`,
+      to: this.currentJid,
+      type: 'unavailable',
+    };
+
+    return presence;
   }
 
   async sendGroupchatMessage(roomJid: string, body: string): Promise<string> {
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
-
-    await delay(this.latency);
 
     // Get nickname
     const membership = await this.storage.getItem<{ nickname: string }>(`rooms/${roomJid}/joined`);
@@ -349,23 +392,19 @@ export class MockXMPPBackend implements XMPPBackend {
 
     const from = `${roomJid}/${membership.nickname}`;
 
-    const message = createMessageStanza({
+    const message: Message = {
+      id: generateMessageId(),
       from,
       to: roomJid,
       type: 'groupchat',
       body,
-    });
+    };
 
-    // Store in room archive
-    await this.storage.setItem(`archive/rooms/${roomJid}/${message.id}`, message);
-
-    // Trigger message handler
-    this.handlers.onMessage?.(message);
-
-    return message.id;
+    // Use sendMessage for consistency
+    return this.sendMessage(message);
   }
 
-  async getRoomInfo(roomJid: string): Promise<XMPPRoom> {
+  async getRoomInfo(roomJid: string): Promise<DiscoInfo> {
     await delay(this.latency);
 
     // Extract room name from JID (e.g., "red-command@conference.local" -> "red-command")
@@ -381,23 +420,17 @@ export class MockXMPPBackend implements XMPPBackend {
       throw new Error(`Room not found: ${roomJid}`);
     }
 
-    // Add occupants (runtime state)
-    const occupants = await this.getRoomOccupants(roomJid);
-
-    return {
-      ...room,
-      occupants,
-    };
+    return room;
   }
 
-  async getRoomOccupants(roomJid: string): Promise<XMPPOccupant[]> {
+  async getRoomOccupants(roomJid: string): Promise<MUCUserItem[]> {
     await delay(this.latency);
 
-    const occupants = await this.storage.getAll<XMPPOccupant>(`rooms/${roomJid}/occupants/`);
+    const occupants = await this.storage.getAll<MUCUserItem>(`rooms/${roomJid}/occupants/`);
     return Object.values(occupants);
   }
 
-  async getMyRooms(): Promise<XMPPRoom[]> {
+  async getMyRooms(): Promise<DiscoInfo[]> {
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -407,15 +440,7 @@ export class MockXMPPBackend implements XMPPBackend {
     // Use adapter to get rooms for current user
     const rooms = await this.adapter.getUserRooms(this.currentJid);
 
-    // Add occupants to each room (runtime state, not in unified model)
-    const roomsWithOccupants = await Promise.all(
-      rooms.map(async (room) => ({
-        ...room,
-        occupants: await this.getRoomOccupants(room.jid),
-      }))
-    );
-
-    return roomsWithOccupants;
+    return rooms;
   }
 
   async setRoomSubject(roomJid: string, subject: string): Promise<void> {
@@ -463,7 +488,7 @@ export class MockXMPPBackend implements XMPPBackend {
     await delay(this.latency);
 
     // Update occupant role
-    const occupant = await this.storage.getItem<XMPPOccupant>(
+    const occupant = await this.storage.getItem<MUCUserItem>(
       `rooms/${roomJid}/occupants/${nickname}`
     );
 
@@ -475,17 +500,17 @@ export class MockXMPPBackend implements XMPPBackend {
 
   // ===== Message Archive Management =====
 
-  async queryArchive(roomJid: string, query: MAMQuery): Promise<MAMResult> {
+  async queryArchive(roomJid: string, query: Partial<MAMQuery>): Promise<MAMResult> {
     await delay(this.latency);
 
     // Get all messages for room
-    const allMessages = await this.storage.getAll<XMPPMessage>(`archive/rooms/${roomJid}/`);
+    const allMessages = await this.storage.getAll<Message>(`archive/rooms/${roomJid}/`);
     let messages = Object.values(allMessages);
 
     // Filter by timestamp
     if (query.start || query.end) {
       messages = messages.filter((msg) => {
-        const timestamp = msg.delay?.stamp || getISOTimestamp();
+        const timestamp = msg.delay?.timestamp || getISOTimestamp();
         if (query.start && timestamp < query.start) return false;
         if (query.end && timestamp > query.end) return false;
         return true;

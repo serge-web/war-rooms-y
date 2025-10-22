@@ -3,15 +3,75 @@
  * XMPP protocol types and backend operation interfaces
  */
 
-// Export XMPP stanza types
+// Export Stanza.js types
 export type {
+  // Core Stanza types
+  Message,
+  Presence,
+  IQ,
+  StreamError,
+  StanzaError,
+  JID,
+  Delay,
+
+  // MUC types
+  MUCJoin,
+  MUCPresence,
+  MUCUserItem,
+  MUCHistory,
+  MUCInfo,
+  MUCAffiliation,
+  MUCRole,
+
+  // PubSub types
+  Pubsub,
+  PubsubItem,
+  PubsubItemContent,
+  PubsubSubscription,
+  PubsubPublish,
+  PubsubEvent,
+  PubsubEventItems,
+
+  // MAM types
+  MAMQuery,
+  MAMResult,
+  MAMFin,
+
+  // Roster types
+  RosterResult,
+  RosterItem,
+  Roster,
+
+  // Received stanzas
+  ReceivedMessage,
+  ReceivedPresence,
+  ReceivedMUCPresence,
+  ReceivedIQ,
+
+  // Service Discovery
+  DiscoInfo,
+  DiscoItem,
+  DiscoInfoIdentity,
+  DiscoFeature,
+
+  // Data Forms
+  DataForm,
+  DataFormField,
+
+  // Type aliases
+  MessageType,
+  PresenceType,
+  PresenceShow,
+
+  // App-specific types
+  UserInfo,
+
+  // Backward compatibility (deprecated)
   XMPPUser,
   XMPPPresence,
   XMPPRoom,
   XMPPOccupant,
   XMPPMessage,
-  MAMQuery,
-  MAMResult,
   XMPPError,
   StanzaType,
   Stanza,
