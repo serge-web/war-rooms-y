@@ -66,8 +66,6 @@ export class MockXMPPBackend {
   connect(opts?: AgentConfig): void {
     // Extract credentials from opts or config
     const username = opts?.jid?.split('@')[0] || this.config.username;
-    // @ts-expect-error - _password extracted but not used in mock implementation
-    const _password = opts?.password || this.config.password;
 
     if (!username) {
       throw new Error('Username required for connection');
@@ -76,7 +74,7 @@ export class MockXMPPBackend {
     this.updateConnectionState('connecting');
 
     // Async connection in background
-    delay(this.latency).then(async () => {
+    void delay(this.latency).then(async () => {
       this.updateConnectionState('authenticating');
       await delay(this.latency);
 
@@ -108,7 +106,7 @@ export class MockXMPPBackend {
   disconnect(): void {
     this.updateConnectionState('disconnecting');
 
-    delay(this.latency).then(async () => {
+    void delay(this.latency).then(async () => {
       // Send unavailable presence
       await this.sendUnavailable();
 
@@ -241,9 +239,9 @@ export class MockXMPPBackend {
     }
 
     // Async operations in background
-    delay(this.latency).then(() => {
+    void delay(this.latency).then(() => {
       // Store own presence
-      this.storage.setItem('presence/self', presence);
+      void this.storage.setItem('presence/self', presence);
     });
 
     // Broadcast to contacts (simulated)
@@ -295,13 +293,13 @@ export class MockXMPPBackend {
     };
 
     // Async operations in background
-    delay(this.latency).then(() => {
+    void delay(this.latency).then(() => {
       // Store in archive based on type
       if (message.type === 'groupchat') {
         const roomJid = getBareJid(message.to || '');
-        this.storage.setItem(`archive/rooms/${roomJid}/${message.id}`, message);
+        void this.storage.setItem(`archive/rooms/${roomJid}/${message.id}`, message);
       } else {
-        this.storage.setItem(`archive/direct/${message.id}`, message);
+        void this.storage.setItem(`archive/direct/${message.id}`, message);
       }
 
       // Trigger message handler

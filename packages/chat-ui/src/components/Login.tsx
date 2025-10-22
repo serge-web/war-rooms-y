@@ -42,7 +42,7 @@ export function Login() {
     }
 
     try {
-      await connect(username, password);
+      connect(username, password);
 
       // Load user's assigned rooms after successful connection
       await loadMyRooms();
