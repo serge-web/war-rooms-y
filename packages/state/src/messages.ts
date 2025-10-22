@@ -131,9 +131,28 @@ export const loadArchivedMessagesAtom = atom(
  */
 export function sortMessages(messages: XMPPMessage[]): XMPPMessage[] {
   return [...messages].sort((a, b) => {
-    const timeA = a.delay?.timestamp || new Date();
-    const timeB = b.delay?.timestamp || new Date();
-    return timeA.getTime() - timeB.getTime();
+    // Handle both Date objects and ISO timestamp strings
+    const getTime = (msg: XMPPMessage): number => {
+      const timestamp = msg.delay?.timestamp;
+
+      if (!timestamp) {
+        return Date.now();
+      }
+
+      if (timestamp instanceof Date) {
+        return timestamp.getTime();
+      }
+
+      // Handle string timestamps (ISO format from storage)
+      if (typeof timestamp === 'string') {
+        return new Date(timestamp).getTime();
+      }
+
+      // Fallback
+      return Date.now();
+    };
+
+    return getTime(a) - getTime(b);
   });
 }
 

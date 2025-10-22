@@ -117,8 +117,12 @@ export function ChatRoom({ roomJid }: ChatRoomProps) {
           {sortedMessages.map((message: XMPPMessage) => {
             const isOwn = isOwnMessage(message, currentNickname);
             const sender = getMessageSender(message);
+            // Handle both Date objects and ISO string timestamps
             const timestamp = message.delay?.timestamp
-              ? message.delay.timestamp.toLocaleTimeString()
+              ? (message.delay.timestamp instanceof Date
+                  ? message.delay.timestamp
+                  : new Date(message.delay.timestamp)
+                ).toLocaleTimeString()
               : 'now';
 
             return (

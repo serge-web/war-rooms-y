@@ -47,9 +47,15 @@ export const unreadCountAtomFamily = atomFamily((roomJid: string) =>
       return messages.length;
     }
 
-    // Count messages newer than last read timestamp
+    // Count messages newer than last read timestamp (force rebuild)
     return messages.filter((msg: XMPPMessage) => {
-      const msgTime = msg.delay?.timestamp?.toISOString() || new Date().toISOString();
+      const timestamp = msg.delay?.timestamp;
+      if (!timestamp) {
+        return true; // No timestamp = treat as new
+      }
+      // Handle both Date objects and ISO string timestamps
+      const msgTime =
+        timestamp instanceof Date ? timestamp.toISOString() : timestamp;
       return msgTime > lastRead;
     }).length;
   })

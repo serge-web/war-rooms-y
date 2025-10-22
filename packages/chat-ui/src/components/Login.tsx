@@ -44,6 +44,29 @@ export function Login() {
     try {
       connect(username, password);
 
+      // Wait for connection to complete (poll connection state with timeout)
+      await new Promise<void>((resolve, reject) => {
+        const startTime = Date.now();
+        const timeout = 10000; // 10 second timeout
+
+        const checkConnection = () => {
+          const state = useConnectionStore.getState().connectionInfo.state;
+
+          if (state === 'authenticated') {
+            resolve();
+          } else if (state === 'disconnected') {
+            reject(new Error('Connection failed'));
+          } else if (Date.now() - startTime > timeout) {
+            reject(new Error('Connection timeout'));
+          } else {
+            setTimeout(checkConnection, 50);
+          }
+        };
+
+        // Start checking after a small delay to allow connect() to start
+        setTimeout(checkConnection, 50);
+      });
+
       // Load user's assigned rooms after successful connection
       await loadMyRooms();
 
