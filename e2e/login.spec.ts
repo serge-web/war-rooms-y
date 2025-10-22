@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Login Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
   test('should display login form', async ({ page }) => {
     await page.goto('/');
 
@@ -26,14 +30,11 @@ test.describe('Login Flow', () => {
     // Click connect button (pre-populated credentials)
     await page.getByRole('button', { name: 'Connect' }).click();
 
-    // Wait for login to complete
-    await page.waitForTimeout(1000);
+    // Wait for login to complete and rooms to load
+    await expect(page.getByText('Red Force Command')).toBeVisible({ timeout: 10000 });
 
     // Should see main app interface (username appears in multiple places, use first)
     await expect(page.getByText('commander.red@wargame.local').first()).toBeVisible();
-
-    // Should see Red Force Command room tab label
-    await expect(page.getByText('Red Force Command')).toBeVisible();
   });
 
   test('should show error for invalid credentials', async ({ page }) => {

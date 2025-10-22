@@ -5,7 +5,9 @@ test.describe('Chat Functionality', () => {
     // Login before each test
     await page.goto('/');
     await page.getByRole('button', { name: 'Connect' }).click();
-    await page.waitForTimeout(1000);
+
+    // Wait for rooms to load - increased to 3s for headless mode
+    await page.waitForTimeout(3000);
   });
 
   test('should display assigned rooms', async ({ page }) => {
