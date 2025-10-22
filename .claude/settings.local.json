@@ -42,7 +42,9 @@
       "Bash(cat:*)",
       "Bash(curl -s http://localhost:5173/admin)",
       "Bash(npx playwright test:*)",
-      "Bash(timeout 30 tail:*)"
+      "Bash(timeout 30 tail:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []
