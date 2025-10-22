@@ -4,12 +4,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import type {
-  Message,
-  Presence,
-  MUCUserItem,
-  XMPPUser,
-} from '@war-rooms/backend-interface';
+import type { Message, Presence, MUCUserItem, XMPPUser } from '@war-rooms/backend-interface';
 
 // ============================================================================
 // JID Utilities

@@ -42,7 +42,7 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
   // Actions
   setBackend: (backend: XMPPBackend) => {
     // Register connection state change handler
-    backend.on({
+    backend.setEventHandlers({
       onConnectionStateChange: (info) => {
         get().updateConnectionInfo(info);
       },
@@ -59,7 +59,7 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
     }
 
     try {
-      await backend.connect(username, password);
+      backend.connect({ jid: username, password });
     } catch (error) {
       console.error('[ConnectionStore] Connect failed:', error);
       throw error;

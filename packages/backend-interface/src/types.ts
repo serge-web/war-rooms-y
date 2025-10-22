@@ -65,13 +65,11 @@ export type {
   IQ,
   StreamError,
   StanzaError,
-
   MUCJoin,
   MUCPresence,
   MUCUserItem,
   MUCHistory,
   MUCInfo,
-
   Pubsub,
   PubsubItem,
   PubsubItemContent,
@@ -79,24 +77,19 @@ export type {
   PubsubPublish,
   PubsubEvent,
   PubsubEventItems,
-
   MAMQuery,
   MAMResult,
   MAMFin,
-
   DiscoInfo,
   DiscoItem,
   DiscoInfoIdentity,
-
   RosterResult,
   RosterItem,
   Roster,
-
   ReceivedMessage,
   ReceivedPresence,
   ReceivedMUCPresence,
   ReceivedIQ,
-
   Delay,
 };
 
@@ -108,7 +101,13 @@ export type { JID } from 'stanza';
 // ============================================================================
 
 export type MessageType = 'chat' | 'groupchat' | 'error' | 'headline' | 'normal';
-export type PresenceType = 'unavailable' | 'subscribe' | 'subscribed' | 'unsubscribe' | 'unsubscribed' | 'error';
+export type PresenceType =
+  | 'unavailable'
+  | 'subscribe'
+  | 'subscribed'
+  | 'unsubscribe'
+  | 'unsubscribed'
+  | 'error';
 export type PresenceShow = 'away' | 'chat' | 'dnd' | 'xa';
 export type MUCAffiliation = 'owner' | 'admin' | 'member' | 'none' | 'outcast';
 export type MUCRole = 'moderator' | 'participant' | 'visitor' | 'none';
@@ -294,7 +293,17 @@ export interface DataForm {
 
 export interface DataFormField {
   var?: string;
-  type?: 'boolean' | 'fixed' | 'hidden' | 'jid-multi' | 'jid-single' | 'list-multi' | 'list-single' | 'text-multi' | 'text-private' | 'text-single';
+  type?:
+    | 'boolean'
+    | 'fixed'
+    | 'hidden'
+    | 'jid-multi'
+    | 'jid-single'
+    | 'list-multi'
+    | 'list-single'
+    | 'text-multi'
+    | 'text-private'
+    | 'text-single';
   label?: string;
   value?: string | string[];
   required?: boolean;

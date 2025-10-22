@@ -20,16 +20,11 @@ import type {
   RosterItem,
   ReceivedMUCPresence,
   ReceivedPresence,
+  XMPPRoom,
 } from '@war-rooms/backend-interface';
 
 import { Storage, createStorage } from './storage';
-import {
-  getBareJid,
-  buildJid,
-  generateMessageId,
-  getISOTimestamp,
-  delay,
-} from './helpers';
+import { getBareJid, buildJid, generateMessageId, getISOTimestamp, delay } from './helpers';
 import { XMPPAdapter } from './adapters/xmpp-adapter';
 
 // ============================================================================
@@ -439,7 +434,7 @@ export class MockXMPPBackend {
     return Object.values(occupants);
   }
 
-  async getMyRooms(): Promise<DiscoInfo[]> {
+  async getMyRooms(): Promise<XMPPRoom[]> {
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -449,8 +444,8 @@ export class MockXMPPBackend {
     // Use adapter to get rooms for current user
     const rooms = await this.adapter.getUserRooms(this.currentJid);
 
-    // Return just the DiscoInfo parts
-    return rooms.map((r) => r.info);
+    // Return full XMPPRoom objects (jid + info + extension)
+    return rooms;
   }
 
   async setRoomSubject(roomJid: string, subject: string): Promise<void> {

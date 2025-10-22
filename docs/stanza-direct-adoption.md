@@ -8,42 +8,44 @@ This document provides a comprehensive refactoring plan to directly adopt Stanza
 
 ### Message Types
 
-| Current Type (types.ts) | Stanza Type | Refactoring Notes |
-|------------------------|-------------|-------------------|
-| `XMPPMessage` | `Message` | Import from 'stanza' |
-| `id: string` | `id?: string` | Make optional |
-| `from: string` | `from?: string` | Make optional |
-| `to: string` | `to?: string` | Make optional |
-| `type: 'groupchat' \| 'chat' \| 'error' \| 'headline' \| 'normal'` | `type?: MessageType` | Use Stanza's enum |
-| `body?: string` | `body?: string` | Same |
-| `subject?: string` | `subject?: string` | Same |
-| `delay?: { stamp: string; from?: string }` | `delay?: Delay` | Different structure |
-| `thread?: string` | `thread?: string` | Same |
-| `chatstate?: 'active' \| 'composing'...` | `chatState?: string` | Field name change |
-| `mam?: { id: string; queryid?: string }` | `archive?: MAMResult` | Different structure |
+| Current Type (types.ts)                                            | Stanza Type           | Refactoring Notes    |
+| ------------------------------------------------------------------ | --------------------- | -------------------- |
+| `XMPPMessage`                                                      | `Message`             | Import from 'stanza' |
+| `id: string`                                                       | `id?: string`         | Make optional        |
+| `from: string`                                                     | `from?: string`       | Make optional        |
+| `to: string`                                                       | `to?: string`         | Make optional        |
+| `type: 'groupchat' \| 'chat' \| 'error' \| 'headline' \| 'normal'` | `type?: MessageType`  | Use Stanza's enum    |
+| `body?: string`                                                    | `body?: string`       | Same                 |
+| `subject?: string`                                                 | `subject?: string`    | Same                 |
+| `delay?: { stamp: string; from?: string }`                         | `delay?: Delay`       | Different structure  |
+| `thread?: string`                                                  | `thread?: string`     | Same                 |
+| `chatstate?: 'active' \| 'composing'...`                           | `chatState?: string`  | Field name change    |
+| `mam?: { id: string; queryid?: string }`                           | `archive?: MAMResult` | Different structure  |
 
 ### Presence Types
 
-| Current Type | Stanza Type | Refactoring Notes |
-|--------------|-------------|-------------------|
-| `XMPPPresence` | `Presence` | Import from 'stanza' |
-| `from: string` | `from?: string` | Make optional |
-| `type?: 'unavailable'...` | `type?: PresenceType` | Use Stanza's enum |
-| `show?: 'away' \| 'chat'...` | `show?: PresenceShow` | Use Stanza's enum |
-| `status?: string` | `status?: string` | Same |
-| `priority?: number` | `priority?: number` | Same |
-| `caps?: { node, ver, hash }` | `caps?: LegacyCaps` | Different structure |
-| `idle?: { since: string }` | `idleSince?: Date` | Date type, field rename |
+| Current Type                 | Stanza Type           | Refactoring Notes       |
+| ---------------------------- | --------------------- | ----------------------- |
+| `XMPPPresence`               | `Presence`            | Import from 'stanza'    |
+| `from: string`               | `from?: string`       | Make optional           |
+| `type?: 'unavailable'...`    | `type?: PresenceType` | Use Stanza's enum       |
+| `show?: 'away' \| 'chat'...` | `show?: PresenceShow` | Use Stanza's enum       |
+| `status?: string`            | `status?: string`     | Same                    |
+| `priority?: number`          | `priority?: number`   | Same                    |
+| `caps?: { node, ver, hash }` | `caps?: LegacyCaps`   | Different structure     |
+| `idle?: { since: string }`   | `idleSince?: Date`    | Date type, field rename |
 
 ### Roster Types
 
 **⚠️ ROSTERS ARE NOT USED - REMOVE ENTIRELY**
 
 Rosters were being misused to store group membership in the `groups` field. This is incorrect:
+
 - **XMPP Rosters** = personal contact lists (like a friend list)
 - **Roster Groups** = client-side organization labels ("Work", "Friends")
 
 **Correct Approach**: Use OpenFire Groups directly:
+
 - Admin UI already manages users/groups via REST API ✓
 - Chat UI should query user's groups via:
   - Service discovery on user JID
@@ -51,6 +53,7 @@ Rosters were being misused to store group membership in the `groups` field. This
   - PubSub node with user metadata
 
 **Actions**:
+
 - Remove all roster methods from `XMPPBackend` interface
 - Remove `getRoster()`, `addRosterItem()`, `removeRosterItem()`, `updateRosterItem()`
 - Remove `XMPPUser` type (was only used for roster)
@@ -58,32 +61,33 @@ Rosters were being misused to store group membership in the `groups` field. This
 
 ### MUC Types
 
-| Current Type | Stanza Type | Refactoring Notes |
-|--------------|-------------|-------------------|
-| `XMPPRoom` | `DiscoInfo` + `MUCInfo` | Combine types |
-| `XMPPOccupant` | `MUCUserItem` | Import from 'stanza' |
-| `nick: string` | `nick?: string` | Make optional |
-| `jid?: string` | `jid?: JID` | Use JID type |
-| `affiliation: 'owner'...` | `affiliation?: MUCAffiliation` | Use enum, optional |
-| `role: 'moderator'...` | `role?: MUCRole` | Use enum, optional |
-| Room join | `MUCJoin` | New interface |
-| Room presence | `MUCPresence` | Extends Presence |
+| Current Type              | Stanza Type                    | Refactoring Notes    |
+| ------------------------- | ------------------------------ | -------------------- |
+| `XMPPRoom`                | `DiscoInfo` + `MUCInfo`        | Combine types        |
+| `XMPPOccupant`            | `MUCUserItem`                  | Import from 'stanza' |
+| `nick: string`            | `nick?: string`                | Make optional        |
+| `jid?: string`            | `jid?: JID`                    | Use JID type         |
+| `affiliation: 'owner'...` | `affiliation?: MUCAffiliation` | Use enum, optional   |
+| `role: 'moderator'...`    | `role?: MUCRole`               | Use enum, optional   |
+| Room join                 | `MUCJoin`                      | New interface        |
+| Room presence             | `MUCPresence`                  | Extends Presence     |
 
 ### PubSub Types
 
-| Current Concept | Stanza Type | Usage |
-|----------------|-------------|-------|
-| PubSub item | `PubsubItem<T>` | Generic with content type |
-| Subscription | `PubsubSubscription` | State management |
-| Publishing | `PubsubPublish` | Publish operations |
-| Events | `PubsubEvent` | Event notifications |
-| Node config | `PubsubConfigure` | With DataForm |
+| Current Concept | Stanza Type          | Usage                     |
+| --------------- | -------------------- | ------------------------- |
+| PubSub item     | `PubsubItem<T>`      | Generic with content type |
+| Subscription    | `PubsubSubscription` | State management          |
+| Publishing      | `PubsubPublish`      | Publish operations        |
+| Events          | `PubsubEvent`        | Event notifications       |
+| Node config     | `PubsubConfigure`    | With DataForm             |
 
 ## Refactoring Steps by Package
 
 ### 1. Backend Interface (`packages/backend-interface`)
 
 #### File: `src/types.ts`
+
 ```typescript
 // DELETE all custom type definitions
 // REPLACE with Stanza type re-exports
@@ -144,6 +148,7 @@ export interface UserInfo {
 ```
 
 #### File: `src/xmpp.ts`
+
 ```typescript
 // DELETE XMPPBackend interface
 // REPLACE with Stanza Agent
@@ -159,6 +164,7 @@ export type XMPPConfig = AgentConfig;
 ### 2. Backend Mock (`packages/backend-mock`)
 
 #### File: `src/mock-xmpp.ts`
+
 ```typescript
 // Implement Stanza's Agent interface
 import { Agent, Message, Presence, IQ } from 'stanza';
@@ -189,6 +195,7 @@ export class MockAgent extends EventEmitter implements Agent {
 ```
 
 #### File: `src/fixtures.ts`
+
 ```typescript
 import { Message, MUCUserItem } from 'stanza';
 import type { UserInfo } from '@war-rooms-y/backend-interface/types';
@@ -203,8 +210,8 @@ export const MOCK_MESSAGES: Message[] = [
     body: 'Blue forces detected moving north',
     delay: {
       timestamp: '2024-01-20T10:30:00Z',
-      from: 'situation-room@conference.wargame.local'
-    }
+      from: 'situation-room@conference.wargame.local',
+    },
   },
   // ...
 ];
@@ -214,12 +221,12 @@ export const MOCK_USERS: UserInfo[] = [
   {
     jid: 'commander.blue@wargame.local',
     displayName: 'Blue Commander',
-    groups: ['force-blue', 'command'] // OpenFire groups
+    groups: ['force-blue', 'command'], // OpenFire groups
   },
   {
     jid: 'commander.red@wargame.local',
     displayName: 'Red Commander',
-    groups: ['force-red', 'command']
+    groups: ['force-red', 'command'],
   },
   // ...
 ];
@@ -228,14 +235,13 @@ export const MOCK_USERS: UserInfo[] = [
 ### 3. State Management (`packages/state`)
 
 #### File: `src/messages.ts`
+
 ```typescript
 import { Message } from 'stanza';
 import { atom, useAtom } from 'jotai';
 
 // Room messages using Stanza Message type
-const messagesAtomFamily = atomFamily(
-  (roomJid: string) => atom<Message[]>([])
-);
+const messagesAtomFamily = atomFamily((roomJid: string) => atom<Message[]>([]));
 
 export const useRoomMessages = (roomJid: string) => {
   const [messages] = useAtom(messagesAtomFamily(roomJid));
@@ -252,6 +258,7 @@ export const useRoomMessages = (roomJid: string) => {
 ```
 
 #### File: `src/rooms.ts`
+
 ```typescript
 import { DiscoInfo, MUCUserItem, MUCPresence } from 'stanza';
 import { create } from 'zustand';
@@ -275,6 +282,7 @@ interface RoomsStore {
 ### 4. Chat UI Components (`packages/chat-ui`)
 
 #### File: `src/components/MessageItem.tsx`
+
 ```typescript
 import { Message } from 'stanza';
 
@@ -302,6 +310,7 @@ export function MessageItem({ message, isOwnMessage }: MessageItemProps) {
 ```
 
 #### File: `src/components/RoomOccupants.tsx`
+
 ```typescript
 import { MUCUserItem } from 'stanza';
 
@@ -327,6 +336,7 @@ export function RoomOccupants({ occupants }: RoomOccupantsProps) {
 ### 5. Admin UI Updates
 
 #### File: `packages/chat-ui/src/admin/transformers.ts`
+
 ```typescript
 import { MUCUserItem, PubsubItem } from 'stanza';
 import type { UserInfo } from '@war-rooms-y/backend-interface/types';
@@ -359,7 +369,7 @@ export function forceMetadataToPubsub(force: Force): PubsubItem<ForceMetadata> {
       color: force.color,
       icon: force.icon,
       objectives: force.objectives,
-    }
+    },
   };
 }
 ```
@@ -367,33 +377,39 @@ export function forceMetadataToPubsub(force: Force): PubsubItem<ForceMetadata> {
 ## Migration Checklist
 
 ### Phase 1: Setup
+
 - [ ] Install Stanza: `npm install stanza`
 - [ ] Install JID utilities: `npm install @xmpp/jid`
 - [ ] Update TypeScript config to include Stanza types
 
 ### Phase 2: Type Updates
+
 - [ ] Replace `packages/backend-interface/src/types.ts` with Stanza exports
 - [ ] Update `packages/backend-interface/src/xmpp.ts` to use Agent
 - [ ] Remove all custom XMPP type definitions
 
 ### Phase 3: Mock Backend
+
 - [ ] Create MockAgent implementing Stanza's Agent interface
 - [ ] Update fixtures to use Stanza types
 - [ ] Update storage/retrieval to use Stanza structures
 - [ ] Implement Stanza event patterns
 
 ### Phase 4: State Management
+
 - [ ] Update Jotai atoms to use Stanza Message type
 - [ ] Update Zustand stores to use Stanza MUC types
 - [ ] Update selectors to work with Stanza fields
 
 ### Phase 5: Components
+
 - [ ] Update all component props to Stanza types
 - [ ] Update field access (e.g., `chatstate` → `chatState`)
 - [ ] Update optional field handling
 - [ ] Fix TypeScript errors from stricter types
 
 ### Phase 6: Testing
+
 - [ ] Update test fixtures to Stanza format
 - [ ] Create mock Stanza Agent for tests
 - [ ] Update E2E tests for new field names

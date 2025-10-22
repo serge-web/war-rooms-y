@@ -6,14 +6,7 @@
  */
 
 import type { Agent, AgentConfig } from 'stanza';
-import type {
-  Message,
-  Presence,
-  MUCUserItem,
-  MAMQuery,
-  StanzaError,
-  DiscoInfo,
-} from './types';
+import type { Message, Presence, MUCUserItem, MAMQuery, StanzaError, DiscoInfo } from './types';
 
 // ============================================================================
 // Connection State
@@ -123,11 +116,21 @@ export interface XMPPBackend extends Agent {
   /**
    * Get all rooms the current user can access (app-specific logic)
    */
-  getMyRooms(): Promise<DiscoInfo[]>;
+  getMyRooms(): Promise<import('./types').XMPPRoom[]>;
 
   /**
    * Query message archive (helper wrapping MAM)
    * Returns MAMFin which contains the results array and paging info
    */
   queryArchive(roomJid: string, query: Partial<MAMQuery>): Promise<import('./types').MAMFin>;
+
+  /**
+   * Send groupchat message (helper)
+   */
+  sendGroupchatMessage(roomJid: string, body: string): Promise<string>;
+
+  /**
+   * Set room subject (helper)
+   */
+  setRoomSubject(roomJid: string, subject: string): Promise<void>;
 }

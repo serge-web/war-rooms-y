@@ -49,7 +49,7 @@ export const unreadCountAtomFamily = atomFamily((roomJid: string) =>
 
     // Count messages newer than last read timestamp
     return messages.filter((msg: XMPPMessage) => {
-      const msgTime = msg.delay?.stamp || new Date().toISOString();
+      const msgTime = msg.delay?.timestamp?.toISOString() || new Date().toISOString();
       return msgTime > lastRead;
     }).length;
   })
@@ -68,7 +68,7 @@ export function calculateUnreadCount(messages: XMPPMessage[], lastRead: string |
   }
 
   return messages.filter((msg: XMPPMessage) => {
-    const msgTime = msg.delay?.stamp || new Date().toISOString();
+    const msgTime = msg.delay?.timestamp?.toISOString() || new Date().toISOString();
     return msgTime > lastRead;
   }).length;
 }

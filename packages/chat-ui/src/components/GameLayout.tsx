@@ -37,7 +37,7 @@ export function GameLayout() {
             children: [
               {
                 type: 'tab',
-                name: room.info.info.identity.name,
+                name: room.info.info.identities?.[0]?.name || 'Unknown Room',
                 component: 'room',
                 config: { roomJid: room.info.jid },
               },

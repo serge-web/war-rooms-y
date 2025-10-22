@@ -105,10 +105,14 @@ export const loadArchivedMessagesAtom = atom(
     try {
       const result = await backendRef.backend.queryArchive(
         roomJid,
-        limit !== undefined ? { limit } : {}
+        limit !== undefined ? { paging: { max: limit } } : {}
       );
       const messagesAtom = messagesAtomFamily(roomJid);
-      set(messagesAtom, result.messages);
+      // Extract messages from MAMResult items
+      const messages = (result.results || [])
+        .map((r) => r.item.message)
+        .filter((m): m is NonNullable<typeof m> => m !== undefined);
+      set(messagesAtom, messages);
     } catch (error) {
       console.error('[Messages] Load archived messages failed:', error);
       throw error;
@@ -127,9 +131,9 @@ export const loadArchivedMessagesAtom = atom(
  */
 export function sortMessages(messages: XMPPMessage[]): XMPPMessage[] {
   return [...messages].sort((a, b) => {
-    const timeA = a.delay?.stamp || new Date().toISOString();
-    const timeB = b.delay?.stamp || new Date().toISOString();
-    return timeA.localeCompare(timeB);
+    const timeA = a.delay?.timestamp || new Date();
+    const timeB = b.delay?.timestamp || new Date();
+    return timeA.getTime() - timeB.getTime();
   });
 }
 
@@ -137,6 +141,8 @@ export function sortMessages(messages: XMPPMessage[]): XMPPMessage[] {
  * Get message sender nickname (from room JID format: room@conference/nickname)
  */
 export function getMessageSender(message: XMPPMessage): string {
+  if (!message.from) return 'Unknown';
+
   if (message.type === 'groupchat') {
     const parts = message.from.split('/');
     return parts[1] || 'Unknown';

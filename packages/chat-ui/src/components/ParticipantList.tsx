@@ -48,14 +48,16 @@ export function ParticipantList({
   };
 
   // Sort occupants: moderators first, then by nickname
-  const sortedOccupants = [...occupants].sort((a, b) => {
-    // Moderators first
-    if (a.role === 'moderator' && b.role !== 'moderator') return -1;
-    if (a.role !== 'moderator' && b.role === 'moderator') return 1;
+  const sortedOccupants = [...occupants]
+    .filter((occupant) => occupant.nick) // Filter out occupants without nick
+    .sort((a, b) => {
+      // Moderators first
+      if (a.role === 'moderator' && b.role !== 'moderator') return -1;
+      if (a.role !== 'moderator' && b.role === 'moderator') return 1;
 
-    // Then alphabetically by nickname
-    return a.nick.localeCompare(b.nick);
-  });
+      // Then alphabetically by nickname
+      return a.nick!.localeCompare(b.nick!);
+    });
 
   return (
     <Box>
@@ -77,11 +79,7 @@ export function ParticipantList({
             }}
           >
             <ListItemIcon sx={{ minWidth: 32 }}>
-              <PresenceIndicator
-                {...(occupant.presence.show && { show: occupant.presence.show })}
-                {...(occupant.presence.status && { status: occupant.presence.status })}
-                size={compact ? 'small' : 'medium'}
-              />
+              <PresenceIndicator size={compact ? 'small' : 'medium'} />
             </ListItemIcon>
 
             <ListItemText
@@ -113,9 +111,6 @@ export function ParticipantList({
                     />
                   )}
                 </Box>
-              }
-              secondary={
-                !compact && occupant.presence.status ? occupant.presence.status : undefined
               }
               secondaryTypographyProps={{
                 variant: 'caption',

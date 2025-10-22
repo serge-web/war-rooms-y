@@ -35,7 +35,7 @@ export interface RoomsStore {
   // Actions
   setBackend: (backend: XMPPBackend) => void;
   loadMyRooms: () => Promise<void>;
-  joinRoom: (roomJid: string, nickname: string, password?: string) => Promise<void>;
+  joinRoom: (roomJid: string, nickname: string) => Promise<void>;
   leaveRoom: (roomJid: string) => Promise<void>;
   loadRoomInfo: (roomJid: string) => Promise<void>;
   updateOccupants: (roomJid: string, occupants: XMPPOccupant[]) => void;
@@ -59,7 +59,7 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
   // Actions
   setBackend: (backend: XMPPBackend) => {
     // Register room occupant update handler
-    backend.on({
+    backend.setEventHandlers({
       onRoomOccupantUpdate: (roomJid, occupants) => {
         get().updateOccupants(roomJid, occupants);
       },
@@ -82,7 +82,7 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
       for (const xmppRoom of myRooms) {
         rooms.set(xmppRoom.jid, {
           info: xmppRoom,
-          occupants: xmppRoom.occupants || [],
+          occupants: [],
           joined: false,
           loading: false,
         });
@@ -95,7 +95,7 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
     }
   },
 
-  joinRoom: async (roomJid: string, nickname: string, password?: string) => {
+  joinRoom: async (roomJid: string, nickname: string) => {
     const { backend, rooms } = get();
 
     if (!backend) {
@@ -110,14 +110,14 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
     }
 
     try {
-      await backend.joinRoom(roomJid, nickname, password);
+      await backend.joinRoom(roomJid, nickname);
 
-      // Load room info
-      const info = await backend.getRoomInfo(roomJid);
+      // Load room info and wrap in XMPPRoom structure
+      const discoInfo = await backend.getRoomInfo(roomJid);
       const occupants = await backend.getRoomOccupants(roomJid);
 
       rooms.set(roomJid, {
-        info,
+        info: { jid: roomJid, info: discoInfo },
         occupants,
         joined: true,
         nickname,
@@ -178,12 +178,12 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
     }
 
     try {
-      const info = await backend.getRoomInfo(roomJid);
+      const discoInfo = await backend.getRoomInfo(roomJid);
       const occupants = await backend.getRoomOccupants(roomJid);
 
       const room = rooms.get(roomJid);
       const newRoom: RoomState = {
-        info,
+        info: { jid: roomJid, info: discoInfo },
         occupants,
         joined: room?.joined || false,
         loading: false,

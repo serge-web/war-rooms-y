@@ -30,7 +30,7 @@ export function RoomList({ onRoomSelect }: RoomListProps) {
 
       <List>
         {allRooms.map((room: RoomState) => {
-          const roomName = room.info.info.identity.name;
+          const roomName = room.info.info.identities?.[0]?.name || 'Unknown Room';
 
           return (
             <ListItem key={room.info.jid} disablePadding>

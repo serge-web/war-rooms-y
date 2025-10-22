@@ -119,9 +119,7 @@ export class MockPubSubMetadata implements PubSubMetadata {
     // Stubbed
   }
 
-  async subscribeFormSchemas(
-    _callback: (update: PubSubUpdate<FormSchema>) => void
-  ): Promise<void> {
+  async subscribeFormSchemas(_callback: (update: PubSubUpdate<FormSchema>) => void): Promise<void> {
     // Stubbed
   }
 

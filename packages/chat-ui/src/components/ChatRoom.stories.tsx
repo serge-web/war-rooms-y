@@ -26,7 +26,7 @@ function MockRoomSetup({ roomJid, children }: { roomJid: string; children: React
             to: roomJid,
             type: 'groupchat',
             body: 'All units, prepare for mission briefing.',
-            delay: { stamp: new Date(Date.now() - 300000).toISOString() },
+            delay: { timestamp: new Date(Date.now() - 300000) },
           },
           {
             id: 'msg-2',
@@ -34,7 +34,7 @@ function MockRoomSetup({ roomJid, children }: { roomJid: string; children: React
             to: roomJid,
             type: 'groupchat',
             body: 'Intel report ready for review.',
-            delay: { stamp: new Date(Date.now() - 200000).toISOString() },
+            delay: { timestamp: new Date(Date.now() - 200000) },
           },
           {
             id: 'msg-3',
@@ -42,7 +42,7 @@ function MockRoomSetup({ roomJid, children }: { roomJid: string; children: React
             to: roomJid,
             type: 'groupchat',
             body: 'Standing by for orders.',
-            delay: { stamp: new Date(Date.now() - 100000).toISOString() },
+            delay: { timestamp: new Date(Date.now() - 100000) },
           },
         ];
 

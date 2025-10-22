@@ -5,7 +5,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { useSetAtom } from 'jotai';
-import type { XMPPConfig, XMPPMessage } from '@war-rooms/backend-interface';
+import type { XMPPConfig, XMPPMessage, XMPPBackend } from '@war-rooms/backend-interface';
 import { MockXMPPBackend, MockPubSubMetadata } from '@war-rooms/backend-mock';
 import {
   useConnectionStore,
@@ -66,20 +66,23 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Create PubSub metadata wrapper
-  const pubsub = useMemo(() => new MockPubSubMetadata(backend), [backend]);
+  const pubsub = useMemo(
+    () => new MockPubSubMetadata(backend as unknown as XMPPBackend),
+    [backend]
+  );
 
   // Inject backend into stores
   useEffect(() => {
-    setBackend(backend);
-    setRoomsBackend(backend);
+    setBackend(backend as unknown as XMPPBackend);
+    setRoomsBackend(backend as unknown as XMPPBackend);
     setPubSub(pubsub);
-    setMessageBackend({ backend });
+    setMessageBackend({ backend: backend as unknown as XMPPBackend });
 
     // Register message handler to update Jotai atoms
-    backend.on({
+    backend.setEventHandlers({
       onMessage: (message: XMPPMessage) => {
         // Extract room JID from groupchat message
-        if (message.type === 'groupchat') {
+        if (message.type === 'groupchat' && message.from) {
           const roomJid = message.from.split('/')[0];
           if (roomJid) {
             addMessage({ roomJid, message });
@@ -90,7 +93,7 @@ export function BackendProvider({ children }: { children: React.ReactNode }) {
 
     // Cleanup on unmount
     return () => {
-      backend.disconnect().catch(console.error);
+      backend.disconnect();
     };
   }, [backend, pubsub, setBackend, setRoomsBackend, setPubSub, setMessageBackend, addMessage]);
 

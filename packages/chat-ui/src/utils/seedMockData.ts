@@ -19,9 +19,11 @@ export async function seedMockData() {
   // Seed archived messages
   for (const message of MOCK_MESSAGES) {
     // Extract room JID from the message 'from' field (format: room@conference/nickname)
-    const roomJid = message.from.split('/')[0];
-    if (roomJid) {
-      await storage.setItem(`archive/rooms/${roomJid}/${message.id}`, message);
+    if (message.from) {
+      const roomJid = message.from.split('/')[0];
+      if (roomJid) {
+        await storage.setItem(`archive/rooms/${roomJid}/${message.id}`, message);
+      }
     }
   }
 
