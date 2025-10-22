@@ -44,7 +44,8 @@
       "Bash(npx playwright test:*)",
       "Bash(timeout 30 tail:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
