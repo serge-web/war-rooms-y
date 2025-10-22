@@ -3,21 +3,20 @@
  * Simulates XMPP protocol using browser storage (localForage or localStorage)
  */
 
+import type { AgentConfig } from 'stanza';
 import type {
   XMPPBackend,
   XMPPConfig,
   ConnectionInfo,
   ConnectionState,
   XMPPEventHandlers,
-  UserInfo,
   Message,
   DiscoInfo,
   MUCUserItem,
   MAMQuery,
-  MAMResult,
+  MAMFin,
   UnifiedUser,
   Presence,
-  PresenceShow,
   RosterResult,
   RosterItem,
   ReceivedMUCPresence,
@@ -30,8 +29,6 @@ import {
   buildJid,
   generateMessageId,
   getISOTimestamp,
-  createPresenceStanza,
-  createMessageStanza,
   delay,
 } from './helpers';
 import { XMPPAdapter } from './adapters/xmpp-adapter';
@@ -40,7 +37,14 @@ import { XMPPAdapter } from './adapters/xmpp-adapter';
 // Mock XMPP Backend Implementation
 // ============================================================================
 
-export class MockXMPPBackend implements XMPPBackend {
+/**
+ * Mock XMPP Backend
+ *
+ * Note: This is a partial implementation for testing. It implements the app-specific
+ * helper methods from XMPPBackend but doesn't include all Agent properties.
+ * Type assertion is used when returning this as XMPPBackend.
+ */
+export class MockXMPPBackend {
   private storage: Storage;
   private config: XMPPConfig;
   private handlers: XMPPEventHandlers = {};
@@ -68,7 +72,7 @@ export class MockXMPPBackend implements XMPPBackend {
   connect(opts?: AgentConfig): void {
     // Extract credentials from opts or config
     const username = opts?.jid?.split('@')[0] || this.config.username;
-    const password = opts?.password || this.config.password;
+    const _password = opts?.password || this.config.password; // Not used in mock
 
     if (!username) {
       throw new Error('Username required for connection');
@@ -146,10 +150,10 @@ export class MockXMPPBackend implements XMPPBackend {
     // Use adapter to get all users
     const users = await this.adapter.getAllUsers();
 
-    // Convert UserInfo[] to RosterResult format
+    // Convert XMPPUser[] to RosterResult format
     const items: RosterItem[] = users.map((user) => ({
       jid: user.jid,
-      name: user.displayName,
+      name: user.name,
       subscription: 'both' as const, // Mock: all users have mutual subscription
       groups: user.groups,
     }));
@@ -311,7 +315,7 @@ export class MockXMPPBackend implements XMPPBackend {
 
   // ===== Multi-User Chat Operations =====
 
-  async joinRoom(jid: string, nick: string, opts?: Presence): Promise<ReceivedMUCPresence> {
+  async joinRoom(jid: string, nick: string, _opts?: Presence): Promise<ReceivedMUCPresence> {
     if (!this.currentJid) {
       throw new Error('Not connected');
     }
@@ -337,10 +341,10 @@ export class MockXMPPBackend implements XMPPBackend {
     // Return MUC presence (self-presence confirming join)
     const mucPresence: ReceivedMUCPresence = {
       from: `${jid}/${nick}`,
-      to: this.currentJid,
+      to: this.currentJid!,
       type: undefined, // available presence
       muc: {
-        statusCodes: [110], // self-presence code
+        statusCodes: ['110'], // self-presence code (string in Stanza)
         affiliation: 'member',
         role: 'participant',
         jid: this.currentJid,
@@ -350,7 +354,7 @@ export class MockXMPPBackend implements XMPPBackend {
     return mucPresence;
   }
 
-  async leaveRoom(jid: string, nick?: string, opts?: Presence): Promise<ReceivedPresence> {
+  async leaveRoom(jid: string, nick?: string, _opts?: Presence): Promise<ReceivedPresence> {
     await delay(this.latency);
 
     // Get nickname - use provided or lookup stored
@@ -370,8 +374,8 @@ export class MockXMPPBackend implements XMPPBackend {
 
     // Return unavailable presence
     const presence: ReceivedPresence = {
-      from: `${jid}/${nickname}`,
-      to: this.currentJid,
+      from: `${jid}/${nickname || ''}`,
+      to: this.currentJid!,
       type: 'unavailable',
     };
 
@@ -420,7 +424,8 @@ export class MockXMPPBackend implements XMPPBackend {
       throw new Error(`Room not found: ${roomJid}`);
     }
 
-    return room;
+    // Return just the DiscoInfo part
+    return room.info;
   }
 
   async getRoomOccupants(roomJid: string): Promise<MUCUserItem[]> {
@@ -440,7 +445,8 @@ export class MockXMPPBackend implements XMPPBackend {
     // Use adapter to get rooms for current user
     const rooms = await this.adapter.getUserRooms(this.currentJid);
 
-    return rooms;
+    // Return just the DiscoInfo parts
+    return rooms.map((r) => r.info);
   }
 
   async setRoomSubject(roomJid: string, subject: string): Promise<void> {
@@ -500,40 +506,40 @@ export class MockXMPPBackend implements XMPPBackend {
 
   // ===== Message Archive Management =====
 
-  async queryArchive(roomJid: string, query: Partial<MAMQuery>): Promise<MAMResult> {
+  async queryArchive(roomJid: string, query: Partial<MAMQuery>): Promise<MAMFin> {
     await delay(this.latency);
 
     // Get all messages for room
     const allMessages = await this.storage.getAll<Message>(`archive/rooms/${roomJid}/`);
     let messages = Object.values(allMessages);
 
-    // Filter by timestamp
-    if (query.start || query.end) {
-      messages = messages.filter((msg) => {
-        const timestamp = msg.delay?.timestamp || getISOTimestamp();
-        if (query.start && timestamp < query.start) return false;
-        if (query.end && timestamp > query.end) return false;
-        return true;
-      });
-    }
+    // Apply limit from paging
+    const limit = query.paging?.max || 50;
+    messages = messages.slice(0, limit);
 
-    // Apply limit
-    if (query.limit) {
-      messages = messages.slice(0, query.limit);
-    }
+    // Convert messages to MAMResult format (simplified for mock)
+    const results: import('@war-rooms/backend-interface').MAMResult[] = messages.map((msg) => ({
+      version: '2',
+      queryId: query.queryId || 'query1',
+      id: msg.id!,
+      item: {
+        delay: msg.delay,
+        message: msg,
+      },
+    }));
 
-    const result: MAMResult = {
-      messages,
+    // Return MAMFin with results
+    const fin: MAMFin = {
+      type: 'result',
+      version: '2',
       complete: true,
-      count: messages.length,
+      results,
+      paging: {
+        count: messages.length,
+      },
     };
 
-    if (messages.length > 0) {
-      result.first = messages[0]!.id;
-      result.last = messages[messages.length - 1]!.id;
-    }
-
-    return result;
+    return fin;
   }
 
   // ===== PubSub Operations =====

@@ -128,6 +128,7 @@ export interface XMPPBackend extends Agent {
 
   /**
    * Query message archive (helper wrapping MAM)
+   * Returns MAMFin which contains the results array and paging info
    */
-  queryArchive(roomJid: string, query: Partial<MAMQuery>): Promise<MAMResult>;
+  queryArchive(roomJid: string, query: Partial<MAMQuery>): Promise<import('./types').MAMFin>;
 }
