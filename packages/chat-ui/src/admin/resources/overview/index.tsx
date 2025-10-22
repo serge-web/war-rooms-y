@@ -2,7 +2,17 @@
  * Overview Resource (single game record)
  */
 
-import { Edit, SimpleForm, TextInput, NumberInput, SelectInput, Show, SimpleShowLayout, TextField, NumberField } from 'react-admin';
+import {
+  Edit,
+  SimpleForm,
+  TextInput,
+  NumberInput,
+  SelectInput,
+  Show,
+  SimpleShowLayout,
+  TextField,
+  NumberField,
+} from 'react-admin';
 
 export const OverviewEdit = () => (
   <Edit>

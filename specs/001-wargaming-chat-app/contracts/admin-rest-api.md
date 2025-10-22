@@ -14,6 +14,7 @@ Authentication: Basic Auth or Shared Secret Key
 The Admin UI (`/admin`) enforces access control through OpenFire group membership:
 
 **Login Flow**:
+
 1. User provides credentials at `/admin` login page
 2. Admin UI performs XMPP authentication via backend
 3. On successful XMPP auth, check user's group memberships
@@ -45,6 +46,7 @@ Response:
 Mock backend must simulate admin group check:
 
 **Mock Storage Structure** (localForage):
+
 ```typescript
 // Key: 'rest:user:gamemaster'
 {
@@ -57,6 +59,7 @@ Mock backend must simulate admin group check:
 ```
 
 **Mock Auth Provider**:
+
 ```typescript
 async checkAuth(credentials) {
   // 1. Authenticate via XMPP mock
@@ -75,20 +78,24 @@ async checkAuth(credentials) {
 ### Error Handling
 
 **401 Unauthorized**: Invalid credentials
+
 - Message: "Authentication failed. Please check your username and password."
 - Action: Clear form, allow retry
 
 **403 Forbidden**: Valid user but not in admin group
+
 - Message: "Admin access required. Redirecting to chat interface..."
 - Action: Auto-redirect to `/` after 2 seconds
 
 **500 Server Error**: OpenFire connection failed
+
 - Message: "Unable to connect to server. Please try again later."
 - Action: Retry option, don't redirect
 
 ### Core REST Endpoints Used
 
 #### Users
+
 - `GET /users` - List all users with pagination
 - `GET /users/{username}` - Get user details
 - `POST /users` - Create new user
@@ -96,6 +103,7 @@ async checkAuth(credentials) {
 - `DELETE /users/{username}` - Delete user
 
 #### Groups (Forces)
+
 - `GET /groups` - List all groups
 - `GET /groups/{groupName}` - Get group details
 - `POST /groups` - Create new group
@@ -105,6 +113,7 @@ async checkAuth(credentials) {
 - `DELETE /groups/{groupName}/members/{username}` - Remove member
 
 #### MUC Rooms
+
 - `GET /chatrooms` - List all rooms
 - `GET /chatrooms/{roomName}` - Get room details
 - `POST /chatrooms` - Create new room
@@ -119,7 +128,9 @@ async checkAuth(credentials) {
 Since OpenFire REST API doesn't provide all needed metadata, we store additional data in PubSub nodes:
 
 #### Force Metadata Node
+
 Node ID: `force:{groupName}`
+
 ```json
 {
   "color": "#FF0000",
@@ -130,7 +141,9 @@ Node ID: `force:{groupName}`
 ```
 
 #### Room Metadata Node
+
 Node ID: `room:{roomName}`
+
 ```json
 {
   "theme": {
@@ -147,7 +160,9 @@ Node ID: `room:{roomName}`
 ```
 
 #### Game Overview Node
+
 Node ID: `game:overview`
+
 ```json
 {
   "title": "Operation Thunder Strike",
@@ -182,11 +197,13 @@ interface AdminDataProvider extends DataProvider {
 ### Resource Mapping
 
 #### Overview Resource
+
 - **getOne**: Fetches from PubSub node `game:overview`
 - **update**: Updates PubSub node `game:overview`
 - No create/delete operations (single record)
 
 #### Forces Resource
+
 - **getList**: `GET /groups` + PubSub metadata for each group
 - **getOne**: `GET /groups/{name}` + PubSub node `force:{name}`
 - **create**: `POST /groups` + create PubSub node
@@ -194,6 +211,7 @@ interface AdminDataProvider extends DataProvider {
 - **delete**: `DELETE /groups/{name}` + delete PubSub node
 
 #### Rooms Resource
+
 - **getList**: `GET /chatrooms` + PubSub metadata for each room
 - **getOne**: `GET /chatrooms/{name}` + PubSub node `room:{name}`
 - **create**: `POST /chatrooms` + create PubSub node
@@ -201,23 +219,27 @@ interface AdminDataProvider extends DataProvider {
 - **delete**: `DELETE /chatrooms/{name}` + delete PubSub node
 
 #### Templates Resource (Placeholder)
+
 - All operations via PubSub nodes only
 - Node pattern: `template:{templateId}`
 
 ## Mock Implementation Requirements
 
 ### Mock REST API
+
 - Implement all OpenFire REST endpoints listed above
 - Store data in localForage with key pattern: `rest:{resource}:{id}`
 - Simulate authentication with shared secret
 - Support pagination, filtering, sorting
 
 ### Mock PubSub Storage
+
 - Store metadata in localForage with key pattern: `pubsub:{nodeId}`
 - Emit events via BroadcastChannel for real-time updates
 - Support subscription simulation
 
 ### Data Synchronization
+
 - REST operations trigger PubSub events
 - PubSub updates propagate to all connected clients
 - Maintain consistency between REST and PubSub data
@@ -225,6 +247,7 @@ interface AdminDataProvider extends DataProvider {
 ## Error Handling
 
 ### REST API Errors
+
 - 400: Bad Request (invalid data)
 - 401: Unauthorized (auth failure)
 - 403: Forbidden (insufficient permissions)
@@ -233,6 +256,7 @@ interface AdminDataProvider extends DataProvider {
 - 500: Internal Server Error
 
 ### PubSub Errors
+
 - Node not found: Create node automatically
 - Permission denied: Check user roles
 - Invalid payload: Validate against schema
@@ -240,18 +264,21 @@ interface AdminDataProvider extends DataProvider {
 ## Testing Strategy
 
 ### Unit Tests
+
 - Mock data provider methods
 - Test REST endpoint mapping
 - Test PubSub metadata operations
 - Validate error handling
 
 ### Integration Tests
+
 - Test full CRUD operations for each resource
 - Verify REST + PubSub synchronization
 - Test real-time updates via subscriptions
 - Validate permission enforcement
 
 ### E2E Tests
+
 - Admin creates force with metadata
 - Admin assigns rooms to forces
 - Verify metadata propagation to chat UI

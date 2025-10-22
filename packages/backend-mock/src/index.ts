@@ -20,11 +20,7 @@ export type {
 } from './rest/openfire-api';
 
 export { MockPubSubMetadata as MockPubSubMetadataREST } from './rest/pubsub-metadata';
-export type {
-  ForceMetadata,
-  RoomMetadata,
-  GameOverview,
-} from './rest/pubsub-metadata';
+export type { ForceMetadata, RoomMetadata, GameOverview } from './rest/pubsub-metadata';
 
 // Admin user seeding (adds passwords to Game Masters)
 export { seedRestUsers as seedAdminUsers } from './rest/seed-rest';

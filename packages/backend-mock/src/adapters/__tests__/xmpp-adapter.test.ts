@@ -7,11 +7,7 @@ import { createStorage } from '../../storage';
 import type { Storage } from '../../storage';
 import type { UnifiedRoom } from '@war-rooms/backend-interface';
 import { MOCK_DOMAIN, MOCK_CONFERENCE } from '../../fixtures';
-import {
-  seedTestWargame,
-  createTestUser,
-  createTestRoom,
-} from '../test-fixtures';
+import { seedTestWargame, createTestUser, createTestRoom } from '../test-fixtures';
 
 describe('XMPPAdapter', () => {
   let storage: Storage;
@@ -73,27 +69,27 @@ describe('XMPPAdapter', () => {
     describe('getUserRooms', () => {
       it('should return public rooms for any user', async () => {
         const rooms = await adapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
-        const publicRoom = rooms.find(r => r.jid === `all-hands@${MOCK_CONFERENCE}`);
+        const publicRoom = rooms.find((r) => r.jid === `all-hands@${MOCK_CONFERENCE}`);
         expect(publicRoom).toBeDefined();
         expect(publicRoom?.info.identity.name).toBe('All Hands');
       });
 
       it('should return group-restricted rooms for group members', async () => {
         const rooms = await adapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
-        const redCommand = rooms.find(r => r.jid === `red-command@${MOCK_CONFERENCE}`);
+        const redCommand = rooms.find((r) => r.jid === `red-command@${MOCK_CONFERENCE}`);
         expect(redCommand).toBeDefined();
         expect(redCommand?.info.identity.name).toBe('Red Command Center');
       });
 
       it('should not return group-restricted rooms for non-members', async () => {
         const rooms = await adapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
-        const redCommand = rooms.find(r => r.jid === `red-command@${MOCK_CONFERENCE}`);
+        const redCommand = rooms.find((r) => r.jid === `red-command@${MOCK_CONFERENCE}`);
         expect(redCommand).toBeUndefined();
       });
 
       it('should return rooms with individual membership', async () => {
         const rooms = await adapter.getUserRooms(`analyst.red1@${MOCK_DOMAIN}`);
-        const intelRoom = rooms.find(r => r.jid === `intel-room@${MOCK_CONFERENCE}`);
+        const intelRoom = rooms.find((r) => r.jid === `intel-room@${MOCK_CONFERENCE}`);
         expect(intelRoom).toBeDefined();
         expect(intelRoom?.info.identity.name).toBe('Intelligence Room');
       });
@@ -101,17 +97,17 @@ describe('XMPPAdapter', () => {
       it('should handle mixed access (group + individual)', async () => {
         // Blue commander should see planning (force-blue group)
         const blueRooms = await adapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
-        const bluePlanning = blueRooms.find(r => r.jid === `planning@${MOCK_CONFERENCE}`);
+        const bluePlanning = blueRooms.find((r) => r.jid === `planning@${MOCK_CONFERENCE}`);
         expect(bluePlanning).toBeDefined();
 
         // Gamemaster should see planning (individual member)
         const gmRooms = await adapter.getUserRooms(`gamemaster@${MOCK_DOMAIN}`);
-        const gmPlanning = gmRooms.find(r => r.jid === `planning@${MOCK_CONFERENCE}`);
+        const gmPlanning = gmRooms.find((r) => r.jid === `planning@${MOCK_CONFERENCE}`);
         expect(gmPlanning).toBeDefined();
 
         // Red commander should NOT see planning
         const redRooms = await adapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
-        const redPlanning = redRooms.find(r => r.jid === `planning@${MOCK_CONFERENCE}`);
+        const redPlanning = redRooms.find((r) => r.jid === `planning@${MOCK_CONFERENCE}`);
         expect(redPlanning).toBeUndefined();
       });
 
@@ -125,7 +121,7 @@ describe('XMPPAdapter', () => {
       it('should return all rooms', async () => {
         const rooms = await adapter.getAllRooms();
         expect(rooms).toHaveLength(4);
-        const roomNames = rooms.map(r => r.info.identity.name).sort();
+        const roomNames = rooms.map((r) => r.info.identity.name).sort();
         expect(roomNames).toEqual([
           'All Hands',
           'Intelligence Room',
@@ -166,9 +162,7 @@ describe('XMPPAdapter', () => {
       });
 
       it('should not fail for non-existent room', async () => {
-        await expect(
-          adapter.updateRoomMembers('non-existent', ['user1'])
-        ).resolves.not.toThrow();
+        await expect(adapter.updateRoomMembers('non-existent', ['user1'])).resolves.not.toThrow();
       });
     });
   });
@@ -212,7 +206,7 @@ describe('XMPPAdapter', () => {
       it('should return all users', async () => {
         const users = await adapter.getAllUsers();
         expect(users).toHaveLength(5);
-        const usernames = users.map(u => u.bare_jid.split('@')[0]).sort();
+        const usernames = users.map((u) => u.bare_jid.split('@')[0]).sort();
         expect(usernames).toEqual([
           'analyst.blue1',
           'analyst.red1',
@@ -224,7 +218,7 @@ describe('XMPPAdapter', () => {
 
       it('should set subscription to both for all users', async () => {
         const users = await adapter.getAllUsers();
-        users.forEach(user => {
+        users.forEach((user) => {
           expect(user.subscription).toBe('both');
         });
       });

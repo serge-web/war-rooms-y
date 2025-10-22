@@ -101,11 +101,16 @@ const mockDataProvider = {
   }),
   getMany: async () => ({ data: [] }),
   getManyReference: async () => ({ data: [], total: 0 }),
-  create: async (_resource: string, params: any) => ({ data: { ...params.data, id: params.data.roomName } }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  create: async (_resource: string, params: any) => ({
+    data: { ...params.data, id: params.data.roomName },
+  }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   update: async (_resource: string, params: any) => ({ data: params.data }),
   updateMany: async () => ({ data: [] }),
   delete: async () => ({ data: { id: 'deleted' } }),
   deleteMany: async () => ({ data: [] }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any as DataProvider;
 
 const meta = {
@@ -145,4 +150,3 @@ export const Create: StoryObj = {
 export const Edit: StoryObj = {
   render: () => <RoomEdit />,
 };
-

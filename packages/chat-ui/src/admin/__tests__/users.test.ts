@@ -3,7 +3,6 @@
  * Tests admin panel user management via REST API
  */
 
-// @ts-nocheck
 import { createStorage, MockOpenFireAPI, seedTestWargame } from '@war-rooms/backend-mock';
 
 describe('Admin User CRUD Operations', () => {
@@ -33,9 +32,9 @@ describe('Admin User CRUD Operations', () => {
       await api.createUser(newUser);
 
       const user = await api.getUser('testuser1');
-      expect(user.username).toBe('testuser1');
-      expect(user.name).toBe('Test User One');
-      expect(user.email).toBe('testuser1@wargame.local');
+      expect(user!.username).toBe('testuser1');
+      expect(user!.name).toBe('Test User One');
+      expect(user!.email).toBe('testuser1@wargame.local');
     });
 
     it('should reject duplicate usernames', async () => {
@@ -79,7 +78,7 @@ describe('Admin User CRUD Operations', () => {
 
       // Verify bidirectional relationship
       const group = await api.getGroup('TestForce');
-      expect(group.members).toContain('groupuser');
+      expect(group!.members).toContain('groupuser');
     });
   });
 
@@ -109,9 +108,9 @@ describe('Admin User CRUD Operations', () => {
 
     it('should get user by username', async () => {
       const user = await api.getUser('user1');
-      expect(user.username).toBe('user1');
-      expect(user.name).toBe('User One');
-      expect(user.email).toBe('user1@test.local');
+      expect(user!.username).toBe('user1');
+      expect(user!.name).toBe('User One');
+      expect(user!.email).toBe('user1@test.local');
     });
 
     it('should return null for non-existent user', async () => {
@@ -137,8 +136,8 @@ describe('Admin User CRUD Operations', () => {
       });
 
       const user = await api.getUser('updateuser');
-      expect(user.name).toBe('Updated Name');
-      expect(user.email).toBe('updated@test.local');
+      expect(user!.name).toBe('Updated Name');
+      expect(user!.email).toBe('updated@test.local');
     });
 
     it('should update user password', async () => {
@@ -148,7 +147,7 @@ describe('Admin User CRUD Operations', () => {
 
       // Password is stored internally, just verify update doesn't throw
       const user = await api.getUser('updateuser');
-      expect(user.username).toBe('updateuser');
+      expect(user!.username).toBe('updateuser');
     });
 
     it('should update user group membership', async () => {
@@ -166,10 +165,10 @@ describe('Admin User CRUD Operations', () => {
       });
 
       const user = await api.getUser('updateuser');
-      expect(user.properties?.sharedGroups).toContain('UpdateTestGroup');
+      expect(user!.properties?.sharedGroups).toContain('UpdateTestGroup');
 
       const group = await api.getGroup('UpdateTestGroup');
-      expect(group.members).toContain('updateuser');
+      expect(group!.members).toContain('updateuser');
     });
   });
 
@@ -206,14 +205,14 @@ describe('Admin User CRUD Operations', () => {
 
       // Verify user is in group
       let group = await api.getGroup('DeleteTestGroup');
-      expect(group.members).toContain('deleteuser');
+      expect(group!.members).toContain('deleteuser');
 
       // Delete user
       await api.deleteUser('deleteuser');
 
       // Verify user removed from group
       group = await api.getGroup('DeleteTestGroup');
-      expect(group.members).not.toContain('deleteuser');
+      expect(group!.members).not.toContain('deleteuser');
     });
 
     it('should not throw when deleting non-existent user', async () => {

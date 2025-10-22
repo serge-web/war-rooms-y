@@ -3,11 +3,16 @@
  * Tests force/group membership operations via REST API + PubSub metadata
  */
 
-// @ts-nocheck
-import { createStorage, MockOpenFireAPI, MockPubSubMetadataREST as MockPubSubMetadata, seedTestWargame } from '@war-rooms/backend-mock';
+import {
+  createStorage,
+  MockOpenFireAPI,
+  MockPubSubMetadataREST as MockPubSubMetadata,
+  seedTestWargame,
+} from '@war-rooms/backend-mock';
+import type { Storage } from '@war-rooms/backend-mock';
 
 describe('Group Membership Management', () => {
-  let storage: ReturnType<typeof createStorage>;
+  let storage: Storage;
   let api: MockOpenFireAPI;
   let pubsub: MockPubSubMetadata;
 
@@ -53,9 +58,9 @@ describe('Group Membership Management', () => {
       });
 
       const group = await api.getGroup('TestForce');
-      expect(group.name).toBe('TestForce');
-      expect(group.description).toBe('Test force description');
-      expect(group.members).toEqual([]);
+      expect(group!.name).toBe('TestForce');
+      expect(group!.description).toBe('Test force description');
+      expect(group!.members).toEqual([]);
     });
 
     it('should create group with initial members', async () => {
@@ -67,8 +72,8 @@ describe('Group Membership Management', () => {
       });
 
       const group = await api.getGroup('ForceWithMembers');
-      expect(group.members).toContain('user1');
-      expect(group.members).toContain('user2');
+      expect(group!.members).toContain('user1');
+      expect(group!.members).toContain('user2');
 
       // Verify bidirectional relationship
       const user1 = await api.getUser('user1');
@@ -91,9 +96,9 @@ describe('Group Membership Management', () => {
       });
 
       const metadata = await pubsub.getForceMetadata('MetaForce');
-      expect(metadata.color).toBe('#FF5722');
-      expect(metadata.icon).toBe('military-tech');
-      expect(metadata.objectives).toEqual(['Objective 1', 'Objective 2']);
+      expect(metadata!.color).toBe('#FF5722');
+      expect(metadata!.icon).toBe('military-tech');
+      expect(metadata!.objectives).toEqual(['Objective 1', 'Objective 2']);
     });
   });
 
@@ -117,7 +122,7 @@ describe('Group Membership Management', () => {
       expect(updatedGroup.members).toContain('user1');
 
       const user = await api.getUser('user1');
-      expect(user.properties?.sharedGroups).toContain('RedForce');
+      expect(user!.properties?.sharedGroups).toContain('RedForce');
     });
 
     it('should add multiple members to group', async () => {
@@ -139,7 +144,7 @@ describe('Group Membership Management', () => {
       });
 
       const user = await api.getUser('user1');
-      expect(user.properties?.sharedGroups).toContain('RedForce');
+      expect(user!.properties?.sharedGroups).toContain('RedForce');
 
       const updatedGroup = await api.getGroup('RedForce');
       expect(updatedGroup.members).toContain('user1');
@@ -184,7 +189,7 @@ describe('Group Membership Management', () => {
       expect(updatedGroup.members).toContain('user3');
 
       const user = await api.getUser('user2');
-      expect(user.properties?.sharedGroups || []).not.toContain('BlueForce');
+      expect(user!.properties?.sharedGroups || []).not.toContain('BlueForce');
     });
 
     it('should remove multiple members from group', async () => {
@@ -206,7 +211,7 @@ describe('Group Membership Management', () => {
       });
 
       const user = await api.getUser('user1');
-      expect(user.properties?.sharedGroups || []).not.toContain('BlueForce');
+      expect(user!.properties?.sharedGroups || []).not.toContain('BlueForce');
     });
 
     it('should handle removing all members', async () => {
@@ -215,7 +220,7 @@ describe('Group Membership Management', () => {
       });
 
       const group = await api.getGroup('BlueForce');
-      expect(group.members).toEqual([]);
+      expect(group!.members).toEqual([]);
 
       // Verify all users updated
       const user1 = await api.getUser('user1');
@@ -255,9 +260,9 @@ describe('Group Membership Management', () => {
       await api.updateGroup('Group3', { members: ['user1'] });
 
       const user = await api.getUser('user1');
-      expect(user.properties?.sharedGroups).toContain('Group1');
-      expect(user.properties?.sharedGroups).toContain('Group2');
-      expect(user.properties?.sharedGroups).toContain('Group3');
+      expect(user!.properties?.sharedGroups).toContain('Group1');
+      expect(user!.properties?.sharedGroups).toContain('Group2');
+      expect(user!.properties?.sharedGroups).toContain('Group3');
     });
 
     it('should remove from one group without affecting others', async () => {
@@ -268,9 +273,9 @@ describe('Group Membership Management', () => {
       await api.updateGroup('Group2', { members: [] });
 
       const user = await api.getUser('user1');
-      expect(user.properties?.sharedGroups).toContain('Group1');
-      expect(user.properties?.sharedGroups).not.toContain('Group2');
-      expect(user.properties?.sharedGroups).toContain('Group3');
+      expect(user!.properties?.sharedGroups).toContain('Group1');
+      expect(user!.properties?.sharedGroups).not.toContain('Group2');
+      expect(user!.properties?.sharedGroups).toContain('Group3');
     });
   });
 
@@ -297,9 +302,9 @@ describe('Group Membership Management', () => {
       });
 
       const metadata = await pubsub.getForceMetadata('ColoredForce');
-      expect(metadata.color).toBe('#4CAF50');
-      expect(metadata.icon).toBe('shield');
-      expect(metadata.objectives).toEqual(['Hold position']);
+      expect(metadata!.color).toBe('#4CAF50');
+      expect(metadata!.icon).toBe('shield');
+      expect(metadata!.objectives).toEqual(['Hold position']);
     });
 
     it('should maintain metadata when removing members', async () => {
@@ -314,8 +319,8 @@ describe('Group Membership Management', () => {
       });
 
       const metadata = await pubsub.getForceMetadata('ColoredForce');
-      expect(metadata.color).toBe('#2196F3');
-      expect(metadata.objectives).toEqual(['Advance', 'Secure area']);
+      expect(metadata!.color).toBe('#2196F3');
+      expect(metadata!.objectives).toEqual(['Advance', 'Secure area']);
     });
 
     it('should update metadata and members independently', async () => {
@@ -398,7 +403,7 @@ describe('Group Membership Management', () => {
       });
 
       const group = await api.getGroup('ErrorForce');
-      expect(group.members).toContain('nonexistent');
+      expect(group!.members).toContain('nonexistent');
     });
 
     it('should throw error updating non-existent group', async () => {

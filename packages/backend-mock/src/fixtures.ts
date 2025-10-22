@@ -610,14 +610,19 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
 // ============================================================================
 
 import type { Storage } from './storage';
-import type { UnifiedUser, UnifiedForce, UnifiedRoom, UnifiedFormTemplate } from '@war-rooms/backend-interface';
+import type {
+  UnifiedUser,
+  UnifiedForce,
+  UnifiedRoom,
+  UnifiedFormTemplate,
+} from '@war-rooms/backend-interface';
 
 /**
  * Convert MOCK fixtures to unified storage format and seed
  */
 export async function seedMockWargame(storage: Storage): Promise<void> {
   // Convert MOCK_USERS to UnifiedUser format
-  const unifiedUsers: UnifiedUser[] = MOCK_USERS.map(user => {
+  const unifiedUsers: UnifiedUser[] = MOCK_USERS.map((user) => {
     const baseUser: UnifiedUser = {
       username: user.jid.split('@')[0] || '',
       jid: user.jid,
@@ -638,16 +643,19 @@ export async function seedMockWargame(storage: Storage): Promise<void> {
   for (const user of unifiedUsers) {
     await storage.setItem(`entities/users/${user.username}`, user);
   }
-  await storage.setItem('entities/users/_index', unifiedUsers.map(u => u.username));
+  await storage.setItem(
+    'entities/users/_index',
+    unifiedUsers.map((u) => u.username)
+  );
 
   // Convert MOCK_FORCES to UnifiedForce format
-  const unifiedForces: UnifiedForce[] = MOCK_FORCES.map(force => {
+  const unifiedForces: UnifiedForce[] = MOCK_FORCES.map((force) => {
     const baseForce: UnifiedForce = {
       id: force.id,
       name: force.name,
       color: force.color || '#000000',
       icon: 'military_tech',
-      members: force.members.map(jid => jid.split('@')[0] || ''),
+      members: force.members.map((jid) => jid.split('@')[0] || ''),
       admins: force.commander ? [force.commander.split('@')[0] || ''] : [],
       objectives: [],
       createdAt: force.createdAt,
@@ -663,10 +671,13 @@ export async function seedMockWargame(storage: Storage): Promise<void> {
   for (const force of unifiedForces) {
     await storage.setItem(`entities/forces/${force.id}`, force);
   }
-  await storage.setItem('entities/forces/_index', unifiedForces.map(f => f.id));
+  await storage.setItem(
+    'entities/forces/_index',
+    unifiedForces.map((f) => f.id)
+  );
 
   // Convert MOCK_ROOMS to UnifiedRoom format
-  const unifiedRooms: UnifiedRoom[] = MOCK_ROOMS.map(room => {
+  const unifiedRooms: UnifiedRoom[] = MOCK_ROOMS.map((room) => {
     const baseRoom: UnifiedRoom = {
       id: room.jid.split('@')[0] || '',
       jid: room.jid,
@@ -710,10 +721,13 @@ export async function seedMockWargame(storage: Storage): Promise<void> {
   for (const room of unifiedRooms) {
     await storage.setItem(`entities/rooms/${room.id}`, room);
   }
-  await storage.setItem('entities/rooms/_index', unifiedRooms.map(r => r.id));
+  await storage.setItem(
+    'entities/rooms/_index',
+    unifiedRooms.map((r) => r.id)
+  );
 
   // Convert MOCK_FORM_SCHEMAS to UnifiedFormTemplate format
-  const unifiedTemplates: UnifiedFormTemplate[] = MOCK_FORM_SCHEMAS.map(schema => {
+  const unifiedTemplates: UnifiedFormTemplate[] = MOCK_FORM_SCHEMAS.map((schema) => {
     const baseTemplate: UnifiedFormTemplate = {
       id: schema.id,
       name: schema.title,
@@ -737,9 +751,14 @@ export async function seedMockWargame(storage: Storage): Promise<void> {
   for (const template of unifiedTemplates) {
     await storage.setItem(`entities/templates/${template.id}`, template);
   }
-  await storage.setItem('entities/templates/_index', unifiedTemplates.map(t => t.id));
+  await storage.setItem(
+    'entities/templates/_index',
+    unifiedTemplates.map((t) => t.id)
+  );
 
-  console.info(`✅ Seeded ${unifiedUsers.length} users, ${unifiedForces.length} forces, ${unifiedRooms.length} rooms, ${unifiedTemplates.length} templates`);
+  console.info(
+    `✅ Seeded ${unifiedUsers.length} users, ${unifiedForces.length} forces, ${unifiedRooms.length} rooms, ${unifiedTemplates.length} templates`
+  );
 }
 
 // ============================================================================

@@ -66,17 +66,19 @@ export function createDataProvider(): DataProvider {
     const roomInfoKey = `rooms/${roomJid}/info`;
 
     // Get existing room info
-    const existingInfo = await storage.getItem<any>(roomInfoKey);
+    const existingInfo = await storage.getItem<Record<string, unknown>>(roomInfoKey);
     if (!existingInfo) return;
 
     // Convert usernames to JIDs
-    const memberJids = members?.map(username => `${username}@${DOMAIN}`) || [];
+    const memberJids = members?.map((username) => `${username}@${DOMAIN}`) || [];
 
     // Update room info with member JIDs (using MUC standard field name)
+    const existingX =
+      typeof existingInfo.x === 'object' && existingInfo.x !== null ? existingInfo.x : {};
     const updatedInfo = {
       ...existingInfo,
       x: {
-        ...existingInfo.x,
+        ...existingX,
         'muc#roomconfig_members': memberJids,
       },
     };
@@ -300,8 +302,12 @@ export function createDataProvider(): DataProvider {
       }
 
       if (resource === 'forces') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { metadata, id, ...groupData } = params.data;
-        const group = await restApi.updateGroup(params.id as string, groupData as Partial<OpenFireGroup>);
+        const group = await restApi.updateGroup(
+          params.id as string,
+          groupData as Partial<OpenFireGroup>
+        );
 
         if (metadata) {
           await pubsubApi.setForceMetadata(group.name, metadata as ForceMetadata);
@@ -317,6 +323,7 @@ export function createDataProvider(): DataProvider {
       }
 
       if (resource === 'rooms') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { metadata, id, ...roomData } = params.data;
 
         // Sync metadata.members to room.members (for XMPP room membership)
@@ -324,7 +331,10 @@ export function createDataProvider(): DataProvider {
           roomData.members = metadata.members;
         }
 
-        const room = await restApi.updateRoom(params.id as string, roomData as Partial<OpenFireRoom>);
+        const room = await restApi.updateRoom(
+          params.id as string,
+          roomData as Partial<OpenFireRoom>
+        );
 
         if (metadata) {
           await pubsubApi.setRoomMetadata(room.roomName, metadata as RoomMetadata);
@@ -343,8 +353,12 @@ export function createDataProvider(): DataProvider {
       }
 
       if (resource === 'users') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id, ...userData } = params.data;
-        const user = await restApi.updateUser(params.id as string, userData as Partial<OpenFireUser>);
+        const user = await restApi.updateUser(
+          params.id as string,
+          userData as Partial<OpenFireUser>
+        );
         return { data: { ...user, id: user.username } };
       }
 

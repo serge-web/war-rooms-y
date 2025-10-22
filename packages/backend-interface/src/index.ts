@@ -40,19 +40,9 @@ export type {
 export { PUBSUB_NODES } from './pubsub';
 
 // Export OpenFire REST API types
-export type {
-  OpenFireUser,
-  OpenFireGroup,
-  OpenFireRoom,
-  PaginationParams,
-} from './rest';
+export type { OpenFireUser, OpenFireGroup, OpenFireRoom, PaginationParams } from './rest';
 
 // Export Unified Data Model types
-export type {
-  UnifiedRoom,
-  UnifiedForce,
-  UnifiedUser,
-  UnifiedFormTemplate,
-} from './unified';
+export type { UnifiedRoom, UnifiedForce, UnifiedUser, UnifiedFormTemplate } from './unified';
 
 export { UNIFIED_KEYS } from './unified';

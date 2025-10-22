@@ -3,11 +3,7 @@
  * Projects unified data model to PubSub metadata structures
  */
 
-import type {
-  UnifiedRoom,
-  UnifiedForce,
-  RoomExtension,
-} from '@war-rooms/backend-interface';
+import type { UnifiedRoom, UnifiedForce, RoomExtension } from '@war-rooms/backend-interface';
 
 import type { Storage } from '../storage';
 import type { Theme } from '@mui/material/styles';
@@ -41,9 +37,7 @@ export interface GameOverview {
 }
 
 export class PubSubAdapter {
-  constructor(
-    private storage: Storage
-  ) {}
+  constructor(private storage: Storage) {}
 
   // ============================================================================
   // Room Metadata Operations (Admin UI)
@@ -53,9 +47,7 @@ export class PubSubAdapter {
    * Get room metadata for admin UI
    */
   async getRoomMetadata(roomName: string): Promise<RoomMetadata | null> {
-    const unified = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomName}`
-    );
+    const unified = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomName}`);
     if (!unified) return null;
     return this.projectRoomToMetadata(unified);
   }
@@ -64,9 +56,7 @@ export class PubSubAdapter {
    * Set room metadata from admin UI
    */
   async setRoomMetadata(roomName: string, metadata: RoomMetadata): Promise<void> {
-    const room = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomName}`
-    );
+    const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomName}`);
     if (!room) return;
 
     // Update unified room with metadata
@@ -98,9 +88,7 @@ export class PubSubAdapter {
    * Delete room metadata
    */
   async deleteRoomMetadata(roomName: string): Promise<void> {
-    const room = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomName}`
-    );
+    const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomName}`);
     if (!room) return;
 
     // Clear wargaming extensions
@@ -124,9 +112,7 @@ export class PubSubAdapter {
     const roomName = roomJid.split('@')[0];
     if (!roomName) return null;
 
-    const unified = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomName}`
-    );
+    const unified = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomName}`);
     if (!unified) return null;
     return this.projectRoomToExtension(unified);
   }
@@ -135,13 +121,11 @@ export class PubSubAdapter {
    * Get all room extensions
    */
   async getAllRoomExtensions(): Promise<RoomExtension[]> {
-    const roomIds = await this.storage.getItem<string[]>('entities/rooms/_index') || [];
+    const roomIds = (await this.storage.getItem<string[]>('entities/rooms/_index')) || [];
     const extensions: RoomExtension[] = [];
 
     for (const roomId of roomIds) {
-      const room = await this.storage.getItem<UnifiedRoom>(
-        `entities/rooms/${roomId}`
-      );
+      const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomId}`);
       if (room && room.wargaming.groupMembers?.length) {
         extensions.push(this.projectRoomToExtension(room));
       }
@@ -158,9 +142,7 @@ export class PubSubAdapter {
    * Get force metadata
    */
   async getForceMetadata(forceName: string): Promise<ForceMetadata | null> {
-    const unified = await this.storage.getItem<UnifiedForce>(
-      `entities/forces/${forceName}`
-    );
+    const unified = await this.storage.getItem<UnifiedForce>(`entities/forces/${forceName}`);
     if (!unified) return null;
     return this.projectForceToMetadata(unified);
   }
@@ -169,9 +151,7 @@ export class PubSubAdapter {
    * Set force metadata
    */
   async setForceMetadata(forceName: string, metadata: ForceMetadata): Promise<void> {
-    let force = await this.storage.getItem<UnifiedForce>(
-      `entities/forces/${forceName}`
-    );
+    let force = await this.storage.getItem<UnifiedForce>(`entities/forces/${forceName}`);
 
     if (!force) {
       // Create new force
@@ -188,7 +168,7 @@ export class PubSubAdapter {
       };
 
       // Update index
-      const forceIds = await this.storage.getItem<string[]>('entities/forces/_index') || [];
+      const forceIds = (await this.storage.getItem<string[]>('entities/forces/_index')) || [];
       if (!forceIds.includes(forceName)) {
         forceIds.push(forceName);
         await this.storage.setItem('entities/forces/_index', forceIds);
@@ -210,9 +190,7 @@ export class PubSubAdapter {
    */
   async deleteForceMetadata(forceName: string): Promise<void> {
     // We don't delete the force itself, just clear extended metadata
-    const force = await this.storage.getItem<UnifiedForce>(
-      `entities/forces/${forceName}`
-    );
+    const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${forceName}`);
     if (!force) return;
 
     delete force.objectives;

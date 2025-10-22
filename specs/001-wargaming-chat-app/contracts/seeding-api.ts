@@ -1,7 +1,7 @@
 /**
  * Unified Seeding API Contract
  * Single source of truth for mock data initialization
- * 
+ *
  * DESIGN PRINCIPLE: Seed XMPP fixtures first, then transform to REST
  * This ensures both protocols share identical data
  */
@@ -14,82 +14,82 @@ import type { Storage } from './storage-api';
 
 /**
  * Seeding configuration
- * 
+ *
  * Controls which entities are seeded and seeding behavior
  */
 export interface SeedOptions {
   /**
    * Clear existing data before seeding
-   * 
+   *
    * WARNING: This deletes ALL data in the namespace
-   * 
+   *
    * @default true
    */
   clear?: boolean;
 
   /**
    * Seed user roster entries
-   * 
+   *
    * Creates XMPP users and transforms to REST users
-   * 
+   *
    * @default true
    */
   users?: boolean;
 
   /**
    * Seed game metadata
-   * 
+   *
    * Creates game overview and theme in PubSub
-   * 
+   *
    * @default true
    */
   game?: boolean;
 
   /**
    * Seed forces (groups)
-   * 
+   *
    * Creates force metadata in PubSub and transforms to REST groups
-   * 
+   *
    * @default true
    */
   forces?: boolean;
 
   /**
    * Seed rooms
-   * 
+   *
    * Creates XMPP MUC rooms and transforms to REST rooms
-   * 
+   *
    * @default true
    */
   rooms?: boolean;
 
   /**
    * Seed messages
-   * 
+   *
    * Creates message history in XMPP MAM
    * (No REST representation - XMPP only)
-   * 
+   *
    * @default true
    */
   messages?: boolean;
 
   /**
    * Seed form schemas
-   * 
+   *
    * Creates RJSF form templates in PubSub
    * (No REST representation - XMPP only)
-   * 
+   *
    * @default true
    */
   forms?: boolean;
 
   /**
    * Seed REST representations
-   * 
+   *
    * Transform XMPP entities to REST format
-   * 
+   *
    * CRITICAL: Set to true for unified data layer
-   * 
+   *
    * @default true
    */
   rest?: boolean;
@@ -106,7 +106,7 @@ export const DEFAULT_SEED_OPTIONS: SeedOptions = {
   rooms: true,
   messages: true,
   forms: true,
-  rest: true,  // ← NEW: Enable REST seeding
+  rest: true, // ← NEW: Enable REST seeding
 };
 
 // ============================================================================
@@ -115,21 +115,21 @@ export const DEFAULT_SEED_OPTIONS: SeedOptions = {
 
 /**
  * Seed mock backend with unified XMPP and REST data
- * 
+ *
  * Execution order:
  * 1. Clear storage (if options.clear)
  * 2. Seed XMPP entities (canonical source)
  * 3. Transform and seed REST representations
  * 4. Validate consistency
- * 
+ *
  * @param storage - Shared storage instance
  * @param options - Seeding configuration
- * 
+ *
  * @example
  * ```ts
  * // Full seeding (both XMPP and REST)
  * await seedAll(storage, DEFAULT_SEED_OPTIONS);
- * 
+ *
  * // Seed only users and rooms
  * await seedAll(storage, {
  *   clear: true,
@@ -137,7 +137,7 @@ export const DEFAULT_SEED_OPTIONS: SeedOptions = {
  *   rooms: true,
  *   rest: true,  // Transform to REST
  * });
- * 
+ *
  * // Re-seed without clearing (add more data)
  * await seedAll(storage, {
  *   clear: false,
@@ -146,10 +146,7 @@ export const DEFAULT_SEED_OPTIONS: SeedOptions = {
  * });
  * ```
  */
-export async function seedAll(
-  storage: Storage,
-  options?: SeedOptions
-): Promise<void>;
+export async function seedAll(storage: Storage, options?: SeedOptions): Promise<void>;
 
 // ============================================================================
 // XMPP Seeding Functions
@@ -157,11 +154,11 @@ export async function seedAll(
 
 /**
  * Seed XMPP user roster
- * 
+ *
  * Seeds MOCK_USERS from fixtures.ts into roster/ keys
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedXmppUsers(storage);
@@ -172,11 +169,11 @@ export async function seedXmppUsers(storage: Storage): Promise<void>;
 
 /**
  * Seed game metadata (PubSub)
- * 
+ *
  * Seeds MOCK_GAME and MOCK_GAME_THEME into PubSub nodes
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedGameMetadata(storage);
@@ -188,11 +185,11 @@ export async function seedGameMetadata(storage: Storage): Promise<void>;
 
 /**
  * Seed forces metadata (PubSub)
- * 
+ *
  * Seeds MOCK_FORCES into PubSub nodes
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedForces(storage);
@@ -204,11 +201,11 @@ export async function seedForces(storage: Storage): Promise<void>;
 
 /**
  * Seed XMPP MUC rooms
- * 
+ *
  * Seeds MOCK_ROOMS into rooms/ keys
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedXmppRooms(storage);
@@ -220,11 +217,11 @@ export async function seedXmppRooms(storage: Storage): Promise<void>;
 
 /**
  * Seed message archives (MAM)
- * 
+ *
  * Seeds MOCK_MESSAGES into messages/ keys
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedMessages(storage);
@@ -236,11 +233,11 @@ export async function seedMessages(storage: Storage): Promise<void>;
 
 /**
  * Seed form schemas (PubSub)
- * 
+ *
  * Seeds MOCK_FORM_SCHEMAS into PubSub nodes
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedFormSchemas(storage);
@@ -255,24 +252,24 @@ export async function seedFormSchemas(storage: Storage): Promise<void>;
 
 /**
  * Seed REST representations from XMPP fixtures
- * 
+ *
  * Reads XMPP entities from storage, transforms to REST format,
  * and writes REST representations
- * 
+ *
  * PREREQUISITE: XMPP entities must be seeded first
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * // Seed XMPP first
  * await seedXmppUsers(storage);
  * await seedXmppRooms(storage);
  * await seedForces(storage);
- * 
+ *
  * // Then transform to REST
  * await seedRestFromXmpp(storage);
- * 
+ *
  * // Now both UIs see same data:
  * const xmppUser = await storage.getItem('roster/commander.red@wargame.local');
  * const restUser = await storage.getItem('rest:user:commander.red');
@@ -283,9 +280,9 @@ export async function seedRestFromXmpp(storage: Storage): Promise<void>;
 
 /**
  * Seed REST users from XMPP roster
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedRestUsers(storage);
@@ -298,9 +295,9 @@ export async function seedRestUsers(storage: Storage): Promise<void>;
 
 /**
  * Seed REST groups from forces and roster
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedRestGroups(storage);
@@ -313,9 +310,9 @@ export async function seedRestGroups(storage: Storage): Promise<void>;
 
 /**
  * Seed REST rooms from XMPP MUC rooms
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * await seedRestRooms(storage);
@@ -332,17 +329,17 @@ export async function seedRestRooms(storage: Storage): Promise<void>;
 
 /**
  * Validate seeded data consistency
- * 
+ *
  * Checks that XMPP and REST representations match for all entities
- * 
+ *
  * @param storage - Storage instance
  * @returns Validation errors (empty array if valid)
- * 
+ *
  * @example
  * ```ts
  * await seedAll(storage);
  * const errors = await validateSeededData(storage);
- * 
+ *
  * if (errors.length > 0) {
  *   console.error('Seeding validation failed:', errors);
  *   throw new Error('Data inconsistency detected');
@@ -353,10 +350,10 @@ export async function validateSeededData(storage: Storage): Promise<string[]>;
 
 /**
  * Count seeded entities by type
- * 
+ *
  * @param storage - Storage instance
  * @returns Entity counts
- * 
+ *
  * @example
  * ```ts
  * await seedAll(storage);
@@ -388,11 +385,11 @@ export async function countSeededEntities(storage: Storage): Promise<{
 
 /**
  * Reset wargame (clear all data and re-seed)
- * 
+ *
  * Admin operation to reset game state to initial fixtures
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * // Admin clicks "Reset Wargame" button
@@ -404,11 +401,11 @@ export async function resetWargame(storage: Storage): Promise<void>;
 
 /**
  * Clear messages only (preserve users, rooms, forces)
- * 
+ *
  * Admin operation to reset chat history without losing setup
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * // Admin clicks "Clear Messages" button
@@ -424,13 +421,13 @@ export async function clearMessages(storage: Storage): Promise<void>;
 
 /**
  * Migrate from old dual-seeding to new unified seeding
- * 
+ *
  * Reads existing XMPP data, generates REST representations,
  * validates consistency
- * 
+ *
  * @param storage - Storage instance
  * @returns Migration report
- * 
+ *
  * @example
  * ```ts
  * // One-time migration when upgrading to unified data layer
@@ -455,17 +452,17 @@ export async function migrateToUnifiedSeeding(storage: Storage): Promise<{
 
 /**
  * Create minimal test fixture (fast seeding for tests)
- * 
+ *
  * Seeds only essential data (1 user, 1 room, 1 message)
- * 
+ *
  * @param storage - Storage instance
- * 
+ *
  * @example
  * ```ts
  * // In test setup
  * const testStorage = createStorage({ backend: 'memory', namespace: 'test' });
  * await seedMinimalFixture(testStorage);
- * 
+ *
  * // Now test with minimal but valid data
  * ```
  */
@@ -473,11 +470,11 @@ export async function seedMinimalFixture(storage: Storage): Promise<void>;
 
 /**
  * Create isolated test storage with fresh fixtures
- * 
+ *
  * Convenience function for test setup
- * 
+ *
  * @returns Storage instance with seeded data
- * 
+ *
  * @example
  * ```ts
  * // Each test gets isolated storage

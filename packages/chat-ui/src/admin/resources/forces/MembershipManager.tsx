@@ -4,12 +4,7 @@
  */
 
 import { useState } from 'react';
-import {
-  useRecordContext,
-  useDataProvider,
-  useNotify,
-  useRefresh,
-} from 'react-admin';
+import { useRecordContext, useDataProvider, useNotify, useRefresh } from 'react-admin';
 import {
   Box,
   Card,
@@ -24,10 +19,7 @@ import {
   Button,
   Typography,
 } from '@mui/material';
-import {
-  Delete as DeleteIcon,
-  PersonAdd as AddIcon,
-} from '@mui/icons-material';
+import { Delete as DeleteIcon, PersonAdd as AddIcon } from '@mui/icons-material';
 
 export function MembershipManager() {
   const record = useRecordContext();
@@ -58,8 +50,9 @@ export function MembershipManager() {
       notify(`Added ${newMember} to ${groupName}`, { type: 'success' });
       setNewMember('');
       refresh();
-    } catch (error: any) {
-      notify(`Error: ${error.message}`, { type: 'error' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      notify(`Error: ${message}`, { type: 'error' });
     } finally {
       setAdding(false);
     }
@@ -77,8 +70,9 @@ export function MembershipManager() {
 
       notify(`Removed ${username} from ${groupName}`, { type: 'success' });
       refresh();
-    } catch (error: any) {
-      notify(`Error: ${error.message}`, { type: 'error' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      notify(`Error: ${message}`, { type: 'error' });
     }
   };
 
@@ -100,14 +94,14 @@ export function MembershipManager() {
             fullWidth
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                handleAddMember();
+                void handleAddMember();
               }
             }}
           />
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={handleAddMember}
+            onClick={() => void handleAddMember()}
             disabled={adding || !newMember.trim()}
           >
             Add
@@ -123,15 +117,12 @@ export function MembershipManager() {
           <List dense>
             {members.map((username: string) => (
               <ListItem key={username}>
-                <ListItemText
-                  primary={username}
-                  secondary={`Member of ${groupName}`}
-                />
+                <ListItemText primary={username} secondary={`Member of ${groupName}`} />
                 <ListItemSecondaryAction>
                   <IconButton
                     edge="end"
                     aria-label="remove"
-                    onClick={() => handleRemoveMember(username)}
+                    onClick={() => void handleRemoveMember(username)}
                     size="small"
                   >
                     <DeleteIcon />

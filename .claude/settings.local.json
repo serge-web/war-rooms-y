@@ -37,7 +37,12 @@
       "Bash(npx tsc --noEmit)",
       "Bash(node -e \"\nconst fixtures = require(''./packages/backend-mock/dist/fixtures.js'');\nconsole.log(''MOCK_DOMAIN:'', fixtures.MOCK_DOMAIN);\nconsole.log(''MOCK_CONFERENCE:'', fixtures.MOCK_CONFERENCE);\nconsole.log(''Sample message from:'', fixtures.MOCK_MESSAGES[0].from);\n\")",
       "Bash(tee:*)",
-      "Read(//private/tmp/**)"
+      "Read(//private/tmp/**)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(curl -s http://localhost:5173/admin)",
+      "Bash(npx playwright test:*)",
+      "Bash(timeout 30 tail:*)"
     ],
     "deny": [],
     "ask": []

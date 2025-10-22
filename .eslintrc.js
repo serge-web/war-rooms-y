@@ -30,18 +30,28 @@ module.exports = {
   ],
   plugins: ['@typescript-eslint', 'react', 'react-hooks'],
   rules: {
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+    ],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
     'react/react-in-jsx-scope': 'off', // React 18+
     'react/prop-types': 'off', // TypeScript handles this
     'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
   overrides: [
     {
-      // Relax rules for test files (must come first to take precedence)
-      files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx', 'e2e/**/*.ts'],
+      // Relax rules for test files and specs (must come first to take precedence)
+      files: [
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        '**/*.spec.ts',
+        '**/*.spec.tsx',
+        'e2e/**/*.ts',
+        'specs/**/*.ts',
+      ],
       parserOptions: {
         project: null,
       },

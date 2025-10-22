@@ -317,25 +317,40 @@ export async function seedTestWargame(storage: Storage): Promise<void> {
   for (const user of TEST_USERS) {
     await storage.setItem(`entities/users/${user.username}`, JSON.parse(JSON.stringify(user)));
   }
-  await storage.setItem('entities/users/_index', TEST_USERS.map(u => u.username));
+  await storage.setItem(
+    'entities/users/_index',
+    TEST_USERS.map((u) => u.username)
+  );
 
   // Seed forces (deep copy to avoid mutation)
   for (const force of TEST_FORCES) {
     await storage.setItem(`entities/forces/${force.id}`, JSON.parse(JSON.stringify(force)));
   }
-  await storage.setItem('entities/forces/_index', TEST_FORCES.map(f => f.id));
+  await storage.setItem(
+    'entities/forces/_index',
+    TEST_FORCES.map((f) => f.id)
+  );
 
   // Seed rooms (deep copy to avoid mutation)
   for (const room of TEST_ROOMS) {
     await storage.setItem(`entities/rooms/${room.id}`, JSON.parse(JSON.stringify(room)));
   }
-  await storage.setItem('entities/rooms/_index', TEST_ROOMS.map(r => r.id));
+  await storage.setItem(
+    'entities/rooms/_index',
+    TEST_ROOMS.map((r) => r.id)
+  );
 
   // Seed templates (deep copy to avoid mutation)
   for (const template of TEST_TEMPLATES) {
-    await storage.setItem(`entities/templates/${template.id}`, JSON.parse(JSON.stringify(template)));
+    await storage.setItem(
+      `entities/templates/${template.id}`,
+      JSON.parse(JSON.stringify(template))
+    );
   }
-  await storage.setItem('entities/templates/_index', TEST_TEMPLATES.map(t => t.id));
+  await storage.setItem(
+    'entities/templates/_index',
+    TEST_TEMPLATES.map((t) => t.id)
+  );
 }
 
 /**
@@ -343,12 +358,12 @@ export async function seedTestWargame(storage: Storage): Promise<void> {
  */
 export async function seedMinimalTestData(storage: Storage): Promise<void> {
   // Just gamemaster user
-  const gm = TEST_USERS.find(u => u.username === 'gamemaster')!;
+  const gm = TEST_USERS.find((u) => u.username === 'gamemaster')!;
   await storage.setItem(`entities/users/gamemaster`, gm);
   await storage.setItem('entities/users/_index', ['gamemaster']);
 
   // Just all-hands room
-  const allHands = TEST_ROOMS.find(r => r.id === 'all-hands')!;
+  const allHands = TEST_ROOMS.find((r) => r.id === 'all-hands')!;
   await storage.setItem(`entities/rooms/all-hands`, allHands);
   await storage.setItem('entities/rooms/_index', ['all-hands']);
 }
@@ -378,7 +393,7 @@ export async function addPlayerToForce(
   await storage.setItem(`entities/users/${username}`, user);
 
   // Update user index
-  const userIndex = await storage.getItem<string[]>('entities/users/_index') || [];
+  const userIndex = (await storage.getItem<string[]>('entities/users/_index')) || [];
   if (!userIndex.includes(username)) {
     userIndex.push(username);
     await storage.setItem('entities/users/_index', userIndex);
@@ -429,7 +444,7 @@ export async function createTestRoomInWargame(
   await storage.setItem(`entities/rooms/${id}`, room);
 
   // Update room index
-  const roomIndex = await storage.getItem<string[]>('entities/rooms/_index') || [];
+  const roomIndex = (await storage.getItem<string[]>('entities/rooms/_index')) || [];
   if (!roomIndex.includes(id)) {
     roomIndex.push(id);
     await storage.setItem('entities/rooms/_index', roomIndex);
@@ -506,9 +521,9 @@ export function getTestWargameStats() {
     forceCount: TEST_FORCES.length,
     roomCount: TEST_ROOMS.length,
     templateCount: TEST_TEMPLATES.length,
-    redForceMembers: TEST_FORCES.find(f => f.id === 'force-red')?.members.length || 0,
-    blueForceMembers: TEST_FORCES.find(f => f.id === 'force-blue')?.members.length || 0,
-    publicRooms: TEST_ROOMS.filter(r => r.xmpp.publicRoom).length,
-    privateRooms: TEST_ROOMS.filter(r => !r.xmpp.publicRoom).length,
+    redForceMembers: TEST_FORCES.find((f) => f.id === 'force-red')?.members.length || 0,
+    blueForceMembers: TEST_FORCES.find((f) => f.id === 'force-blue')?.members.length || 0,
+    publicRooms: TEST_ROOMS.filter((r) => r.xmpp.publicRoom).length,
+    privateRooms: TEST_ROOMS.filter((r) => !r.xmpp.publicRoom).length,
   };
 }

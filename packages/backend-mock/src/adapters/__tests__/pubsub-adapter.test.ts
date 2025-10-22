@@ -8,11 +8,7 @@ import type { Storage } from '../../storage';
 import type { UnifiedRoom, UnifiedForce } from '@war-rooms/backend-interface';
 import type { Theme } from '@mui/material/styles';
 import { MOCK_CONFERENCE } from '../../fixtures';
-import {
-  seedTestWargame,
-  createTestRoom,
-  createTestForce,
-} from '../test-fixtures';
+import { seedTestWargame, createTestRoom, createTestForce } from '../test-fixtures';
 
 describe('PubSubAdapter', () => {
   let storage: Storage;
@@ -154,19 +150,16 @@ describe('PubSubAdapter', () => {
         // red-command and planning have group restrictions
         expect(extensions).toHaveLength(2);
 
-        const roomJids = extensions.map(e => e.roomJid).sort();
-        expect(roomJids).toEqual([
-          `planning@${MOCK_CONFERENCE}`,
-          `red-command@${MOCK_CONFERENCE}`,
-        ]);
+        const roomJids = extensions.map((e) => e.roomJid).sort();
+        expect(roomJids).toEqual([`planning@${MOCK_CONFERENCE}`, `red-command@${MOCK_CONFERENCE}`]);
       });
 
       it('should not include rooms without group restrictions', async () => {
         const extensions = await adapter.getAllRoomExtensions();
-        const allHands = extensions.find(e => e.roomJid === `all-hands@${MOCK_CONFERENCE}`);
+        const allHands = extensions.find((e) => e.roomJid === `all-hands@${MOCK_CONFERENCE}`);
         expect(allHands).toBeUndefined();
 
-        const intelRoom = extensions.find(e => e.roomJid === `intel-room@${MOCK_CONFERENCE}`);
+        const intelRoom = extensions.find((e) => e.roomJid === `intel-room@${MOCK_CONFERENCE}`);
         expect(intelRoom).toBeUndefined();
       });
     });

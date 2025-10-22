@@ -1,22 +1,13 @@
 /**
  * Entity Transformation Contracts
  * Bidirectional conversion between XMPP and REST representations
- * 
+ *
  * DESIGN PRINCIPLE: XMPP is canonical format, REST is derived
  */
 
-import type {
-  XMPPUser,
-  XMPPRoom,
-  ForceMetadata,
-  RoomExtension,
-} from '@war-rooms/backend-interface';
+import type { XMPPUser, XMPPRoom, ForceMetadata } from '@war-rooms/backend-interface';
 
-import type {
-  OpenFireUser,
-  OpenFireGroup,
-  OpenFireRoom,
-} from '@war-rooms/backend-mock';
+import type { OpenFireUser, OpenFireGroup, OpenFireRoom } from '@war-rooms/backend-mock';
 
 // ============================================================================
 // User Transformers
@@ -24,10 +15,10 @@ import type {
 
 /**
  * Transform XMPP user to OpenFire REST representation
- * 
+ *
  * @param xmppUser - Canonical XMPP user from fixtures
  * @returns OpenFire REST user (without password)
- * 
+ *
  * @example
  * ```ts
  * const xmpp = {
@@ -37,7 +28,7 @@ import type {
  *   vcard: { fn: "Commander Red", email: "red@example.com" }
  * };
  * const rest = xmppUserToRest(xmpp);
- * // => { username: "commander.red", name: "Commander Red", 
+ * // => { username: "commander.red", name: "Commander Red",
  * //      email: "red@example.com", properties: { sharedGroups: [...] }}
  * ```
  */
@@ -45,11 +36,11 @@ export function xmppUserToRest(xmppUser: XMPPUser): Omit<OpenFireUser, 'password
 
 /**
  * Transform OpenFire REST user to XMPP representation
- * 
+ *
  * @param restUser - OpenFire user from REST API
  * @param domain - XMPP domain for JID construction
  * @returns XMPP user with reconstructed JID
- * 
+ *
  * @example
  * ```ts
  * const rest = {
@@ -69,11 +60,11 @@ export function restUserToXmpp(restUser: OpenFireUser, domain: string): XMPPUser
 
 /**
  * Extract OpenFire group from XMPP roster groups + force metadata
- * 
+ *
  * @param force - Force metadata from PubSub
  * @param members - Usernames of group members (from user transforms)
  * @returns OpenFire group representation
- * 
+ *
  * @example
  * ```ts
  * const force = {
@@ -85,17 +76,14 @@ export function restUserToXmpp(restUser: OpenFireUser, domain: string): XMPPUser
  * // => { name: "force-red", description: "Red Force", members: [...] }
  * ```
  */
-export function forceToRestGroup(
-  force: ForceMetadata,
-  members: string[]
-): OpenFireGroup;
+export function forceToRestGroup(force: ForceMetadata, members: string[]): OpenFireGroup;
 
 /**
  * Derive roster groups from OpenFire groups
- * 
+ *
  * @param users - Collection of XMPP users
  * @returns Map of group names to OpenFire groups
- * 
+ *
  * @example
  * ```ts
  * const users = [
@@ -118,23 +106,23 @@ export function deriveRestGroupsFromRoster(users: XMPPUser[]): OpenFireGroup[];
 
 /**
  * Transform XMPP room to OpenFire REST representation
- * 
+ *
  * @param xmppRoom - Canonical XMPP room from fixtures
  * @param conferenceService - MUC conference service domain
  * @returns OpenFire REST room
- * 
+ *
  * Transformation rules:
  * - roomName ← parse JID before "@"
  * - naturalName ← info.identity.name
  * - membersOnly ← true if forceRestrictions defined
  * - members ← derived from users in allowed forces
- * 
+ *
  * @example
  * ```ts
  * const xmpp = {
  *   jid: "red-command@conference.wargame.local",
  *   info: { identity: { name: "Red Force Command" } },
- *   extension: { 
+ *   extension: {
  *     type: "command",
  *     forceRestrictions: ["force-red"]
  *   }
@@ -144,18 +132,15 @@ export function deriveRestGroupsFromRoster(users: XMPPUser[]): OpenFireGroup[];
  * //      membersOnly: true, ... }
  * ```
  */
-export function xmppRoomToRest(
-  xmppRoom: XMPPRoom,
-  conferenceService: string
-): OpenFireRoom;
+export function xmppRoomToRest(xmppRoom: XMPPRoom, conferenceService: string): OpenFireRoom;
 
 /**
  * Transform OpenFire REST room to XMPP representation
- * 
+ *
  * @param restRoom - OpenFire room from REST API
  * @param conferenceService - MUC conference service domain
  * @returns XMPP room with reconstructed JID
- * 
+ *
  * @example
  * ```ts
  * const rest = {
@@ -168,10 +153,7 @@ export function xmppRoomToRest(
  * // => { jid: "blue-operations@conference.wargame.local", ... }
  * ```
  */
-export function restRoomToXmpp(
-  restRoom: OpenFireRoom,
-  conferenceService: string
-): XMPPRoom;
+export function restRoomToXmpp(restRoom: OpenFireRoom, conferenceService: string): XMPPRoom;
 
 // ============================================================================
 // Validation & Round-Trip Testing
@@ -179,13 +161,13 @@ export function restRoomToXmpp(
 
 /**
  * Validate XMPP → REST → XMPP round-trip preserves core fields
- * 
+ *
  * Used in tests to ensure no data loss during transformation
- * 
+ *
  * @param original - Original XMPP entity
  * @param roundTrip - Result after REST transformation and back
  * @returns Validation errors (empty if valid)
- * 
+ *
  * @example
  * ```ts
  * const original = MOCK_USERS[0];
@@ -195,15 +177,9 @@ export function restRoomToXmpp(
  * expect(errors).toEqual([]);
  * ```
  */
-export function validateUserRoundTrip(
-  original: XMPPUser,
-  roundTrip: XMPPUser
-): string[];
+export function validateUserRoundTrip(original: XMPPUser, roundTrip: XMPPUser): string[];
 
-export function validateRoomRoundTrip(
-  original: XMPPRoom,
-  roundTrip: XMPPRoom
-): string[];
+export function validateRoomRoundTrip(original: XMPPRoom, roundTrip: XMPPRoom): string[];
 
 // ============================================================================
 // Helper Utilities
@@ -211,10 +187,10 @@ export function validateRoomRoundTrip(
 
 /**
  * Extract username from XMPP JID
- * 
+ *
  * @param jid - Full or bare JID
  * @returns Username portion (before "@")
- * 
+ *
  * @example
  * ```ts
  * extractUsername("commander.red@wargame.local") // => "commander.red"
@@ -225,11 +201,11 @@ export function extractUsername(jid: string): string;
 
 /**
  * Build bare JID from username and domain
- * 
+ *
  * @param username - Local part of JID
  * @param domain - XMPP domain
  * @returns Bare JID (username@domain)
- * 
+ *
  * @example
  * ```ts
  * buildBareJid("analyst.blue1", "wargame.local")
@@ -240,10 +216,10 @@ export function buildBareJid(username: string, domain: string): string;
 
 /**
  * Extract room name from MUC JID
- * 
+ *
  * @param roomJid - Full room JID
  * @returns Room name (before "@")
- * 
+ *
  * @example
  * ```ts
  * extractRoomName("red-command@conference.wargame.local")
@@ -254,11 +230,11 @@ export function extractRoomName(roomJid: string): string;
 
 /**
  * Build room JID from name and conference service
- * 
+ *
  * @param roomName - Room name
  * @param conferenceService - Conference domain
  * @returns Full room JID
- * 
+ *
  * @example
  * ```ts
  * buildRoomJid("all-hands", "conference.wargame.local")

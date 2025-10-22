@@ -29,9 +29,7 @@ export class RESTAdapter {
    * Get room in REST format
    */
   async getRoom(roomName: string): Promise<OpenFireRoom | null> {
-    const unified = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomName}`
-    );
+    const unified = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomName}`);
     if (!unified) return null;
     return this.projectRoomToREST(unified);
   }
@@ -40,13 +38,11 @@ export class RESTAdapter {
    * Get all rooms
    */
   async getAllRooms(): Promise<OpenFireRoom[]> {
-    const roomIds = await this.storage.getItem<string[]>('entities/rooms/_index') || [];
+    const roomIds = (await this.storage.getItem<string[]>('entities/rooms/_index')) || [];
     const rooms: OpenFireRoom[] = [];
 
     for (const roomId of roomIds) {
-      const room = await this.storage.getItem<UnifiedRoom>(
-        `entities/rooms/${roomId}`
-      );
+      const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomId}`);
       if (room) {
         rooms.push(this.projectRoomToREST(room));
       }
@@ -76,7 +72,8 @@ export class RESTAdapter {
       },
       wargaming: {
         type: 'standard',
-        individualMembers: restRoom.members?.map(jid => jid.split('@')[0]).filter((u): u is string => !!u) || [],
+        individualMembers:
+          restRoom.members?.map((jid) => jid.split('@')[0]).filter((u): u is string => !!u) || [],
       },
       createdAt: new Date().toISOString(),
       createdBy: 'admin',
@@ -86,7 +83,7 @@ export class RESTAdapter {
     await this.storage.setItem(`entities/rooms/${unified.id}`, unified);
 
     // Update index
-    const roomIds = await this.storage.getItem<string[]>('entities/rooms/_index') || [];
+    const roomIds = (await this.storage.getItem<string[]>('entities/rooms/_index')) || [];
     if (!roomIds.includes(unified.id)) {
       roomIds.push(unified.id);
       await this.storage.setItem('entities/rooms/_index', roomIds);
@@ -99,9 +96,7 @@ export class RESTAdapter {
    * Update room
    */
   async updateRoom(roomName: string, updates: Partial<OpenFireRoom>): Promise<OpenFireRoom | null> {
-    const room = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomName}`
-    );
+    const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomName}`);
     if (!room) return null;
 
     // Apply updates
@@ -114,7 +109,9 @@ export class RESTAdapter {
     if (updates.maxUsers !== undefined) room.xmpp.maxUsers = updates.maxUsers;
     if (updates.subject !== undefined) room.xmpp.subject = updates.subject;
     if (updates.members !== undefined) {
-      room.wargaming.individualMembers = updates.members.map(jid => jid.split('@')[0]).filter((u): u is string => !!u);
+      room.wargaming.individualMembers = updates.members
+        .map((jid) => jid.split('@')[0])
+        .filter((u): u is string => !!u);
     }
 
     room.modifiedAt = new Date().toISOString();
@@ -130,7 +127,7 @@ export class RESTAdapter {
     await this.storage.removeItem(`entities/rooms/${roomName}`);
 
     // Update index
-    const roomIds = await this.storage.getItem<string[]>('entities/rooms/_index') || [];
+    const roomIds = (await this.storage.getItem<string[]>('entities/rooms/_index')) || [];
     const index = roomIds.indexOf(roomName);
     if (index > -1) {
       roomIds.splice(index, 1);
@@ -146,9 +143,7 @@ export class RESTAdapter {
    * Get user in REST format
    */
   async getUser(username: string): Promise<OpenFireUser | null> {
-    const unified = await this.storage.getItem<UnifiedUser>(
-      `entities/users/${username}`
-    );
+    const unified = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
     if (!unified) return null;
     return this.projectUserToREST(unified);
   }
@@ -157,13 +152,11 @@ export class RESTAdapter {
    * Get all users
    */
   async getAllUsers(): Promise<OpenFireUser[]> {
-    const usernames = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const usernames = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
     const users: OpenFireUser[] = [];
 
     for (const username of usernames) {
-      const user = await this.storage.getItem<UnifiedUser>(
-        `entities/users/${username}`
-      );
+      const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
       if (user) {
         users.push(this.projectUserToREST(user));
       }
@@ -183,18 +176,20 @@ export class RESTAdapter {
       ...(restUser.password ? { password: restUser.password } : {}),
       groups: restUser.properties?.sharedGroups || [],
       isGameMaster: restUser.properties?.sharedGroups?.includes('Game Masters') || false,
-      ...(restUser.name ? {
-        vcard: {
-          fn: restUser.name,
-        },
-      } : {}),
+      ...(restUser.name
+        ? {
+            vcard: {
+              fn: restUser.name,
+            },
+          }
+        : {}),
       createdAt: new Date().toISOString(),
     };
 
     await this.storage.setItem(`entities/users/${unified.username}`, unified);
 
     // Update index
-    const usernames = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const usernames = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
     if (!usernames.includes(unified.username)) {
       usernames.push(unified.username);
       await this.storage.setItem('entities/users/_index', usernames);
@@ -210,6 +205,7 @@ export class RESTAdapter {
     }
 
     // Don't return password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = unified;
     return this.projectUserToREST(userWithoutPassword as UnifiedUser);
   }
@@ -245,7 +241,7 @@ export class RESTAdapter {
         if (!newGroups.includes(groupName)) {
           const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
           if (force) {
-            force.members = force.members.filter(m => m !== username);
+            force.members = force.members.filter((m) => m !== username);
             await this.storage.setItem(`entities/forces/${groupName}`, force);
           }
         }
@@ -264,6 +260,7 @@ export class RESTAdapter {
     }
 
     // Don't return password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
     return this.projectUserToREST(userWithoutPassword as UnifiedUser);
   }
@@ -279,7 +276,7 @@ export class RESTAdapter {
     for (const groupName of user.groups) {
       const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
       if (force) {
-        force.members = force.members.filter(m => m !== username);
+        force.members = force.members.filter((m) => m !== username);
         await this.storage.setItem(`entities/forces/${groupName}`, force);
       }
     }
@@ -288,7 +285,7 @@ export class RESTAdapter {
     await this.storage.removeItem(`entities/users/${username}`);
 
     // Update index
-    const usernames = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const usernames = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
     const index = usernames.indexOf(username);
     if (index > -1) {
       usernames.splice(index, 1);
@@ -304,9 +301,7 @@ export class RESTAdapter {
    * Get group in REST format
    */
   async getGroup(groupName: string): Promise<OpenFireGroup | null> {
-    const unified = await this.storage.getItem<UnifiedForce>(
-      `entities/forces/${groupName}`
-    );
+    const unified = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
     if (!unified) return null;
     return this.projectForceToGroup(unified);
   }
@@ -315,13 +310,11 @@ export class RESTAdapter {
    * Get all groups
    */
   async getAllGroups(): Promise<OpenFireGroup[]> {
-    const forceIds = await this.storage.getItem<string[]>('entities/forces/_index') || [];
+    const forceIds = (await this.storage.getItem<string[]>('entities/forces/_index')) || [];
     const groups: OpenFireGroup[] = [];
 
     for (const forceId of forceIds) {
-      const force = await this.storage.getItem<UnifiedForce>(
-        `entities/forces/${forceId}`
-      );
+      const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${forceId}`);
       if (force) {
         groups.push(this.projectForceToGroup(force));
       }
@@ -356,7 +349,7 @@ export class RESTAdapter {
     await this.storage.setItem(`entities/forces/${unified.id}`, unified);
 
     // Update index
-    const forceIds = await this.storage.getItem<string[]>('entities/forces/_index') || [];
+    const forceIds = (await this.storage.getItem<string[]>('entities/forces/_index')) || [];
     if (!forceIds.includes(unified.id)) {
       forceIds.push(unified.id);
       await this.storage.setItem('entities/forces/_index', forceIds);
@@ -377,7 +370,10 @@ export class RESTAdapter {
   /**
    * Update group (force)
    */
-  async updateGroup(groupName: string, updates: Partial<OpenFireGroup>): Promise<OpenFireGroup | null> {
+  async updateGroup(
+    groupName: string,
+    updates: Partial<OpenFireGroup>
+  ): Promise<OpenFireGroup | null> {
     const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
     if (!force) return null;
 
@@ -407,7 +403,7 @@ export class RESTAdapter {
         if (!newMembers.includes(username)) {
           const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
           if (user) {
-            user.groups = user.groups.filter(g => g !== groupName);
+            user.groups = user.groups.filter((g) => g !== groupName);
             await this.storage.setItem(`entities/users/${username}`, user);
           }
         }
@@ -439,7 +435,7 @@ export class RESTAdapter {
     for (const username of force.members) {
       const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
       if (user) {
-        user.groups = user.groups.filter(g => g !== groupName);
+        user.groups = user.groups.filter((g) => g !== groupName);
         await this.storage.setItem(`entities/users/${username}`, user);
       }
     }
@@ -448,7 +444,7 @@ export class RESTAdapter {
     await this.storage.removeItem(`entities/forces/${groupName}`);
 
     // Update index
-    const forceIds = await this.storage.getItem<string[]>('entities/forces/_index') || [];
+    const forceIds = (await this.storage.getItem<string[]>('entities/forces/_index')) || [];
     const index = forceIds.indexOf(groupName);
     if (index > -1) {
       forceIds.splice(index, 1);
@@ -483,13 +479,13 @@ export class RESTAdapter {
     const force = await this.storage.getItem<UnifiedForce>(`entities/forces/${groupName}`);
     if (!force) return;
 
-    force.members = force.members.filter(m => m !== username);
+    force.members = force.members.filter((m) => m !== username);
     await this.storage.setItem(`entities/forces/${groupName}`, force);
 
     // Update user
     const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
     if (user) {
-      user.groups = user.groups.filter(g => g !== groupName);
+      user.groups = user.groups.filter((g) => g !== groupName);
       await this.storage.setItem(`entities/users/${username}`, user);
     }
   }
@@ -503,9 +499,8 @@ export class RESTAdapter {
    */
   private projectRoomToREST(room: UnifiedRoom): OpenFireRoom {
     // Convert usernames to JIDs
-    const memberJids = room.wargaming.individualMembers?.map(
-      username => `${username}@${this.domain}`
-    ) || [];
+    const memberJids =
+      room.wargaming.individualMembers?.map((username) => `${username}@${this.domain}`) || [];
 
     return {
       roomName: room.id,
@@ -518,7 +513,9 @@ export class RESTAdapter {
       membersOnly: room.xmpp.membersOnly,
       moderated: room.xmpp.moderated,
       members: memberJids,
-      ...(room.xmpp.changeSubject !== undefined ? { canOccupantsChangeSubject: room.xmpp.changeSubject } : {}),
+      ...(room.xmpp.changeSubject !== undefined
+        ? { canOccupantsChangeSubject: room.xmpp.changeSubject }
+        : {}),
       creationDate: room.createdAt,
       ...(room.modifiedAt ? { modificationDate: room.modifiedAt } : {}),
     };
@@ -555,13 +552,11 @@ export class RESTAdapter {
    * Get all users who are game masters
    */
   private async getGameMasterUsernames(): Promise<string[]> {
-    const usernames = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const usernames = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
     const gameMasters: string[] = [];
 
     for (const username of usernames) {
-      const user = await this.storage.getItem<UnifiedUser>(
-        `entities/users/${username}`
-      );
+      const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
       if (user?.isGameMaster) {
         gameMasters.push(username);
       }

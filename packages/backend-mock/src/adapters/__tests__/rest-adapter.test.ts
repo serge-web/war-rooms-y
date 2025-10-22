@@ -7,12 +7,7 @@ import { createStorage } from '../../storage';
 import type { Storage } from '../../storage';
 import type { UnifiedRoom, UnifiedUser, OpenFireRoom } from '@war-rooms/backend-interface';
 import { MOCK_DOMAIN, MOCK_CONFERENCE } from '../../fixtures';
-import {
-  seedTestWargame,
-  createTestUser,
-  createTestRoom,
-  createTestForce,
-} from '../test-fixtures';
+import { seedTestWargame, createTestUser, createTestRoom, createTestForce } from '../test-fixtures';
 
 describe('RESTAdapter', () => {
   let storage: Storage;
@@ -69,13 +64,8 @@ describe('RESTAdapter', () => {
       it('should return all rooms', async () => {
         const rooms = await adapter.getAllRooms();
         expect(rooms).toHaveLength(4);
-        const roomNames = rooms.map(r => r.roomName).sort();
-        expect(roomNames).toEqual([
-          'all-hands',
-          'intel-room',
-          'planning',
-          'red-command',
-        ]);
+        const roomNames = rooms.map((r) => r.roomName).sort();
+        expect(roomNames).toEqual(['all-hands', 'intel-room', 'planning', 'red-command']);
       });
     });
 
@@ -227,7 +217,7 @@ describe('RESTAdapter', () => {
       it('should return all users', async () => {
         const users = await adapter.getAllUsers();
         expect(users).toHaveLength(5);
-        const usernames = users.map(u => u.username).sort();
+        const usernames = users.map((u) => u.username).sort();
         expect(usernames).toEqual([
           'analyst.blue1',
           'analyst.red1',
@@ -239,7 +229,7 @@ describe('RESTAdapter', () => {
 
       it('should never include passwords', async () => {
         const users = await adapter.getAllUsers();
-        users.forEach(user => {
+        users.forEach((user) => {
           expect(user.password).toBeUndefined();
           expect('password' in user).toBe(false);
         });
@@ -318,13 +308,13 @@ describe('RESTAdapter', () => {
         const groups = await adapter.getAllGroups();
         expect(groups.length).toBeGreaterThanOrEqual(2); // Forces + Game Masters
 
-        const forceGroups = groups.filter(g => g.name.startsWith('force-'));
+        const forceGroups = groups.filter((g) => g.name.startsWith('force-'));
         expect(forceGroups).toHaveLength(2);
       });
 
       it('should include Game Masters group', async () => {
         const groups = await adapter.getAllGroups();
-        const gmGroup = groups.find(g => g.name === 'Game Masters');
+        const gmGroup = groups.find((g) => g.name === 'Game Masters');
         expect(gmGroup).toBeDefined();
         expect(gmGroup?.description).toBe('Game administrators');
         expect(gmGroup?.members).toEqual(['gamemaster']);

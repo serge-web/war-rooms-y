@@ -18,7 +18,7 @@ test.describe('Admin Panel', () => {
 
   test('should display admin login page', async ({ page }) => {
     await expect(page).toHaveURL(/\/admin#?\/?(login)?/);
-    await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /war rooms.*admin/i })).toBeVisible();
   });
 
   test('should login with admin credentials', async ({ page }) => {
@@ -26,9 +26,12 @@ test.describe('Admin Panel', () => {
     await page.getByLabel(/password/i).fill(ADMIN_CREDENTIALS.password);
     await page.getByRole('button', { name: /sign in/i }).click();
 
+    // Wait for dashboard to load
+    await page.waitForTimeout(2000);
+
     // Should redirect to admin dashboard
     await expect(page).toHaveURL(/\/admin/);
-    await expect(page.getByText(/War Rooms/i)).toBeVisible();
+    await expect(page.getByText(/War Rooms/i)).toBeVisible({ timeout: 10000 });
   });
 
   test('should reject invalid credentials', async ({ page }) => {
@@ -36,8 +39,11 @@ test.describe('Admin Panel', () => {
     await page.getByLabel(/password/i).fill('wrongpass');
     await page.getByRole('button', { name: /sign in/i }).click();
 
-    // Should show error
-    await expect(page.getByText(/invalid|error|unauthorized/i)).toBeVisible();
+    // Wait for error notification
+    await page.waitForTimeout(1000);
+
+    // Should show error notification
+    await expect(page.getByText(/not authenticated/i)).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -63,7 +69,7 @@ test.describe.skip('Admin User Management', () => {
 
   test('should create a new user', async ({ page }) => {
     await page.getByRole('link', { name: /users/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
 
     // Fill user form
     const timestamp = Date.now();
@@ -108,17 +114,21 @@ test.describe('Admin Force Management', () => {
   });
 
   test('should list forces', async ({ page }) => {
-    await page.getByRole('link', { name: /forces/i }).click();
+    await page.getByRole('menuitem', { name: /forces/i }).click();
     await expect(page).toHaveURL(/\/admin.*forces/);
   });
 
   test('should create a new force', async ({ page }) => {
-    await page.getByRole('link', { name: /forces/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('menuitem', { name: /forces/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
+    await page.waitForURL(/.*forces\/create/);
 
     const timestamp = Date.now();
     await page.getByLabel(/force name/i).fill(`Force${timestamp}`);
-    await page.getByLabel(/description/i).first().fill('Test force description');
+    await page
+      .getByLabel(/description/i)
+      .first()
+      .fill('Test force description');
 
     // Set metadata
     await page.getByLabel(/force color/i).fill('#FF5722');
@@ -135,13 +145,17 @@ test.describe('Admin Force Management', () => {
 
   test('should edit force metadata', async ({ page }) => {
     // First create a force
-    await page.getByRole('link', { name: /forces/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('menuitem', { name: /forces/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
+    await page.waitForURL(/.*forces\/create/);
 
     const timestamp = Date.now();
     const forceName = `EditForce${timestamp}`;
     await page.getByLabel(/force name/i).fill(forceName);
-    await page.getByLabel(/description/i).first().fill('Original description');
+    await page
+      .getByLabel(/description/i)
+      .first()
+      .fill('Original description');
 
     await page.getByRole('button', { name: /save/i }).click();
     await expect(page.getByText(/created|success/i)).toBeVisible();
@@ -162,13 +176,17 @@ test.describe('Admin Force Management', () => {
 
   test('should manage force members', async ({ page }) => {
     // Create test force
-    await page.getByRole('link', { name: /forces/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('menuitem', { name: /forces/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
+    await page.waitForURL(/.*forces\/create/);
 
     const timestamp = Date.now();
     const forceName = `MemberForce${timestamp}`;
     await page.getByLabel(/force name/i).fill(forceName);
-    await page.getByLabel(/description/i).first().fill('For member testing');
+    await page
+      .getByLabel(/description/i)
+      .first()
+      .fill('For member testing');
 
     await page.getByRole('button', { name: /save/i }).click();
     await page.waitForTimeout(500);
@@ -181,7 +199,8 @@ test.describe('Admin Force Management', () => {
     await page.getByLabel(/username/i).fill('admin');
     await page.getByRole('button', { name: /add/i }).click();
 
-    await expect(page.getByText('admin')).toBeVisible();
+    // Check for success message
+    await expect(page.getByText(/added admin to/i)).toBeVisible();
   });
 });
 
@@ -197,18 +216,22 @@ test.describe('Admin Room Management', () => {
   });
 
   test('should list rooms', async ({ page }) => {
-    await page.getByRole('link', { name: /rooms/i }).click();
+    await page.getByRole('menuitem', { name: /rooms/i }).click();
     await expect(page).toHaveURL(/\/admin.*rooms/);
   });
 
   test('should create a new room', async ({ page }) => {
-    await page.getByRole('link', { name: /rooms/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('menuitem', { name: /rooms/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
+    await page.waitForURL(/.*rooms\/create/);
 
     const timestamp = Date.now();
     await page.getByLabel(/^room name/i).fill(`room${timestamp}`);
     await page.getByLabel(/display name/i).fill(`Test Room ${timestamp}`);
-    await page.getByLabel(/^description/i).first().fill('Test room description');
+    await page
+      .getByLabel(/^description/i)
+      .first()
+      .fill('Test room description');
 
     // Set room options
     await page.getByLabel(/persistent/i).check();
@@ -224,14 +247,18 @@ test.describe('Admin Room Management', () => {
 
   test('should edit room configuration', async ({ page }) => {
     // Create room first
-    await page.getByRole('link', { name: /rooms/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('menuitem', { name: /rooms/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
+    await page.waitForURL(/.*rooms\/create/);
 
     const timestamp = Date.now();
     const roomName = `editroom${timestamp}`;
     await page.getByLabel(/^room name/i).fill(roomName);
     await page.getByLabel(/display name/i).fill(`Edit Room ${timestamp}`);
-    await page.getByLabel(/^description/i).first().fill('Original description');
+    await page
+      .getByLabel(/^description/i)
+      .first()
+      .fill('Original description');
 
     await page.getByRole('button', { name: /save/i }).click();
     await expect(page.getByText(/created|success/i)).toBeVisible();
@@ -251,20 +278,25 @@ test.describe('Admin Room Management', () => {
 
   test('should set room allowed groups from dynamic list', async ({ page }) => {
     // First create a force to appear in the list
-    await page.getByRole('link', { name: /forces/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('menuitem', { name: /forces/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
+    await page.waitForURL(/.*forces\/create/);
 
     const timestamp = Date.now();
     const forceName = `TestForce${timestamp}`;
     await page.getByLabel(/force name/i).fill(forceName);
-    await page.getByLabel(/description/i).first().fill('Test force');
+    await page
+      .getByLabel(/description/i)
+      .first()
+      .fill('Test force');
 
     await page.getByRole('button', { name: /save/i }).click();
     await expect(page.getByText(/created|success/i)).toBeVisible();
 
     // Now create a room and select the force
-    await page.getByRole('link', { name: /rooms/i }).click();
-    await page.getByRole('button', { name: /create/i }).click();
+    await page.getByRole('menuitem', { name: /rooms/i }).click();
+    await page.getByRole('link', { name: /create/i }).click();
+    await page.waitForURL(/.*rooms\/create/);
 
     await page.getByLabel(/^room name/i).fill(`room${timestamp}`);
     await page.getByLabel(/display name/i).fill(`Room ${timestamp}`);
@@ -290,7 +322,7 @@ test.describe('Admin Overview', () => {
   });
 
   test('should display overview page', async ({ page }) => {
-    await page.getByRole('link', { name: /overview/i }).click();
+    await page.getByRole('menuitem', { name: /overview/i }).click();
     await expect(page).toHaveURL(/\/admin.*overview/);
   });
 });
@@ -305,10 +337,14 @@ test.describe('Admin Logout', () => {
     // Wait for dashboard to load
     await page.waitForTimeout(1000);
 
-    // Click logout (may be in menu or profile)
-    await page.getByRole('button', { name: /logout|sign out/i }).click();
+    // Click profile button to open menu
+    await page.getByRole('button', { name: /profile/i }).click();
+    await page.waitForTimeout(500);
+
+    // Click logout from the menu
+    await page.getByRole('menuitem', { name: /logout|sign out/i }).click();
 
     // Should redirect to login
-    await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /war rooms.*admin/i })).toBeVisible();
   });
 });

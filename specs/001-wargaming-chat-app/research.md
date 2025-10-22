@@ -394,6 +394,7 @@ XMPP types serve as canonical internal representation with explicit conversion f
 1. **Protocol Authority**: XMPP is the production protocol. OpenFire REST API exists only for admin operations and maps internally to XMPP entities.
 
 2. **Type Safety**: TypeScript transformers enforce complete mapping:
+
    ```typescript
    // Unidirectional transformation
    function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
@@ -438,17 +439,21 @@ XMPP types serve as canonical internal representation with explicit conversion f
 ### Alternatives Considered
 
 **Option A: Separate Fixture Arrays** (`MOCK_USERS_XMPP`, `MOCK_USERS_REST`)
+
 - ❌ Rejected: Duplication leads to drift. No guarantee fixtures stay in sync.
 
 **Option B: Peer Formats with Conversion** (XMPP and REST as equals)
+
 - ❌ Rejected: Adds conceptual overhead. XMPP is production protocol; REST is administrative interface.
 
 **Option C: Neutral Canonical Format** (internal representation → XMPP/REST)
+
 - ❌ Rejected: Unnecessary abstraction layer. Would still need to map from neutral to XMPP, then XMPP already serves as canonical.
 
 ### Implementation Notes
 
 **File Structure:**
+
 ```
 packages/backend-mock/src/
 ├── fixtures.ts              # CANONICAL: XMPP fixtures (MOCK_USERS, MOCK_ROOMS, etc.)
@@ -459,6 +464,7 @@ packages/backend-mock/src/
 ```
 
 **Transformer Module** (`rest/transformers.ts`):
+
 ```typescript
 import type { XMPPUser, XMPPRoom } from '@war-rooms/backend-interface';
 import type { OpenFireUser, OpenFireGroup, OpenFireRoom } from './openfire-api';
@@ -500,6 +506,7 @@ Both UIs use same default namespace (`war-rooms`) but allow override via `VITE_S
    - **No overlap**: Protocol prefixes prevent collisions even within shared namespace.
 
 4. **Key Format Consistency**:
+
    ```
    {namespace}:{protocol}:{entity-type}:{identifier}
 
@@ -512,17 +519,21 @@ Both UIs use same default namespace (`war-rooms`) but allow override via `VITE_S
 ### Alternatives Considered
 
 **Option A: Separate Namespaces** (`war-rooms-xmpp`, `war-rooms-rest`)
+
 - ❌ Rejected: Requires cross-namespace synchronization. Admin UI changes wouldn't reflect in chat UI without complex event bus.
 
 **Option B: Single Hardcoded Namespace**
+
 - ❌ Rejected: Breaks test isolation. Parallel test runs would interfere.
 
 **Option C: App-Specific Namespaces** (`war-rooms-chat`, `war-rooms-admin`)
+
 - ❌ Rejected: Same synchronization problems as Option A. Admin UI is admin interface to same XMPP backend.
 
 ### Implementation Notes
 
 **Environment Variable:**
+
 ```bash
 # .env (default for both apps)
 VITE_STORAGE_NAMESPACE=war-rooms
@@ -532,17 +543,17 @@ VITE_STORAGE_NAMESPACE=test-${TEST_ID}
 ```
 
 **Storage Creation:**
+
 ```typescript
 // packages/backend-mock/src/storage.ts (already implemented)
 export function createStorage(options: StorageOptions): Storage {
-  const namespace = options.namespace ||
-                    import.meta.env.VITE_STORAGE_NAMESPACE ||
-                    'war-rooms';
+  const namespace = options.namespace || import.meta.env.VITE_STORAGE_NAMESPACE || 'war-rooms';
   // ...
 }
 ```
 
 **Risk Mitigation:**
+
 - **Namespace Prefix Validation**: Ensure all storage keys follow `{protocol}:{entity}:{id}` pattern
 - **Clear Documentation**: Document shared namespace requirement in CLAUDE.md
 - **Storage Clearing**: Both UIs must call `storage.clear()` during seeding to prevent orphaned keys
@@ -558,15 +569,18 @@ Single `seedAll()` function seeds XMPP representation, then transforms and seeds
 ### Rationale
 
 1. **Dependency Order**: Entities have FK-like relationships:
+
    ```
    Users → Groups → Forces → Rooms → Messages
    ```
+
    - Users must exist before Groups can reference them
    - Groups must exist before Forces (PubSub) can link to them
    - Rooms require Force metadata for `forceRestrictions`
    - Messages require Rooms to exist
 
 2. **Transform-Then-Seed Pattern**:
+
    ```typescript
    export async function seedAll(storage: Storage): Promise<void> {
      // 1. Seed XMPP entities (canonical)
@@ -586,7 +600,7 @@ Single `seedAll()` function seeds XMPP representation, then transforms and seeds
      }
 
      // Update REST users list
-     const usernames = MOCK_USERS.map(u => parseJid(u.bare_jid).local);
+     const usernames = MOCK_USERS.map((u) => parseJid(u.bare_jid).local);
      await storage.setItem('rest:users:list', usernames);
 
      // Seed REST groups from roster groups
@@ -594,7 +608,10 @@ Single `seedAll()` function seeds XMPP representation, then transforms and seeds
      for (const group of restGroups) {
        await storage.setItem(`rest:group:${group.name}`, group);
      }
-     await storage.setItem('rest:groups:list', restGroups.map(g => g.name));
+     await storage.setItem(
+       'rest:groups:list',
+       restGroups.map((g) => g.name)
+     );
 
      // Seed REST rooms from XMPP rooms
      for (const mockRoom of MOCK_ROOMS) {
@@ -603,7 +620,7 @@ Single `seedAll()` function seeds XMPP representation, then transforms and seeds
        await storage.setItem(`rest:room:${restRoom.roomName}`, restRoom);
      }
 
-     const roomNames = MOCK_ROOMS.map(r => parseJid(r.jid).local);
+     const roomNames = MOCK_ROOMS.map((r) => parseJid(r.jid).local);
      await storage.setItem('rest:rooms:list', roomNames);
    }
    ```
@@ -615,17 +632,21 @@ Single `seedAll()` function seeds XMPP representation, then transforms and seeds
 ### Alternatives Considered
 
 **Option A: Parallel Seeding** (XMPP and REST simultaneously)
+
 - ❌ Rejected: Race conditions if transformers depend on existence checks. Complex ordering logic.
 
 **Option B: Lazy Transformation** (transform on-demand during REST API calls)
+
 - ❌ Rejected: Performance overhead. Every REST `getUsers()` would transform XMPP roster. Storage should be pre-seeded.
 
 **Option C: Dual Fixture Files** (manual maintenance of both)
+
 - ❌ Rejected: Guaranteed drift between XMPP and REST fixtures.
 
 ### Implementation Notes
 
 **Seeding Flow:**
+
 ```typescript
 // packages/backend-mock/src/seed.ts (MODIFIED)
 import { seedRestFromXmpp } from './rest/seed-rest';
@@ -640,6 +661,7 @@ export async function seedAll(storage: Storage): Promise<void> {
 ```
 
 **Error Handling:**
+
 - If XMPP seeding fails, abort before REST seeding
 - Log clear separation: `console.info('[XMPP Seed]')` vs `console.info('[REST Seed]')`
 - Validation: Assert REST user count matches XMPP user count after seeding
@@ -655,6 +677,7 @@ All XMPP ↔ REST conversions go through typed transformer functions with option
 ### Rationale
 
 1. **Compile-Time Safety**: TypeScript ensures all required fields are mapped:
+
    ```typescript
    // Compile error if OpenFireUser gains new required field
    function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
@@ -668,6 +691,7 @@ All XMPP ↔ REST conversions go through typed transformer functions with option
    ```
 
 2. **Runtime Validation (Optional)**: Development-mode assertions catch data quality issues:
+
    ```typescript
    function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
      if (import.meta.env.DEV) {
@@ -685,6 +709,7 @@ All XMPP ↔ REST conversions go through typed transformer functions with option
    - Decide: Map from XMPP field, use default, or mark optional
 
 4. **Reverse Transformation** (REST → XMPP for admin-created entities):
+
    ```typescript
    function restUserToXmpp(restUser: OpenFireUser, domain: string): XMPPUser {
      const jid = buildJid(restUser.username, domain);
@@ -703,6 +728,7 @@ All XMPP ↔ REST conversions go through typed transformer functions with option
    ```
 
 5. **Bidirectional Tests**: Ensure transformations are lossless where applicable:
+
    ```typescript
    test('round-trip transformation preserves core fields', () => {
      const xmppUser = MOCK_USERS[0];
@@ -718,17 +744,21 @@ All XMPP ↔ REST conversions go through typed transformer functions with option
 ### Alternatives Considered
 
 **Option A: Canonical Internal Format** (XMPP/REST map to neutral type)
+
 - ❌ Rejected: Unnecessary indirection. XMPP already serves as canonical (see Topic 1).
 
 **Option B: Manual Conversion in API Layer** (no dedicated transformers)
+
 - ❌ Rejected: Scattered logic. Easy to miss fields. Hard to test.
 
 **Option C: Zod/Yup Runtime Schemas** (validate all transformations)
+
 - ⚠️ Partial Adoption: Too heavyweight for every call. Use selectively for admin-created entities.
 
 ### Implementation Notes
 
 **Transformer Structure:**
+
 ```typescript
 // packages/backend-mock/src/rest/transformers.ts
 
@@ -754,10 +784,7 @@ export function xmppUserToRest(xmppUser: XMPPUser): OpenFireUser {
   };
 }
 
-export function restUserToXmpp(
-  restUser: OpenFireUser,
-  domain: string
-): XMPPUser {
+export function restUserToXmpp(restUser: OpenFireUser, domain: string): XMPPUser {
   const jid = buildJid(restUser.username, domain);
 
   return {
@@ -795,10 +822,7 @@ export function xmppRoomToRest(xmppRoom: XMPPRoom): OpenFireRoom {
   };
 }
 
-export function restRoomToXmpp(
-  restRoom: OpenFireRoom,
-  conferenceDomain: string
-): XMPPRoom {
+export function restRoomToXmpp(restRoom: OpenFireRoom, conferenceDomain: string): XMPPRoom {
   const jid = buildJid(restRoom.roomName, conferenceDomain);
 
   return {
@@ -860,6 +884,7 @@ export function rosterGroupsToRestGroups(users: XMPPUser[]): OpenFireGroup[] {
 ```
 
 **Test Coverage:**
+
 ```typescript
 // packages/backend-mock/src/rest/__tests__/transformers.test.ts
 
@@ -907,12 +932,12 @@ describe('User Transformers', () => {
 
 ## Summary of Decisions
 
-| Topic | Decision | Key Benefit |
-|-------|----------|-------------|
-| **Entity Mapping** | Canonical XMPP + transformers | Single source of truth, protocol fidelity |
-| **Storage Namespace** | Shared with env override | Unified state, test isolation |
-| **Seeding** | Master seeder, sequential protocol seeding | Dependency ordering, idempotency |
-| **Type Safety** | Explicit typed transformers | Compile-time checks, evolution support |
+| Topic                 | Decision                                   | Key Benefit                               |
+| --------------------- | ------------------------------------------ | ----------------------------------------- |
+| **Entity Mapping**    | Canonical XMPP + transformers              | Single source of truth, protocol fidelity |
+| **Storage Namespace** | Shared with env override                   | Unified state, test isolation             |
+| **Seeding**           | Master seeder, sequential protocol seeding | Dependency ordering, idempotency          |
+| **Type Safety**       | Explicit typed transformers                | Compile-time checks, evolution support    |
 
 ---
 

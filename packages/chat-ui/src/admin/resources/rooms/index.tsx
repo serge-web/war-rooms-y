@@ -23,7 +23,7 @@ import {
 /**
  * Dynamic group selector with search - fetches current groups
  */
-function GroupSelector(props: any) {
+function GroupSelector(props: Record<string, unknown>) {
   const { data, isLoading } = useGetList('forces', {
     pagination: { page: 1, perPage: 100 },
     sort: { field: 'name', order: 'ASC' },
@@ -31,10 +31,11 @@ function GroupSelector(props: any) {
 
   if (isLoading) return <Loading />;
 
-  const choices = data?.map((group) => ({
-    id: group.name,
-    name: group.name,
-  })) || [];
+  const choices =
+    data?.map((group) => ({
+      id: group.name,
+      name: group.name,
+    })) || [];
 
   return (
     <AutocompleteArrayInput
@@ -48,7 +49,7 @@ function GroupSelector(props: any) {
 /**
  * Dynamic user selector with search - fetches current users
  */
-function UserSelector(props: any) {
+function UserSelector(props: Record<string, unknown>) {
   const { data, isLoading } = useGetList('users', {
     pagination: { page: 1, perPage: 1000 },
     sort: { field: 'username', order: 'ASC' },
@@ -56,10 +57,11 @@ function UserSelector(props: any) {
 
   if (isLoading) return <Loading />;
 
-  const choices = data?.map((user) => ({
-    id: user.username,
-    name: `${user.name || user.username} (${user.username})`,
-  })) || [];
+  const choices =
+    data?.map((user) => ({
+      id: user.username,
+      name: `${user.name || user.username} (${user.username})`,
+    })) || [];
 
   return (
     <AutocompleteArrayInput
@@ -159,4 +161,3 @@ export const RoomCreate = () => (
     </SimpleForm>
   </Create>
 );
-

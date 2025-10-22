@@ -210,7 +210,11 @@ export class MockOpenFireAPI {
     await this.adapter.deleteRoom(roomName);
   }
 
-  async addRoomMember(roomName: string, jid: string, _role: 'owner' | 'admin' | 'member' | 'outcast'): Promise<void> {
+  async addRoomMember(
+    roomName: string,
+    jid: string,
+    _role: 'owner' | 'admin' | 'member' | 'outcast'
+  ): Promise<void> {
     const room = await this.adapter.getRoom(roomName);
     if (!room) {
       throw new Error(`Room ${roomName} not found`);
@@ -227,13 +231,17 @@ export class MockOpenFireAPI {
     }
   }
 
-  async removeRoomMember(roomName: string, jid: string, _role: 'owner' | 'admin' | 'member' | 'outcast'): Promise<void> {
+  async removeRoomMember(
+    roomName: string,
+    jid: string,
+    _role: 'owner' | 'admin' | 'member' | 'outcast'
+  ): Promise<void> {
     const room = await this.adapter.getRoom(roomName);
     if (!room) {
       throw new Error(`Room ${roomName} not found`);
     }
 
-    const members = (room.members || []).filter(m => m !== jid);
+    const members = (room.members || []).filter((m) => m !== jid);
     await this.adapter.updateRoom(roomName, { members });
   }
 }

@@ -12,7 +12,6 @@ import {
   Typography,
   List,
   ListItem,
-  Divider,
   Drawer,
   Badge,
 } from '@mui/material';

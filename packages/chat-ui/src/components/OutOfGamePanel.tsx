@@ -6,7 +6,14 @@
 
 import { Box, Paper, Typography, Divider } from '@mui/material';
 import { useEffect } from 'react';
-import { useConnectionStore, selectJid, selectBareJid, useRoomsStore, selectIsJoined, type RoomsStore } from '@war-rooms/state';
+import {
+  useConnectionStore,
+  selectJid,
+  selectBareJid,
+  useRoomsStore,
+  selectIsJoined,
+  type RoomsStore,
+} from '@war-rooms/state';
 import { ChatRoom } from './ChatRoom';
 
 const ALL_HANDS_JID = 'all-hands@conference.wargame.local';

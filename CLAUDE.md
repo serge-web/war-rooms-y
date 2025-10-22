@@ -101,6 +101,7 @@ Key files:
 **Single Source of Truth**: Unified entities stored under `entities/*` keys:
 
 **Unified Keys**:
+
 - `entities/users/{username}` → UnifiedUser records
 - `entities/users/_index` → Array of usernames (index)
 - `entities/forces/{forceId}` → UnifiedForce records
@@ -111,17 +112,20 @@ Key files:
 - `entities/templates/_index` → Array of template IDs (index)
 
 **Protocol Adapters** (project unified data to protocol-specific formats):
+
 - **XMPPAdapter** - Chat UI reads via XMPP-formatted views
 - **RESTAdapter** - Admin UI reads via OpenFire REST-formatted views
 - **PubSubAdapter** - Both UIs access metadata via PubSub
 
 **Transient Data** (not projected, session-specific):
+
 - `rooms/{roomJid}/occupants/*` → Real-time room occupants
 - `archive/rooms/{roomJid}/*` → Message history
 - `presence/self` → Current user presence
 - `session` → Current XMPP session info
 
 This enables:
+
 - ✅ Admin creates user at `/admin` → Chat UI at `/` sees user instantly
 - ✅ Admin creates room → Chat UI can join room
 - ✅ Chat sends message → Admin UI sees count update
@@ -236,7 +240,7 @@ VITE_MOCK_LATENCY=100               # Simulated network delay
 - Mock XMPP backend with localStorage persistence
 - Multi-room chat UI with flexlayout-react (route `/`)
 - Admin UI with React-Admin (route `/admin`) - manages users, forces, rooms, templates
-- Unified data layer with adapter pattern (entities/* keys)
+- Unified data layer with adapter pattern (entities/\* keys)
 - Force-based room access control
 - Jotai/Zustand state management
 - CI/CD pipeline with GitHub Actions

@@ -33,12 +33,14 @@ System administrators need to manage users, groups, and room configurations thro
 **Independent Test**: Can be tested by having an administrator create users and rooms, then verifying participants can access only their assigned rooms. Mock implementation simulates both REST API responses and PubSub node storage.
 
 **Application Architecture**:
+
 - **Separate Applications**: Chat UI (`/`) and Admin UI (`/admin`) are independent applications with separate entry points
 - **Admin Authentication**: Admin UI login verifies user is in 'admins' OpenFire group before granting access
 - **Cross-Navigation**: Admin users can switch between admin and chat interfaces via navigation links
 - **Security**: Regular users never load admin UI code, reducing bundle size and attack surface
 
 **Admin UI Resources**:
+
 - **Overview**: Single-record resource displaying current game summary and status
 - **Forces**: Maps to OpenFire Groups, with member management and PubSub-stored metadata (objectives, icon, color)
 - **Rooms**: MUC room management with group/individual assignments, extra details in PubSub nodes

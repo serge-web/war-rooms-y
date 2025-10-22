@@ -3,8 +3,12 @@
  * Tests admin panel room management via REST API + PubSub metadata
  */
 
-// @ts-nocheck
-import { createStorage, MockOpenFireAPI, MockPubSubMetadataREST as MockPubSubMetadata, seedTestWargame } from '@war-rooms/backend-mock';
+import {
+  createStorage,
+  MockOpenFireAPI,
+  MockPubSubMetadataREST as MockPubSubMetadata,
+  seedTestWargame,
+} from '@war-rooms/backend-mock';
 
 describe('Admin Room CRUD Operations', () => {
   let storage: ReturnType<typeof createStorage>;
@@ -39,11 +43,11 @@ describe('Admin Room CRUD Operations', () => {
       await api.createRoom(newRoom);
 
       const room = await api.getRoom('testroom');
-      expect(room.roomName).toBe('testroom');
-      expect(room.naturalName).toBe('Test Room');
-      expect(room.description).toBe('A test room');
-      expect(room.persistent).toBe(true);
-      expect(room.membersOnly).toBe(true);
+      expect(room!.roomName).toBe('testroom');
+      expect(room!.naturalName).toBe('Test Room');
+      expect(room!.description).toBe('A test room');
+      expect(room!.persistent).toBe(true);
+      expect(room!.membersOnly).toBe(true);
     });
 
     it('should reject duplicate room names', async () => {
@@ -120,9 +124,9 @@ describe('Admin Room CRUD Operations', () => {
 
     it('should get room by name', async () => {
       const room = await api.getRoom('room1');
-      expect(room.roomName).toBe('room1');
-      expect(room.naturalName).toBe('Room One');
-      expect(room.description).toBe('First room');
+      expect(room!.roomName).toBe('room1');
+      expect(room!.naturalName).toBe('Room One');
+      expect(room!.description).toBe('First room');
     });
 
     it('should return null for non-existent room', async () => {
@@ -140,9 +144,9 @@ describe('Admin Room CRUD Operations', () => {
       const room = await api.getRoom('room1');
       const metadata = await pubsub.getRoomMetadata('room1');
 
-      expect(room.roomName).toBe('room1');
-      expect(metadata.description).toBe('Extended info');
-      expect(metadata.allowedGroups).toContain('Control');
+      expect(room!.roomName).toBe('room1');
+      expect(metadata!.description).toBe('Extended info');
+      expect(metadata!.allowedGroups).toContain('Control');
     });
   });
 
@@ -165,9 +169,9 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const room = await api.getRoom('updateroom');
-      expect(room.naturalName).toBe('Updated Name');
-      expect(room.description).toBe('Updated description');
-      expect(room.maxUsers).toBe(100);
+      expect(room!.naturalName).toBe('Updated Name');
+      expect(room!.description).toBe('Updated description');
+      expect(room!.maxUsers).toBe(100);
     });
 
     it('should update room subject', async () => {
@@ -176,7 +180,7 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const room = await api.getRoom('updateroom');
-      expect(room.subject).toBe('New subject line');
+      expect(room!.subject).toBe('New subject line');
     });
 
     it('should update room access controls', async () => {
@@ -187,9 +191,9 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const room = await api.getRoom('updateroom');
-      expect(room.membersOnly).toBe(false);
-      expect(room.publicRoom).toBe(true);
-      expect(room.moderated).toBe(true);
+      expect(room!.membersOnly).toBe(false);
+      expect(room!.publicRoom).toBe(true);
+      expect(room!.moderated).toBe(true);
     });
 
     it('should update room metadata', async () => {
@@ -205,9 +209,9 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const metadata = await pubsub.getRoomMetadata('updateroom');
-      expect(metadata.description).toBe('Updated metadata');
-      expect(metadata.allowedGroups).toEqual(['Red Force', 'Blue Force']);
-      expect(metadata.formTemplates).toEqual(['sitrep', 'contact']);
+      expect(metadata!.description).toBe('Updated metadata');
+      expect(metadata!.allowedGroups).toEqual(['Red Force', 'Blue Force']);
+      expect(metadata!.formTemplates).toEqual(['sitrep', 'contact']);
     });
 
     it('should update room theme', async () => {
@@ -222,7 +226,7 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const metadata = await pubsub.getRoomMetadata('updateroom');
-      expect(metadata.theme.palette.primary.main).toBe('#FF5722');
+      expect(metadata!.theme.palette.primary.main).toBe('#FF5722');
     });
   });
 
@@ -283,7 +287,7 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const metadata = await pubsub.getRoomMetadata('metaroom');
-      expect(metadata.allowedGroups).toEqual(['Red Force', 'Blue Force', 'Control']);
+      expect(metadata!.allowedGroups).toEqual(['Red Force', 'Blue Force', 'Control']);
     });
 
     it('should set form templates', async () => {
@@ -292,7 +296,7 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const metadata = await pubsub.getRoomMetadata('metaroom');
-      expect(metadata.formTemplates).toEqual(['sitrep', 'contact', 'intrep']);
+      expect(metadata!.formTemplates).toEqual(['sitrep', 'contact', 'intrep']);
     });
 
     it('should set multiple metadata fields', async () => {
@@ -312,10 +316,10 @@ describe('Admin Room CRUD Operations', () => {
       await pubsub.setRoomMetadata('metaroom', fullMetadata);
 
       const metadata = await pubsub.getRoomMetadata('metaroom');
-      expect(metadata.description).toBe('Full metadata example');
-      expect(metadata.allowedGroups).toEqual(['Red Force']);
-      expect(metadata.formTemplates).toEqual(['sitrep']);
-      expect(metadata.theme.palette.primary.main).toBe('#4CAF50');
+      expect(metadata!.description).toBe('Full metadata example');
+      expect(metadata!.allowedGroups).toEqual(['Red Force']);
+      expect(metadata!.formTemplates).toEqual(['sitrep']);
+      expect(metadata!.theme.palette.primary.main).toBe('#4CAF50');
     });
   });
 
@@ -331,9 +335,9 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const room = await api.getRoom('publictemp');
-      expect(room.persistent).toBe(false);
-      expect(room.publicRoom).toBe(true);
-      expect(room.membersOnly).toBe(false);
+      expect(room!.persistent).toBe(false);
+      expect(room!.publicRoom).toBe(true);
+      expect(room!.membersOnly).toBe(false);
     });
 
     it('should create moderated members-only room', async () => {
@@ -348,8 +352,8 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const room = await api.getRoom('moderated');
-      expect(room.membersOnly).toBe(true);
-      expect(room.moderated).toBe(true);
+      expect(room!.membersOnly).toBe(true);
+      expect(room!.moderated).toBe(true);
     });
 
     it('should set custom max users', async () => {
@@ -362,7 +366,7 @@ describe('Admin Room CRUD Operations', () => {
       });
 
       const room = await api.getRoom('large');
-      expect(room.maxUsers).toBe(500);
+      expect(room!.maxUsers).toBe(500);
     });
   });
 });

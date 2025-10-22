@@ -6,6 +6,7 @@
 ## Summary
 
 The current architecture has **two separate mock data systems** that are out of sync:
+
 - **XMPP Mock** (fixtures.ts): Used by chat-ui with XMPP protocol simulation
 - **REST Mock** (seed-rest.ts): Used by admin-ui with OpenFire REST API simulation
 
@@ -24,11 +25,13 @@ This creates data inconsistency - changes in admin-ui don't reflect in chat-ui a
 **Scale/Scope**: 5 packages, ~15k LOC, 50 participants per wargame, permanent message retention
 
 **Current Issue**: Two separate mock data layers create data silos:
+
 - **packages/backend-mock/src/fixtures.ts**: XMPP entities (XMPPUser, XMPPRoom, XMPPMessage) seeded via seed.ts
 - **packages/backend-mock/src/rest/seed-rest.ts**: OpenFire REST entities (OpenFireUser, OpenFireGroup, OpenFireRoom) seeded separately
 - **admin-ui** uses namespace `war-rooms-admin`, **chat-ui** uses default namespace → isolated storage
 
 **Required Unification**:
+
 - Single canonical storage namespace shared by both UIs
 - Single fixture set that seeds both XMPP and REST representations
 - Bidirectional sync: admin changes → visible in chat, chat activity → visible in admin
@@ -38,16 +41,17 @@ This creates data inconsistency - changes in admin-ui don't reflect in chat-ui a
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Compliance | Notes |
-|-----------|------------|-------|
-| **I. Code Quality First** | ✅ PASS | Refactoring existing mock backend, no new complexity. DRY principle directly addressed by eliminating duplicate fixture data. |
-| **II. Test-Driven Development** | ✅ PASS | TDD required for storage namespace migration and fixture consolidation. Existing E2E tests will verify cross-UI data sync. |
-| **III. UX Consistency** | ✅ PASS | Unification improves UX - admin changes immediately visible in chat UI. No UI interaction patterns changed. |
-| **IV. Performance by Design** | ✅ PASS | Single storage namespace reduces memory footprint. Shared fixtures eliminate duplicate data loading. Performance budgets unchanged. |
-| **V. Security in Depth** | ✅ PASS | No security boundary changes. Both UIs already use same Storage abstraction with same validation. |
-| **VI. Observability** | ✅ PASS | Storage operations already logged. New unified seeding will have clear logging for both XMPP and REST entity creation. |
+| Principle                       | Compliance | Notes                                                                                                                               |
+| ------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **I. Code Quality First**       | ✅ PASS    | Refactoring existing mock backend, no new complexity. DRY principle directly addressed by eliminating duplicate fixture data.       |
+| **II. Test-Driven Development** | ✅ PASS    | TDD required for storage namespace migration and fixture consolidation. Existing E2E tests will verify cross-UI data sync.          |
+| **III. UX Consistency**         | ✅ PASS    | Unification improves UX - admin changes immediately visible in chat UI. No UI interaction patterns changed.                         |
+| **IV. Performance by Design**   | ✅ PASS    | Single storage namespace reduces memory footprint. Shared fixtures eliminate duplicate data loading. Performance budgets unchanged. |
+| **V. Security in Depth**        | ✅ PASS    | No security boundary changes. Both UIs already use same Storage abstraction with same validation.                                   |
+| **VI. Observability**           | ✅ PASS    | Storage operations already logged. New unified seeding will have clear logging for both XMPP and REST entity creation.              |
 
 **Quality Gates**:
+
 - All existing unit and E2E tests must pass
 - New tests for cross-UI data synchronization required
 - No decrease in code coverage (currently ~10%, targeting 80% for new code)
@@ -190,10 +194,12 @@ _No violations detected - all constitution principles satisfied._
 ### Key Implementation Files
 
 **New Files**:
+
 - `packages/backend-mock/src/rest/transformers.ts` - Entity transformations
 - `packages/backend-mock/src/rest/transformers.test.ts` - Round-trip tests
 
 **Modified Files**:
+
 - `packages/backend-mock/src/seed.ts` - Add `seedRestFromXmpp()` call
 - `packages/backend-mock/src/storage.ts` - Add namespace config documentation
 - `packages/chat-ui/src/main.tsx` - Use shared namespace
@@ -201,22 +207,24 @@ _No violations detected - all constitution principles satisfied._
 - `.env` - Add `VITE_STORAGE_NAMESPACE=war-rooms`
 
 **Deprecated Files**:
+
 - `packages/backend-mock/src/rest/seed-rest.ts` - Functionality merged into `seed.ts`
 
 ---
 
 ## Post-Design Constitution Re-Check
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| **I. Code Quality First** | ✅ PASS | New transformers module is focused, well-documented. DRY achieved by eliminating duplicate fixtures. Complexity reduced (1 fixture source vs 2). |
-| **II. Test-Driven Development** | ✅ PASS | Transformer tests required before implementation. Round-trip tests ensure correctness. E2E tests validate cross-UI sync. |
-| **III. UX Consistency** | ✅ PASS | Unified data improves UX - admin changes instantly visible in chat. No UI changes required, pure backend refactoring. |
-| **IV. Performance by Design** | ✅ PASS | Transformation overhead: <1ms per entity. Single namespace reduces storage footprint. No performance regressions. |
-| **V. Security in Depth** | ✅ PASS | No security boundary changes. Shared storage already has same validation. Key prefixes prevent accidental cross-protocol access. |
-| **VI. Observability** | ✅ PASS | Seeding logs both XMPP and REST entity creation. Validation functions detect inconsistencies. Debug utilities added for storage inspection. |
+| Principle                       | Status  | Notes                                                                                                                                            |
+| ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **I. Code Quality First**       | ✅ PASS | New transformers module is focused, well-documented. DRY achieved by eliminating duplicate fixtures. Complexity reduced (1 fixture source vs 2). |
+| **II. Test-Driven Development** | ✅ PASS | Transformer tests required before implementation. Round-trip tests ensure correctness. E2E tests validate cross-UI sync.                         |
+| **III. UX Consistency**         | ✅ PASS | Unified data improves UX - admin changes instantly visible in chat. No UI changes required, pure backend refactoring.                            |
+| **IV. Performance by Design**   | ✅ PASS | Transformation overhead: <1ms per entity. Single namespace reduces storage footprint. No performance regressions.                                |
+| **V. Security in Depth**        | ✅ PASS | No security boundary changes. Shared storage already has same validation. Key prefixes prevent accidental cross-protocol access.                 |
+| **VI. Observability**           | ✅ PASS | Seeding logs both XMPP and REST entity creation. Validation functions detect inconsistencies. Debug utilities added for storage inspection.      |
 
 **Quality Gates Met**:
+
 - ✅ Type safety maintained (transformers fully typed)
 - ✅ Test coverage plan defined (unit, integration, E2E)
 - ✅ No breaking changes to existing APIs
@@ -257,6 +265,7 @@ Before proceeding to Phase 2 (task generation):
 **Problem**: Two separate mock data systems (XMPP fixtures for chat, REST fixtures for admin) create data silos where changes in one UI don't appear in the other.
 
 **Solution**: Unified data layer with:
+
 - Single canonical XMPP fixture source
 - Bidirectional transformers for REST representations
 - Shared localStorage namespace (`war-rooms`)
@@ -264,6 +273,7 @@ Before proceeding to Phase 2 (task generation):
 - Master seeding function initializes both representations
 
 **Impact**:
+
 - Admin creates user → Chat UI sees user instantly
 - Admin creates room → Chat UI can join room
 - Chat sends message → Admin UI sees count update

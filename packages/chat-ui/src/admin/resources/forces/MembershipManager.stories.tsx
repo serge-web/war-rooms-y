@@ -21,6 +21,7 @@ type Story = StoryObj<typeof meta>;
 
 // Mock data provider
 const mockDataProvider = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   update: fn(async (resource: string, params: any) => {
     console.log('Update called:', resource, params);
     return { data: params.data };
@@ -35,11 +36,10 @@ const mockDataProvider = {
   updateMany: fn(),
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const WithProviders = ({ record, children }: any) => (
   <DataProviderContext.Provider value={mockDataProvider}>
-    <RecordContextProvider value={record}>
-      {children}
-    </RecordContextProvider>
+    <RecordContextProvider value={record}>{children}</RecordContextProvider>
   </DataProviderContext.Provider>
 );
 

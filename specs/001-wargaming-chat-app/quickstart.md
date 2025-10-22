@@ -18,13 +18,13 @@ This guide shows how the unified mock data layer enables seamless data sharing b
 // packages/chat-ui/src/main.tsx
 const chatStorage = createStorage({
   backend: 'localStorage',
-  namespace: 'war-rooms',  // Default namespace
+  namespace: 'war-rooms', // Default namespace
 });
 
 // packages/admin-ui/src/providers/dataProvider.ts (OLD - DELETED)
 const adminStorage = createStorage({
   backend: 'localStorage',
-  namespace: 'war-rooms-admin',  // Different namespace!
+  namespace: 'war-rooms-admin', // Different namespace!
 });
 
 // Result: admin creates user → chat UI doesn't see it
@@ -95,7 +95,7 @@ import { useRoster } from '../hooks/useRoster';
 
 export const RosterPanel = () => {
   const roster = useRoster();  // Reads from roster/* keys
-  
+
   // ✅ New user appears immediately in roster list
   return (
     <List>
@@ -147,7 +147,7 @@ import { useRoomsStore } from '@war-rooms/state';
 
 export const RoomList = () => {
   const rooms = useRoomsStore(state => state.rooms);
-  
+
   // ✅ New room appears in available rooms list
   return (
     <List>
@@ -179,7 +179,7 @@ const handleSend = async (body: string) => {
     body,
     timestamp: new Date().toISOString(),
   };
-  
+
   // Writes to messages/all-hands@conference/msg-123
   await sendMessage(message);
 };
@@ -244,10 +244,10 @@ import { useForceMetadata } from '../hooks/useForceMetadata';
 
 export const ForceIndicator = ({ forceId }) => {
   const force = useForceMetadata(forceId);  // Reads from PubSub
-  
+
   // ✅ Color updates immediately
   return (
-    <Chip 
+    <Chip
       label={force.name}
       style={{ backgroundColor: force.color }}  // New color
       icon={<Avatar src={force.icon} />}        // New icon
@@ -320,9 +320,9 @@ if (keys.length === 0) {
        ├─→ rest:user:newuser (OpenFireUser)
        │
        └─→ roster/newuser@wargame.local (XMPPUser)
-       
+
        Both written to shared localStorage namespace
-       
+
 ┌─────────────┐
 │  Chat UI    │
 │  (XMPP)     │
@@ -353,7 +353,7 @@ if (keys.length === 0) {
        ├─→ rest:room:ops (OpenFireRoom)
        │
        └─→ rooms/ops@conference.wargame.local (XMPPRoom)
-       
+
 ┌─────────────┐
 │  Chat UI    │
 └──────┬──────┘
@@ -377,7 +377,7 @@ test('user round-trip preserves data', () => {
   const original = MOCK_USERS[0];
   const rest = xmppUserToRest(original);
   const roundTrip = restUserToXmpp(rest, MOCK_DOMAIN);
-  
+
   expect(roundTrip.bare_jid).toBe(original.bare_jid);
   expect(roundTrip.name).toBe(original.name);
   expect(roundTrip.groups).toEqual(original.groups);
@@ -395,16 +395,16 @@ import { MockOpenFireAPI } from '../rest/openfire-api';
 test('admin creates user → appears in XMPP', async () => {
   const storage = createStorage({ backend: 'memory', namespace: 'test' });
   await seedAll(storage);
-  
+
   const api = new MockOpenFireAPI(storage);
-  
+
   // Admin creates user via REST API
   await api.createUser({
     username: 'testuser',
     name: 'Test User',
     properties: { sharedGroups: ['TestGroup'] },
   });
-  
+
   // Verify XMPP representation exists
   const xmppUser = await storage.getItem('roster/testuser@wargame.local');
   expect(xmppUser).toBeDefined();
@@ -426,20 +426,20 @@ test('admin creates user → chat sees user in roster', async ({ page, context }
   await adminPage.fill('[name="username"]', 'admin');
   await adminPage.fill('[name="password"]', 'admin');
   await adminPage.click('button[type="submit"]');
-  
+
   // Create new user
   await adminPage.click('a[href="#/users"]');
   await adminPage.click('a[href="#/users/create"]');
   await adminPage.fill('[name="username"]', 'e2euser');
   await adminPage.fill('[name="name"]', 'E2E Test User');
   await adminPage.click('button[type="submit"]');
-  
+
   // Open chat UI in second tab (shares same localStorage)
   await page.goto('/');
   await page.fill('[name="username"]', 'commander.red');
   await page.fill('[name="password"]', 'any');
   await page.click('button[type="submit"]');
-  
+
   // Verify new user appears in roster
   await expect(page.locator('text=E2E Test User')).toBeVisible();
 });
@@ -555,8 +555,8 @@ npm run dev
 const chatStorage = createStorage({ backend: 'localStorage', namespace: 'war-rooms' });
 const adminStorage = createStorage({ backend: 'localStorage', namespace: 'war-rooms-admin' });
 
-console.log(await chatStorage.keys());   // Check chat keys
-console.log(await adminStorage.keys());  // Check admin keys
+console.log(await chatStorage.keys()); // Check chat keys
+console.log(await adminStorage.keys()); // Check admin keys
 ```
 
 **Solution**: Ensure both UIs use same `VITE_STORAGE_NAMESPACE`

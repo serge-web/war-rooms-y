@@ -10,12 +10,14 @@
 This task list implements a **unified mock data layer** that enables chat-ui and admin-ui to share a single source of truth. Currently, the two UIs use separate mock data systems (XMPP fixtures vs REST fixtures) causing data silos.
 
 **After Implementation**:
+
 - ✅ Admin creates user → Chat UI sees user instantly
-- ✅ Admin creates room → Chat UI can join room  
+- ✅ Admin creates room → Chat UI can join room
 - ✅ Chat sends message → Admin UI sees count update
 - ✅ Simulates production architecture (OpenFire serves both XMPP and REST)
 
 **Key Technical Approach**:
+
 - XMPP fixtures remain canonical source (packages/backend-mock/src/fixtures.ts)
 - New transformers module converts XMPP ↔ REST bidirectionally
 - Both UIs share `war-rooms` localStorage namespace
@@ -26,6 +28,7 @@ This task list implements a **unified mock data layer** that enables chat-ui and
 ## Task Format
 
 Every task follows this format:
+
 ```
 - [ ] [TaskID] [P?] Description with file path
 ```
@@ -66,6 +69,7 @@ Phase 6 (Cleanup)
 - [x] T004 [P] Add REST entity types to packages/backend-interface/src/rest.ts (re-export from backend-mock)
 
 **Validation**:
+
 - Environment variables configured in both .env files
 - Storage.ts has clear documentation on namespace usage
 - REST types available for import
@@ -78,10 +82,10 @@ Phase 6 (Cleanup)
 
 ### Tests First (TDD per constitution)
 
-- [ ] T005 [P] Write user transformer round-trip test in packages/backend-mock/src/rest/__tests__/transformers.test.ts
-- [ ] T006 [P] Write room transformer round-trip test in packages/backend-mock/src/rest/__tests__/transformers.test.ts
-- [ ] T007 [P] Write group/force transformer test in packages/backend-mock/src/rest/__tests__/transformers.test.ts
-- [ ] T008 [P] Write JID parsing utility tests in packages/backend-mock/src/rest/__tests__/transformers.test.ts
+- [ ] T005 [P] Write user transformer round-trip test in packages/backend-mock/src/rest/**tests**/transformers.test.ts
+- [ ] T006 [P] Write room transformer round-trip test in packages/backend-mock/src/rest/**tests**/transformers.test.ts
+- [ ] T007 [P] Write group/force transformer test in packages/backend-mock/src/rest/**tests**/transformers.test.ts
+- [ ] T008 [P] Write JID parsing utility tests in packages/backend-mock/src/rest/**tests**/transformers.test.ts
 
 ### Implementation (After tests fail)
 
@@ -94,6 +98,7 @@ Phase 6 (Cleanup)
 - [ ] T015 [P] Implement JID helper utilities (extractUsername, buildBareJid) in packages/backend-mock/src/rest/transformers.ts
 
 **Validation**:
+
 - ✅ All transformer tests pass (red → green)
 - ✅ Round-trip transformations preserve core fields
 - ✅ Type safety enforced at compile time
@@ -107,10 +112,10 @@ Phase 6 (Cleanup)
 
 ### Tests First
 
-- [ ] T016 Write test for seedRestUsers() in packages/backend-mock/src/__tests__/seed.test.ts
-- [ ] T017 Write test for seedRestGroups() in packages/backend-mock/src/__tests__/seed.test.ts
-- [ ] T018 Write test for seedRestRooms() in packages/backend-mock/src/__tests__/seed.test.ts
-- [ ] T019 Write integration test for seedAll() with rest: true in packages/backend-mock/src/__tests__/seed.test.ts
+- [ ] T016 Write test for seedRestUsers() in packages/backend-mock/src/**tests**/seed.test.ts
+- [ ] T017 Write test for seedRestGroups() in packages/backend-mock/src/**tests**/seed.test.ts
+- [ ] T018 Write test for seedRestRooms() in packages/backend-mock/src/**tests**/seed.test.ts
+- [ ] T019 Write integration test for seedAll() with rest: true in packages/backend-mock/src/**tests**/seed.test.ts
 
 ### Implementation
 
@@ -123,9 +128,10 @@ Phase 6 (Cleanup)
 - [ ] T026 Export new seeding functions from packages/backend-mock/src/index.ts
 
 **Validation**:
+
 - ✅ Seeding creates both XMPP and REST representations
-- ✅ Users seeded to roster/* and rest:user:* keys
-- ✅ Rooms seeded to rooms/* and rest:room:* keys
+- ✅ Users seeded to roster/_ and rest:user:_ keys
+- ✅ Rooms seeded to rooms/_ and rest:room:_ keys
 - ✅ Groups/forces seeded with correct member lists
 - ✅ All seed tests pass
 
@@ -138,13 +144,13 @@ Phase 6 (Cleanup)
 ### Chat UI Updates
 
 - [ ] T027 [P] Update storage creation to use VITE_STORAGE_NAMESPACE in packages/chat-ui/src/main.tsx
-- [ ] T028 [P] Verify chat UI reads from roster/* keys (validation only, no code changes)
+- [ ] T028 [P] Verify chat UI reads from roster/\* keys (validation only, no code changes)
 
 ### Admin UI Updates
 
 - [ ] T029 [P] Update storage creation to use VITE_STORAGE_NAMESPACE in packages/admin-ui/src/main.tsx
 - [ ] T030 [P] Update dataProvider to use shared storage instance in packages/admin-ui/src/providers/dataProvider.ts
-- [ ] T031 [P] Verify admin UI reads from rest:user:*, rest:group:*, rest:room:* keys (validation only)
+- [ ] T031 [P] Verify admin UI reads from rest:user:_, rest:group:_, rest:room:\* keys (validation only)
 
 ### Seeding Integration
 
@@ -152,6 +158,7 @@ Phase 6 (Cleanup)
 - [ ] T033 Add unified seeding call to admin-ui startup in packages/admin-ui/src/main.tsx
 
 **Validation**:
+
 - ✅ Both UIs use `war-rooms` namespace
 - ✅ Chat UI loads XMPP entities from shared storage
 - ✅ Admin UI loads REST entities from shared storage
@@ -175,7 +182,7 @@ Phase 6 (Cleanup)
 
 - [ ] T038 [P] Implement validateStorageConsistency() utility in packages/backend-mock/src/storage.ts
 - [ ] T039 [P] Implement dumpStorage() debug utility in packages/backend-mock/src/storage.ts
-- [ ] T040 Write consistency validation test in packages/backend-mock/src/__tests__/storage.test.ts
+- [ ] T040 Write consistency validation test in packages/backend-mock/src/**tests**/storage.test.ts
 
 ### Full Test Suite
 
@@ -185,6 +192,7 @@ Phase 6 (Cleanup)
 - [ ] T044 Run npm run typecheck and ensure no type errors
 
 **Validation**:
+
 - ✅ Admin changes appear in chat UI within 1 second
 - ✅ Chat changes appear in admin UI (message counts)
 - ✅ Data consistency validation passes
@@ -211,6 +219,7 @@ Phase 6 (Cleanup)
 - [ ] T051 Add JSDoc comments to seeding functions
 
 **Validation**:
+
 - ✅ Linting passes
 - ✅ Formatting consistent
 - ✅ Documentation updated
@@ -223,6 +232,7 @@ Phase 6 (Cleanup)
 **Total Tasks**: 51
 
 **Breakdown by Phase**:
+
 - Phase 1 (Setup): 4 tasks
 - Phase 2 (Transformers): 11 tasks (4 tests + 7 implementations, many parallelizable)
 - Phase 3 (Seeding): 11 tasks (4 tests + 7 implementations)
@@ -235,6 +245,7 @@ Phase 6 (Cleanup)
 **Testing Approach**: TDD with 18 test tasks written before implementation
 
 **Estimated Effort**:
+
 - Phase 1: 1 hour
 - Phase 2: 4 hours (TDD transformers)
 - Phase 3: 3 hours (seeding logic)
@@ -250,6 +261,7 @@ Phase 6 (Cleanup)
 ### MVP Scope (First Iteration)
 
 **Minimum viable unified data layer**:
+
 - ✅ Phase 1: Setup (T001-T004)
 - ✅ Phase 2: User transformer only (T005, T009-T010, T015)
 - ✅ Phase 3: User seeding only (T016, T020, T023-T026)
@@ -290,6 +302,7 @@ npm test && npm run test:e2e
 ### Development Workflow
 
 **Phase 2 (TDD)**:
+
 ```bash
 # Write test first
 npm test -- --watch transformers.test.ts
@@ -299,6 +312,7 @@ npm test -- --watch transformers.test.ts
 ```
 
 **Phase 3 (Seeding)**:
+
 ```bash
 # Seed both protocols
 npm run dev  # Chat UI
@@ -309,6 +323,7 @@ cd packages/admin-ui && npm run dev  # Admin UI
 ```
 
 **Phase 5 (E2E)**:
+
 ```bash
 # Run E2E in UI mode for debugging
 npm run test:e2e -- --ui
@@ -323,13 +338,20 @@ npm run test:e2e e2e/cross-ui-sync.spec.ts:34
 // In browser console
 const storage = createStorage({ backend: 'localStorage', namespace: 'war-rooms' });
 const dump = await dumpStorage(storage);
-console.log('XMPP users:', Array.from(dump.keys()).filter(k => k.startsWith('roster/')));
-console.log('REST users:', Array.from(dump.keys()).filter(k => k.startsWith('rest:user:')));
+console.log(
+  'XMPP users:',
+  Array.from(dump.keys()).filter((k) => k.startsWith('roster/'))
+);
+console.log(
+  'REST users:',
+  Array.from(dump.keys()).filter((k) => k.startsWith('rest:user:'))
+);
 ```
 
 ### Rollback Plan
 
 If issues arise:
+
 1. Revert UI changes (T027-T033)
 2. Keep transformers (useful for future)
 3. UIs return to separate namespaces
@@ -340,6 +362,7 @@ If issues arise:
 ## Success Metrics
 
 **Implementation Quality**:
+
 - [ ] All 51 tasks completed
 - [ ] All tests pass (unit + E2E)
 - [ ] Code coverage ≥ 80% for new code
@@ -348,6 +371,7 @@ If issues arise:
 - [ ] Type checking passes
 
 **Functional Validation**:
+
 - [ ] Admin creates user → Chat sees user within 1s
 - [ ] Admin creates room → Chat can join within 1s
 - [ ] Admin updates force → Chat sees new theme within 1s
@@ -356,6 +380,7 @@ If issues arise:
 - [ ] Storage consistency validation passes
 
 **Performance**:
+
 - [ ] Transformation overhead < 1ms per entity
 - [ ] Seeding completes in < 2 seconds
 - [ ] No performance regression vs separate namespaces

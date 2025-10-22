@@ -31,26 +31,30 @@ export const ForceList = () => (
       <TextField source="description" label="Description" />
       <FunctionField
         label="Color"
-        render={(record: any) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 20,
-                height: 20,
-                borderRadius: 1,
-                backgroundColor: record.metadata?.color || '#cccccc',
-                border: '1px solid rgba(0,0,0,0.2)',
-              }}
-            />
-            <span>{record.metadata?.color || 'N/A'}</span>
-          </Box>
-        )}
+        render={(record: Record<string, unknown>) => {
+          const metadata = record.metadata as { color?: string } | undefined;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 1,
+                  backgroundColor: metadata?.color || '#cccccc',
+                  border: '1px solid rgba(0,0,0,0.2)',
+                }}
+              />
+              <span>{metadata?.color || 'N/A'}</span>
+            </Box>
+          );
+        }}
       />
       <FunctionField
         label="Objectives"
-        render={(record: any) => (
-          <span>{record.metadata?.objectives?.length || 0} objectives</span>
-        )}
+        render={(record: Record<string, unknown>) => {
+          const metadata = record.metadata as { objectives?: unknown[] } | undefined;
+          return <span>{metadata?.objectives?.length || 0} objectives</span>;
+        }}
       />
     </Datagrid>
   </List>
@@ -149,20 +153,23 @@ export const ForceShow = () => (
       {/* Metadata Display */}
       <FunctionField
         label="Color"
-        render={(record: any) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                backgroundColor: record.metadata?.color || '#cccccc',
-                border: '1px solid rgba(0,0,0,0.2)',
-              }}
-            />
-            <span>{record.metadata?.color || 'N/A'}</span>
-          </Box>
-        )}
+        render={(record: Record<string, unknown>) => {
+          const metadata = record.metadata as { color?: string } | undefined;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 1,
+                  backgroundColor: metadata?.color || '#cccccc',
+                  border: '1px solid rgba(0,0,0,0.2)',
+                }}
+              />
+              <span>{metadata?.color || 'N/A'}</span>
+            </Box>
+          );
+        }}
       />
 
       <TextField source="metadata.icon" label="Icon" />

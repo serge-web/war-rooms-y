@@ -19,7 +19,7 @@ export const LoginPage = () => {
   });
 
   const onSubmit = (data: { username: string; password: string }) => {
-    login(data).catch(() => notify('Invalid credentials', { type: 'error' }));
+    void login(data).catch(() => notify('Invalid credentials', { type: 'error' }));
   };
 
   return (
@@ -31,7 +31,9 @@ export const LoginPage = () => {
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={(e) => {
+              void handleSubmit(onSubmit)(e);
+            }}
             sx={{
               display: 'flex',
               flexDirection: 'column',

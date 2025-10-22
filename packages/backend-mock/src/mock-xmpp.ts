@@ -15,6 +15,7 @@ import type {
   XMPPOccupant,
   MAMQuery,
   MAMResult,
+  UnifiedUser,
 } from '@war-rooms/backend-interface';
 
 import { Storage, createStorage } from './storage';
@@ -150,7 +151,7 @@ export class MockXMPPBackend implements XMPPBackend {
     await this.storage.setItem(`entities/users/${username}`, unifiedUser);
 
     // Update user index
-    const userIndex = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const userIndex = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
     if (!userIndex.includes(username)) {
       userIndex.push(username);
       await this.storage.setItem('entities/users/_index', userIndex);
@@ -173,8 +174,8 @@ export class MockXMPPBackend implements XMPPBackend {
     await this.storage.removeItem(`entities/users/${username}`);
 
     // Update user index
-    const userIndex = await this.storage.getItem<string[]>('entities/users/_index') || [];
-    const newIndex = userIndex.filter(u => u !== username);
+    const userIndex = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
+    const newIndex = userIndex.filter((u) => u !== username);
     await this.storage.setItem('entities/users/_index', newIndex);
 
     // Trigger roster update
@@ -191,7 +192,7 @@ export class MockXMPPBackend implements XMPPBackend {
     }
 
     // Get existing from unified storage
-    const existing = await this.storage.getItem<any>(`entities/users/${username}`);
+    const existing = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
 
     if (!existing) {
       throw new Error(`Roster item not found: ${jid}`);

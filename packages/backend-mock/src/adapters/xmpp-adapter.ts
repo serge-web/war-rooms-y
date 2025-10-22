@@ -3,12 +3,7 @@
  * Projects unified data model to XMPP protocol structures
  */
 
-import type {
-  UnifiedRoom,
-  UnifiedUser,
-  XMPPRoom,
-  XMPPUser,
-} from '@war-rooms/backend-interface';
+import type { UnifiedRoom, UnifiedUser, XMPPRoom, XMPPUser } from '@war-rooms/backend-interface';
 
 import type { Storage } from '../storage';
 
@@ -26,9 +21,7 @@ export class XMPPAdapter {
    * Get room in XMPP format
    */
   async getRoom(roomId: string): Promise<XMPPRoom | null> {
-    const unified = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomId}`
-    );
+    const unified = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomId}`);
     if (!unified) return null;
     return this.projectRoomToXMPP(unified);
   }
@@ -42,19 +35,15 @@ export class XMPPAdapter {
     if (!username) return [];
 
     // Get user to check force memberships
-    const user = await this.storage.getItem<UnifiedUser>(
-      `entities/users/${username}`
-    );
+    const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
     if (!user) return [];
 
     // Get all room IDs
-    const roomIds = await this.storage.getItem<string[]>('entities/rooms/_index') || [];
+    const roomIds = (await this.storage.getItem<string[]>('entities/rooms/_index')) || [];
     const accessibleRooms: XMPPRoom[] = [];
 
     for (const roomId of roomIds) {
-      const room = await this.storage.getItem<UnifiedRoom>(
-        `entities/rooms/${roomId}`
-      );
+      const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomId}`);
       if (!room) continue;
 
       // Check access
@@ -73,9 +62,7 @@ export class XMPPAdapter {
       // 3. Group member
       if (!hasAccess && room.wargaming.groupMembers) {
         const userGroups = user.groups;
-        hasAccess = room.wargaming.groupMembers.some(group =>
-          userGroups.includes(group)
-        );
+        hasAccess = room.wargaming.groupMembers.some((group) => userGroups.includes(group));
       }
 
       if (hasAccess) {
@@ -90,13 +77,11 @@ export class XMPPAdapter {
    * Get all rooms (for admin operations)
    */
   async getAllRooms(): Promise<XMPPRoom[]> {
-    const roomIds = await this.storage.getItem<string[]>('entities/rooms/_index') || [];
+    const roomIds = (await this.storage.getItem<string[]>('entities/rooms/_index')) || [];
     const rooms: XMPPRoom[] = [];
 
     for (const roomId of roomIds) {
-      const room = await this.storage.getItem<UnifiedRoom>(
-        `entities/rooms/${roomId}`
-      );
+      const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomId}`);
       if (room) {
         rooms.push(this.projectRoomToXMPP(room));
       }
@@ -109,9 +94,7 @@ export class XMPPAdapter {
    * Update room members list (from admin UI)
    */
   async updateRoomMembers(roomId: string, members: string[]): Promise<void> {
-    const room = await this.storage.getItem<UnifiedRoom>(
-      `entities/rooms/${roomId}`
-    );
+    const room = await this.storage.getItem<UnifiedRoom>(`entities/rooms/${roomId}`);
     if (!room) return;
 
     // Update individual members
@@ -129,9 +112,7 @@ export class XMPPAdapter {
    * Get user in XMPP format
    */
   async getUser(username: string): Promise<XMPPUser | null> {
-    const unified = await this.storage.getItem<UnifiedUser>(
-      `entities/users/${username}`
-    );
+    const unified = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
     if (!unified) return null;
     return this.projectUserToXMPP(unified);
   }
@@ -140,13 +121,11 @@ export class XMPPAdapter {
    * Get all users (roster)
    */
   async getAllUsers(): Promise<XMPPUser[]> {
-    const usernames = await this.storage.getItem<string[]>('entities/users/_index') || [];
+    const usernames = (await this.storage.getItem<string[]>('entities/users/_index')) || [];
     const users: XMPPUser[] = [];
 
     for (const username of usernames) {
-      const user = await this.storage.getItem<UnifiedUser>(
-        `entities/users/${username}`
-      );
+      const user = await this.storage.getItem<UnifiedUser>(`entities/users/${username}`);
       if (user) {
         users.push(this.projectUserToXMPP(user));
       }
@@ -164,9 +143,8 @@ export class XMPPAdapter {
    */
   private projectRoomToXMPP(room: UnifiedRoom): XMPPRoom {
     // Convert individual members to JIDs
-    const memberJids = room.wargaming.individualMembers?.map(
-      username => `${username}@${this.domain}`
-    ) || [];
+    const memberJids =
+      room.wargaming.individualMembers?.map((username) => `${username}@${this.domain}`) || [];
 
     return {
       jid: room.jid,
@@ -188,11 +166,15 @@ export class XMPPAdapter {
           'muc#roomconfig_moderatedroom': room.xmpp.moderated,
           ...(room.xmpp.maxUsers ? { 'muc#roomconfig_maxusers': room.xmpp.maxUsers } : {}),
           'muc#roomconfig_members': memberJids,
-          ...(room.xmpp.changeSubject !== undefined ? { 'muc#roomconfig_changesubject': room.xmpp.changeSubject } : {}),
-          ...(room.xmpp.password ? {
-            'muc#roomconfig_passwordprotectedroom': true,
-            'muc#roomconfig_roomsecret': room.xmpp.password,
-          } : {}),
+          ...(room.xmpp.changeSubject !== undefined
+            ? { 'muc#roomconfig_changesubject': room.xmpp.changeSubject }
+            : {}),
+          ...(room.xmpp.password
+            ? {
+                'muc#roomconfig_passwordprotectedroom': true,
+                'muc#roomconfig_roomsecret': room.xmpp.password,
+              }
+            : {}),
         },
       },
       // Occupants are handled separately (runtime state)
