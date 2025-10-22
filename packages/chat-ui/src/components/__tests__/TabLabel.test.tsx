@@ -27,7 +27,7 @@ function TestProvider({
     to: roomJid,
     type: 'groupchat' as const,
     body: `Message ${i}`,
-    delay: { stamp: new Date(Date.now() + i * 1000).toISOString() },
+    delay: { timestamp: new Date(Date.now() + i * 1000) },
   }));
 
   // Set lastRead to null so all messages are unread

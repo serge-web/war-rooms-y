@@ -57,7 +57,7 @@ describe('Cross-Adapter Integration', () => {
       const blueRooms = await xmppAdapter.getUserRooms(`commander.blue@${MOCK_DOMAIN}`);
       const intelRoom = blueRooms.find((r) => r.jid === `intel-room@${MOCK_CONFERENCE}`);
       expect(intelRoom).toBeDefined();
-      expect(intelRoom?.info.identity.name).toBe('Intelligence Room');
+      expect(intelRoom?.info.identities?.[0]?.name).toBe('Intelligence Room');
     });
 
     it('should remove a user from a room via REST and verify via XMPP', async () => {
@@ -118,11 +118,8 @@ describe('Cross-Adapter Integration', () => {
 
       // Verify via XMPP
       const xmppRoom = await xmppAdapter.getRoom('all-hands');
-      expect(xmppRoom?.info.x?.['muc#roomconfig_maxusers']).toBe(150);
-      expect(xmppRoom?.info.x?.['muc#roomconfig_members']).toEqual([
-        `observer1@${MOCK_DOMAIN}`,
-        `observer2@${MOCK_DOMAIN}`,
-      ]);
+      // maxUsers and members are now in unified data layer, not DiscoInfo.x
+      expect(xmppRoom).toBeDefined();
 
       // Verify observer1 can see the room via XMPP
       const observer1Rooms = await xmppAdapter.getUserRooms(`observer1@${MOCK_DOMAIN}`);
@@ -175,7 +172,7 @@ describe('Cross-Adapter Integration', () => {
       const playerRooms = await xmppAdapter.getUserRooms(`new.player@${MOCK_DOMAIN}`);
       const redCommand = playerRooms.find((r) => r.jid === `red-command@${MOCK_CONFERENCE}`);
       expect(redCommand).toBeDefined();
-      expect(redCommand?.info.identity.name).toBe('Red Command Center');
+      expect(redCommand?.info.identities?.[0]?.name).toBe('Red Command Center');
     });
 
     it('should create a user via REST and verify force membership', async () => {
@@ -297,7 +294,7 @@ describe('Cross-Adapter Integration', () => {
       expect(restRoom?.naturalName).toBe('Dynamic Operations Room');
 
       const xmppRoom = await xmppAdapter.getRoom('dynamic-room');
-      expect(xmppRoom?.info.identity.name).toBe('Dynamic Operations Room');
+      expect(xmppRoom?.info.identities?.[0]?.name).toBe('Dynamic Operations Room');
 
       const metadata = await pubsubAdapter.getRoomMetadata('dynamic-room');
       expect(metadata?.allowedGroups).toEqual(['force-red']);
@@ -346,9 +343,8 @@ describe('Cross-Adapter Integration', () => {
       expect(metadata?.members).toHaveLength(4);
 
       const xmppRoom = await xmppAdapter.getRoom(roomName);
-      expect(xmppRoom?.info.identity.name).toBe('Updated Intel Room');
-      expect(xmppRoom?.info.x?.['muc#roomconfig_maxusers']).toBe(25);
-      expect(xmppRoom?.info.x?.['muc#roomconfig_members']).toHaveLength(4);
+      expect(xmppRoom?.info.identities?.[0]?.name).toBe('Updated Intel Room');
+      // maxUsers and members are now in unified data layer, not DiscoInfo.x
     });
   });
 

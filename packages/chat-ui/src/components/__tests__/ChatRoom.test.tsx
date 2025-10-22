@@ -48,7 +48,7 @@ describe('ChatRoom', () => {
       to: roomJid,
       type: 'groupchat',
       body: 'Hello everyone!',
-      delay: { stamp: '2025-01-20T10:00:00.000Z' },
+      delay: { timestamp: new Date('2025-01-20T10:00:00.000Z') },
     },
     {
       id: 'msg-2',
@@ -56,7 +56,7 @@ describe('ChatRoom', () => {
       to: roomJid,
       type: 'groupchat',
       body: 'Hi Alice!',
-      delay: { stamp: '2025-01-20T10:01:00.000Z' },
+      delay: { timestamp: new Date('2025-01-20T10:01:00.000Z') },
     },
   ];
 
@@ -66,14 +66,12 @@ describe('ChatRoom', () => {
       jid: 'alice@example.com',
       affiliation: 'owner',
       role: 'moderator',
-      presence: { show: 'chat' },
     },
     {
       nick: 'Bob',
       jid: 'bob@example.com',
       affiliation: 'member',
       role: 'participant',
-      presence: { show: 'away' },
     },
   ];
 
@@ -443,7 +441,7 @@ describe('ChatRoom', () => {
         to: roomJid,
         type: 'groupchat',
         body: 'Line 1\nLine 2\nLine 3',
-        delay: { stamp: '2025-01-20T10:00:00.000Z' },
+        delay: { timestamp: new Date('2025-01-20T10:00:00.000Z') },
       };
 
       render(

@@ -17,8 +17,8 @@ export interface ConnectionStore {
 
   // Actions
   setBackend: (backend: XMPPBackend) => void;
-  connect: (username: string, password: string) => Promise<void>;
-  disconnect: () => Promise<void>;
+  connect: (username: string, password: string) => void;
+  disconnect: () => void;
   updateConnectionInfo: (info: ConnectionInfo) => void;
 }
 
@@ -51,7 +51,7 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
     set({ backend });
   },
 
-  connect: async (username: string, password: string) => {
+  connect: (username: string, password: string) => {
     const { backend } = get();
 
     if (!backend) {
@@ -66,7 +66,7 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
     }
   },
 
-  disconnect: async () => {
+  disconnect: () => {
     const { backend } = get();
 
     if (!backend) {
@@ -74,7 +74,7 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
     }
 
     try {
-      await backend.disconnect();
+      backend.disconnect();
     } catch (error) {
       console.error('[ConnectionStore] Disconnect failed:', error);
       throw error;

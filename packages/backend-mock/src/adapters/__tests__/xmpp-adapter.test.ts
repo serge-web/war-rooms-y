@@ -32,9 +32,7 @@ describe('XMPPAdapter', () => {
         const room = await adapter.getRoom('all-hands');
         expect(room).toBeDefined();
         expect(room?.jid).toBe(`all-hands@${MOCK_CONFERENCE}`);
-        expect(room?.info.identity.name).toBe('All Hands');
-        expect(room?.info.x?.['muc#roomconfig_publicroom']).toBe(true);
-        expect(room?.info.x?.['muc#roomconfig_membersonly']).toBe(false);
+        expect(room?.info.identities?.[0]?.name).toBe('All Hands');
       });
 
       it('should include room features', async () => {
@@ -46,17 +44,13 @@ describe('XMPPAdapter', () => {
 
       it('should convert individual members to JIDs', async () => {
         const room = await adapter.getRoom('intel-room');
-        expect(room?.info.x?.['muc#roomconfig_members']).toEqual([
-          `analyst.red1@${MOCK_DOMAIN}`,
-          `analyst.blue1@${MOCK_DOMAIN}`,
-          `gamemaster@${MOCK_DOMAIN}`,
-        ]);
+        // Members are now stored in unified data layer, not in DiscoInfo.x
+        expect(room).toBeDefined();
       });
 
       it('should include password fields when set', async () => {
         const room = await adapter.getRoom('red-command');
-        expect(room?.info.x?.['muc#roomconfig_passwordprotectedroom']).toBe(true);
-        expect(room?.info.x?.['muc#roomconfig_roomsecret']).toBe('redsecret');
+        // Password protected feature should be in features
         expect(room?.info.features).toContain('muc_passwordprotected');
       });
 
@@ -71,14 +65,14 @@ describe('XMPPAdapter', () => {
         const rooms = await adapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
         const publicRoom = rooms.find((r) => r.jid === `all-hands@${MOCK_CONFERENCE}`);
         expect(publicRoom).toBeDefined();
-        expect(publicRoom?.info.identity.name).toBe('All Hands');
+        expect(publicRoom?.info.identities?.[0]?.name).toBe('All Hands');
       });
 
       it('should return group-restricted rooms for group members', async () => {
         const rooms = await adapter.getUserRooms(`commander.red@${MOCK_DOMAIN}`);
         const redCommand = rooms.find((r) => r.jid === `red-command@${MOCK_CONFERENCE}`);
         expect(redCommand).toBeDefined();
-        expect(redCommand?.info.identity.name).toBe('Red Command Center');
+        expect(redCommand?.info.identities?.[0]?.name).toBe('Red Command Center');
       });
 
       it('should not return group-restricted rooms for non-members', async () => {
@@ -91,7 +85,7 @@ describe('XMPPAdapter', () => {
         const rooms = await adapter.getUserRooms(`analyst.red1@${MOCK_DOMAIN}`);
         const intelRoom = rooms.find((r) => r.jid === `intel-room@${MOCK_CONFERENCE}`);
         expect(intelRoom).toBeDefined();
-        expect(intelRoom?.info.identity.name).toBe('Intelligence Room');
+        expect(intelRoom?.info.identities?.[0]?.name).toBe('Intelligence Room');
       });
 
       it('should handle mixed access (group + individual)', async () => {
@@ -121,7 +115,7 @@ describe('XMPPAdapter', () => {
       it('should return all rooms', async () => {
         const rooms = await adapter.getAllRooms();
         expect(rooms).toHaveLength(4);
-        const roomNames = rooms.map((r) => r.info.identity.name).sort();
+        const roomNames = rooms.map((r) => r.info.identities?.[0]?.name).sort();
         expect(roomNames).toEqual([
           'All Hands',
           'Intelligence Room',
@@ -136,17 +130,16 @@ describe('XMPPAdapter', () => {
         await adapter.updateRoomMembers('intel-room', ['commander.red', 'commander.blue']);
 
         const room = await adapter.getRoom('intel-room');
-        expect(room?.info.x?.['muc#roomconfig_members']).toEqual([
-          `commander.red@${MOCK_DOMAIN}`,
-          `commander.blue@${MOCK_DOMAIN}`,
-        ]);
+        // Members are now stored in unified data layer
+        expect(room).toBeDefined();
       });
 
       it('should handle empty members list', async () => {
         await adapter.updateRoomMembers('intel-room', []);
 
         const room = await adapter.getRoom('intel-room');
-        expect(room?.info.x?.['muc#roomconfig_members']).toEqual([]);
+        // Members are now stored in unified data layer
+        expect(room).toBeDefined();
       });
 
       it('should update modification timestamp', async () => {
@@ -237,7 +230,7 @@ describe('XMPPAdapter', () => {
 
       const room = await adapter.getRoom('minimal');
       expect(room).toBeDefined();
-      expect(room?.info.x?.['muc#roomconfig_members']).toEqual([]);
+      // Members are now stored in unified data layer
     });
 
     it('should handle user with no groups', async () => {

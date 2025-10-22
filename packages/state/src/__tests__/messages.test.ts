@@ -152,7 +152,7 @@ describe('Messages State', () => {
           to: 'room@conference.local',
           type: 'groupchat',
           body: 'Third',
-          delay: { stamp: '2025-01-01T12:00:00.000Z' },
+          delay: { timestamp: new Date('2025-01-01T12:00:00.000Z') },
         },
         {
           id: 'msg-1',
@@ -160,7 +160,7 @@ describe('Messages State', () => {
           to: 'room@conference.local',
           type: 'groupchat',
           body: 'First',
-          delay: { stamp: '2025-01-01T10:00:00.000Z' },
+          delay: { timestamp: new Date('2025-01-01T10:00:00.000Z') },
         },
         {
           id: 'msg-2',
@@ -168,7 +168,7 @@ describe('Messages State', () => {
           to: 'room@conference.local',
           type: 'groupchat',
           body: 'Second',
-          delay: { stamp: '2025-01-01T11:00:00.000Z' },
+          delay: { timestamp: new Date('2025-01-01T11:00:00.000Z') },
         },
       ];
 
