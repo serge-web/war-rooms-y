@@ -77,7 +77,7 @@ describe('Group Membership Management', () => {
 
       // Verify bidirectional relationship
       const user1 = await api.getUser('user1');
-      expect(user1.properties?.sharedGroups).toContain('ForceWithMembers');
+      expect(user1!.properties?.sharedGroups).toContain('ForceWithMembers');
     });
 
     it('should create group with metadata', async () => {
@@ -115,11 +115,11 @@ describe('Group Membership Management', () => {
     it('should add a single member to group', async () => {
       const group = await api.getGroup('RedForce');
       await api.updateGroup('RedForce', {
-        members: [...group.members, 'user1'],
+        members: [...group!.members!, 'user1'],
       });
 
       const updatedGroup = await api.getGroup('RedForce');
-      expect(updatedGroup.members).toContain('user1');
+      expect(updatedGroup!.members).toContain('user1');
 
       const user = await api.getUser('user1');
       expect(user!.properties?.sharedGroups).toContain('RedForce');
@@ -128,41 +128,41 @@ describe('Group Membership Management', () => {
     it('should add multiple members to group', async () => {
       const group = await api.getGroup('RedForce');
       await api.updateGroup('RedForce', {
-        members: [...group.members, 'user1', 'user2', 'user3'],
+        members: [...group!.members!, 'user1', 'user2', 'user3'],
       });
 
       const updatedGroup = await api.getGroup('RedForce');
-      expect(updatedGroup.members).toContain('user1');
-      expect(updatedGroup.members).toContain('user2');
-      expect(updatedGroup.members).toContain('user3');
+      expect(updatedGroup!.members).toContain('user1');
+      expect(updatedGroup!.members).toContain('user2');
+      expect(updatedGroup!.members).toContain('user3');
     });
 
     it('should maintain bidirectional user-group relationship', async () => {
       const group = await api.getGroup('RedForce');
       await api.updateGroup('RedForce', {
-        members: [...group.members, 'user1'],
+        members: [...group!.members!, 'user1'],
       });
 
       const user = await api.getUser('user1');
       expect(user!.properties?.sharedGroups).toContain('RedForce');
 
       const updatedGroup = await api.getGroup('RedForce');
-      expect(updatedGroup.members).toContain('user1');
+      expect(updatedGroup!.members).toContain('user1');
     });
 
     it('should not duplicate members', async () => {
       const group = await api.getGroup('RedForce');
       await api.updateGroup('RedForce', {
-        members: [...group.members, 'user1'],
+        members: [...group!.members!, 'user1'],
       });
 
       const groupAfterFirst = await api.getGroup('RedForce');
       await api.updateGroup('RedForce', {
-        members: [...groupAfterFirst.members, 'user1'],
+        members: [...groupAfterFirst!.members!, 'user1'],
       });
 
       const finalGroup = await api.getGroup('RedForce');
-      const user1Count = finalGroup.members.filter((m: string) => m === 'user1').length;
+      const user1Count = finalGroup!.members!.filter((m: string) => m === 'user1').length;
       expect(user1Count).toBe(1);
     });
   });
@@ -180,13 +180,13 @@ describe('Group Membership Management', () => {
     it('should remove a single member from group', async () => {
       const group = await api.getGroup('BlueForce');
       await api.updateGroup('BlueForce', {
-        members: group.members.filter((m: string) => m !== 'user2'),
+        members: group!.members!.filter((m: string) => m !== 'user2'),
       });
 
       const updatedGroup = await api.getGroup('BlueForce');
-      expect(updatedGroup.members).not.toContain('user2');
-      expect(updatedGroup.members).toContain('user1');
-      expect(updatedGroup.members).toContain('user3');
+      expect(updatedGroup!.members).not.toContain('user2');
+      expect(updatedGroup!.members).toContain('user1');
+      expect(updatedGroup!.members).toContain('user3');
 
       const user = await api.getUser('user2');
       expect(user!.properties?.sharedGroups || []).not.toContain('BlueForce');
@@ -195,19 +195,19 @@ describe('Group Membership Management', () => {
     it('should remove multiple members from group', async () => {
       const group = await api.getGroup('BlueForce');
       await api.updateGroup('BlueForce', {
-        members: group.members.filter((m: string) => !['user1', 'user2'].includes(m)),
+        members: group!.members!.filter((m: string) => !['user1', 'user2'].includes(m)),
       });
 
       const updatedGroup = await api.getGroup('BlueForce');
-      expect(updatedGroup.members).not.toContain('user1');
-      expect(updatedGroup.members).not.toContain('user2');
-      expect(updatedGroup.members).toContain('user3');
+      expect(updatedGroup!.members).not.toContain('user1');
+      expect(updatedGroup!.members).not.toContain('user2');
+      expect(updatedGroup!.members).toContain('user3');
     });
 
     it('should update user when removed from group', async () => {
       const group = await api.getGroup('BlueForce');
       await api.updateGroup('BlueForce', {
-        members: group.members.filter((m: string) => m !== 'user1'),
+        members: group!.members!.filter((m: string) => m !== 'user1'),
       });
 
       const user = await api.getUser('user1');
@@ -226,9 +226,9 @@ describe('Group Membership Management', () => {
       const user1 = await api.getUser('user1');
       const user2 = await api.getUser('user2');
       const user3 = await api.getUser('user3');
-      expect(user1.properties?.sharedGroups || []).not.toContain('BlueForce');
-      expect(user2.properties?.sharedGroups || []).not.toContain('BlueForce');
-      expect(user3.properties?.sharedGroups || []).not.toContain('BlueForce');
+      expect(user1!.properties?.sharedGroups || []).not.toContain('BlueForce');
+      expect(user2!.properties?.sharedGroups || []).not.toContain('BlueForce');
+      expect(user3!.properties?.sharedGroups || []).not.toContain('BlueForce');
     });
   });
 
@@ -299,7 +299,7 @@ describe('Group Membership Management', () => {
 
       const group = await api.getGroup('ColoredForce');
       await api.updateGroup('ColoredForce', {
-        members: [...group!.members, 'user2'],
+        members: [...group!.members!, 'user2'],
       });
 
       const metadata = await pubsub.getForceMetadata('ColoredForce');
@@ -328,6 +328,8 @@ describe('Group Membership Management', () => {
     it('should update metadata and members independently', async () => {
       // Set initial metadata
       await pubsub.setForceMetadata('ColoredForce', {
+        description: 'Test force',
+        icon: 'shield',
         color: '#FF9800',
         objectives: ['Initial objective'],
       });
@@ -335,11 +337,13 @@ describe('Group Membership Management', () => {
       // Add member
       const group = await api.getGroup('ColoredForce');
       await api.updateGroup('ColoredForce', {
-        members: [...group.members, 'user2'],
+        members: [...group!.members!, 'user2'],
       });
 
       // Update metadata
       await pubsub.setForceMetadata('ColoredForce', {
+        description: 'Test force updated',
+        icon: 'shield',
         color: '#F44336',
         objectives: ['Updated objective'],
       });
@@ -348,10 +352,10 @@ describe('Group Membership Management', () => {
       const finalGroup = await api.getGroup('ColoredForce');
       const finalMetadata = await pubsub.getForceMetadata('ColoredForce');
 
-      expect(finalGroup.members).toContain('user1');
-      expect(finalGroup.members).toContain('user2');
-      expect(finalMetadata.color).toBe('#F44336');
-      expect(finalMetadata.objectives).toEqual(['Updated objective']);
+      expect(finalGroup!.members).toContain('user1');
+      expect(finalGroup!.members).toContain('user2');
+      expect(finalMetadata!.color).toBe('#F44336');
+      expect(finalMetadata!.objectives).toEqual(['Updated objective']);
     });
   });
 
@@ -371,8 +375,8 @@ describe('Group Membership Management', () => {
       const user1 = await api.getUser('user1');
       const user2 = await api.getUser('user2');
 
-      expect(user1.properties?.sharedGroups || []).not.toContain('DeleteForce');
-      expect(user2.properties?.sharedGroups || []).not.toContain('DeleteForce');
+      expect(user1!.properties?.sharedGroups || []).not.toContain('DeleteForce');
+      expect(user2!.properties?.sharedGroups || []).not.toContain('DeleteForce');
     });
 
     it('should delete metadata when group deleted', async () => {

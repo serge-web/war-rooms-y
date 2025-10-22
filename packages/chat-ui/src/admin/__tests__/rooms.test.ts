@@ -92,10 +92,10 @@ describe('Admin Room CRUD Operations', () => {
       await pubsub.setRoomMetadata('metaroom', metadata as any);
 
       const retrievedMetadata = await pubsub.getRoomMetadata('metaroom');
-      expect(retrievedMetadata.description).toBe('Extended description');
-      expect(retrievedMetadata.allowedGroups).toEqual(['Red Force', 'Blue Force']);
-      expect(retrievedMetadata.formTemplates).toEqual(['sitrep', 'contact']);
-      expect(retrievedMetadata.theme.palette.primary.main).toBe('#1976D2');
+      expect(retrievedMetadata!.description).toBe('Extended description');
+      expect(retrievedMetadata!.allowedGroups).toEqual(['Red Force', 'Blue Force']);
+      expect(retrievedMetadata!.formTemplates).toEqual(['sitrep', 'contact']);
+      expect(retrievedMetadata!.theme?.palette?.primary?.main).toBe('#1976D2');
     });
   });
 
@@ -221,12 +221,12 @@ describe('Admin Room CRUD Operations', () => {
             primary: {
               main: '#FF5722',
             },
-          },
+          } as any,
         },
-      });
+      } as any);
 
       const metadata = await pubsub.getRoomMetadata('updateroom');
-      expect(metadata!.theme.palette.primary.main).toBe('#FF5722');
+      expect(metadata!.theme?.palette?.primary?.main).toBe('#FF5722');
     });
   });
 
@@ -254,7 +254,7 @@ describe('Admin Room CRUD Operations', () => {
     it('should delete room metadata when room deleted', async () => {
       // Verify metadata exists
       const metadataBefore = await pubsub.getRoomMetadata('deleteroom');
-      expect(metadataBefore.description).toBe('Metadata to be deleted');
+      expect(metadataBefore!.description).toBe('Metadata to be deleted');
 
       // Delete room
       await api.deleteRoom('deleteroom');
@@ -309,17 +309,17 @@ describe('Admin Room CRUD Operations', () => {
             primary: {
               main: '#4CAF50',
             },
-          },
+          } as any,
         },
       };
 
-      await pubsub.setRoomMetadata('metaroom', fullMetadata);
+      await pubsub.setRoomMetadata('metaroom', fullMetadata as any);
 
       const metadata = await pubsub.getRoomMetadata('metaroom');
       expect(metadata!.description).toBe('Full metadata example');
       expect(metadata!.allowedGroups).toEqual(['Red Force']);
       expect(metadata!.formTemplates).toEqual(['sitrep']);
-      expect(metadata!.theme.palette.primary.main).toBe('#4CAF50');
+      expect(metadata!.theme?.palette?.primary?.main).toBe('#4CAF50');
     });
   });
 
