@@ -12,7 +12,8 @@
       "Bash(pkill:*)",
       "Bash(npm run test:e2e:*)",
       "Bash(find:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(npx playwright test:*)"
     ],
     "deny": [],
     "ask": []
