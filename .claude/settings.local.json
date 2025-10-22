@@ -13,7 +13,8 @@
       "Bash(npm run test:e2e:*)",
       "Bash(find:*)",
       "Bash(git stash:*)",
-      "Bash(npx playwright test:*)"
+      "Bash(npx playwright test:*)",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": []
