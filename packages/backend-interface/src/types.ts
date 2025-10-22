@@ -1,183 +1,239 @@
 /**
- * XMPP Protocol Types
- * Following RFC 6121 and relevant XEPs
+ * XMPP Protocol Types - Using Stanza.js
+ *
+ * This file re-exports Stanza.js types and defines app-specific extensions.
+ * Direct adoption eliminates type conversion overhead and ensures compatibility.
  */
 
 // ============================================================================
-// Core XMPP User Types (RFC 6121, XEP-0054)
+// Core Stanza.js Type Re-exports
 // ============================================================================
 
+// Import from stanza's protocol module
+import type {
+  Message,
+  Presence,
+  IQ,
+  StreamError,
+  StanzaError,
+
+  // MUC types (XEP-0045)
+  MUCJoin,
+  MUCPresence,
+  MUCUserItem,
+  MUCHistory,
+  MUCInfo,
+
+  // PubSub types (XEP-0060)
+  Pubsub,
+  PubsubItem,
+  PubsubItemContent,
+  PubsubSubscription,
+  PubsubPublish,
+  PubsubEvent,
+  PubsubEventItems,
+
+  // MAM types (XEP-0313)
+  MAMQuery,
+  MAMResult,
+  MAMFin,
+
+  // Service Discovery (XEP-0030)
+  DiscoInfo,
+  DiscoItem,
+  DiscoInfoIdentity,
+
+  // Delay (XEP-0203)
+  Delay,
+} from 'stanza/protocol';
+
+// Re-export core types
+export type {
+  Message,
+  Presence,
+  IQ,
+  StreamError,
+  StanzaError,
+
+  MUCJoin,
+  MUCPresence,
+  MUCUserItem,
+  MUCHistory,
+  MUCInfo,
+
+  Pubsub,
+  PubsubItem,
+  PubsubItemContent,
+  PubsubSubscription,
+  PubsubPublish,
+  PubsubEvent,
+  PubsubEventItems,
+
+  MAMQuery,
+  MAMResult,
+  MAMFin,
+
+  DiscoInfo,
+  DiscoItem,
+  DiscoInfoIdentity,
+
+  Delay,
+};
+
+// Re-export JID type
+export type { JID } from 'stanza';
+
+// ============================================================================
+// Type Aliases for Common String Unions
+// ============================================================================
+
+export type MessageType = 'chat' | 'groupchat' | 'error' | 'headline' | 'normal';
+export type PresenceType = 'unavailable' | 'subscribe' | 'subscribed' | 'unsubscribe' | 'unsubscribed' | 'error';
+export type PresenceShow = 'away' | 'chat' | 'dnd' | 'xa';
+export type MUCAffiliation = 'owner' | 'admin' | 'member' | 'none' | 'outcast';
+export type MUCRole = 'moderator' | 'participant' | 'visitor' | 'none';
+
+// ============================================================================
+// App-Specific Type Extensions
+// ============================================================================
+
+/**
+ * User information with OpenFire group membership
+ *
+ * NOTE: We no longer use XMPP rosters for group membership.
+ * Groups are fetched from OpenFire's REST API or service discovery.
+ */
+export interface UserInfo {
+  jid: string; // Full JID
+  displayName?: string;
+  groups: string[]; // OpenFire groups (e.g., 'force-red', 'command')
+}
+
+/**
+ * Extended room information
+ * Combines service discovery info with app-specific metadata
+ */
+export interface RoomExtension {
+  type: 'all-hands' | 'command' | 'standard' | 'private';
+  forceRestrictions?: string[]; // Force group IDs that can access this room
+  iconUrl?: string;
+  color?: string;
+}
+
+/**
+ * Game metadata for PubSub
+ */
+export interface GameMetadata extends PubsubItemContent {
+  itemType: 'game-metadata';
+  gameId?: string;
+  turnNumber?: number;
+  gameTime?: string;
+  phase?: string;
+}
+
+/**
+ * Game theme metadata
+ */
+export interface GameTheme {
+  id: string;
+  name: string;
+  description?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  iconUrl?: string;
+}
+
+/**
+ * Force metadata for PubSub
+ */
+export interface ForceMetadata extends PubsubItemContent {
+  itemType: 'force-metadata';
+  forceId: string;
+  name: string;
+  color: string;
+  icon?: string;
+  objectives?: string[];
+}
+
+/**
+ * Form template metadata for PubSub
+ */
+export interface FormTemplateMetadata extends PubsubItemContent {
+  itemType: 'form-template';
+  templateId: string;
+  name: string;
+  description?: string;
+  schema: unknown; // JSON Schema
+  uiSchema?: unknown; // RJSF UI Schema
+  forceRestrictions?: string[];
+}
+
+/**
+ * Form schema for RJSF
+ */
+export interface FormSchema {
+  id: string;
+  name: string;
+  description?: string;
+  schema: Record<string, unknown>; // JSON Schema
+  uiSchema?: Record<string, unknown>; // UI Schema
+  forceRestrictions?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ============================================================================
+// Backward Compatibility Aliases (Deprecated)
+// ============================================================================
+
+/**
+ * @deprecated Use Message from 'stanza/protocol' directly
+ */
+export type XMPPMessage = Message;
+
+/**
+ * @deprecated Use Presence from 'stanza/protocol' directly
+ */
+export type XMPPPresence = Presence;
+
+/**
+ * @deprecated Use MUCUserItem from 'stanza/protocol' directly
+ */
+export type XMPPOccupant = MUCUserItem;
+
+/**
+ * @deprecated Use DiscoInfo from 'stanza/protocol' directly
+ * Room info is now a combination of DiscoInfo + RoomExtension
+ */
+export type XMPPRoom = DiscoInfo;
+
+/**
+ * @deprecated XMPP Rosters are no longer used
+ * Use UserInfo with OpenFire groups instead
+ */
 export interface XMPPUser {
-  jid: string; // user@domain/resource
-  bare_jid: string; // user@domain (no resource)
-
-  // From roster
-  name?: string; // Roster nickname
+  jid: string;
+  bare_jid: string;
+  name?: string;
   subscription: 'both' | 'from' | 'to' | 'none';
-  groups: string[]; // Roster groups
-
-  // From vCard (XEP-0054)
+  groups: string[];
   vcard?: {
-    fn?: string; // Full name
+    fn?: string;
     nickname?: string;
     email?: string;
-    photo?: string; // Base64 or URL
+    photo?: string;
     org?: string;
     title?: string;
   };
 }
 
-// ============================================================================
-// Presence Types (RFC 6121, XEP-0012, XEP-0115)
-// ============================================================================
-
-export interface XMPPPresence {
-  from: string; // Full JID
-  type?: 'unavailable' | 'subscribe' | 'subscribed' | 'unsubscribe' | 'unsubscribed' | 'error';
-  show?: 'away' | 'chat' | 'dnd' | 'xa'; // Extended away, do not disturb, etc.
-  status?: string; // Status message
-  priority?: number; // Resource priority (-128 to 127)
-
-  // Capabilities (XEP-0115)
-  caps?: {
-    node: string;
-    ver: string;
-    hash: string;
-  };
-
-  // Last activity (XEP-0012)
-  idle?: {
-    since: string; // ISO 8601
-  };
-}
+/**
+ * @deprecated Use StanzaError from 'stanza/protocol' directly
+ */
+export type XMPPError = StanzaError;
 
 // ============================================================================
-// Multi-User Chat (MUC) Types (XEP-0045)
-// ============================================================================
-
-export interface XMPPRoom {
-  jid: string; // room@conference.domain
-
-  info: {
-    identity: {
-      category: 'conference';
-      type: 'text';
-      name: string; // Natural room name
-    };
-    features: string[]; // MUC features supported
-
-    // MUC configuration form fields
-    x?: {
-      description?: string;
-      subject?: string;
-      occupants?: number;
-
-      'muc#roomconfig_roomname'?: string;
-      'muc#roomconfig_roomdesc'?: string;
-      'muc#roomconfig_persistentroom'?: boolean;
-      'muc#roomconfig_publicroom'?: boolean;
-      'muc#roomconfig_passwordprotectedroom'?: boolean;
-      'muc#roomconfig_roomsecret'?: string;
-      'muc#roomconfig_maxusers'?: number;
-      'muc#roomconfig_membersonly'?: boolean;
-      'muc#roomconfig_moderatedroom'?: boolean;
-      'muc#roomconfig_members'?: string[];
-      'muc#roomconfig_admins'?: string[];
-      'muc#roomconfig_changesubject'?: boolean;
-      'muc#roomconfig_enablelogging'?: boolean;
-    };
-  };
-
-  occupants?: XMPPOccupant[];
-}
-
-export interface XMPPOccupant {
-  nick: string; // Room nickname
-  jid?: string; // Real JID (if visible)
-  affiliation: 'owner' | 'admin' | 'member' | 'none' | 'outcast';
-  role: 'moderator' | 'participant' | 'visitor' | 'none';
-
-  presence: {
-    show?: 'away' | 'chat' | 'dnd' | 'xa';
-    status?: string;
-  };
-}
-
-// ============================================================================
-// Message Types (RFC 6121, XEP-0203, XEP-0085, XEP-0313, XEP-0184)
-// ============================================================================
-
-export interface XMPPMessage {
-  id: string; // Stanza ID
-  from: string; // room@conference.domain/nickname
-  to: string; // recipient JID
-  type: 'groupchat' | 'chat' | 'error' | 'headline' | 'normal';
-  body?: string; // Message text
-  subject?: string; // Room subject change
-
-  // Timestamps (XEP-0203)
-  delay?: {
-    stamp: string; // ISO 8601
-    from?: string;
-  };
-
-  // Thread (RFC 6121)
-  thread?: string;
-
-  // Chat states (XEP-0085)
-  chatstate?: 'active' | 'composing' | 'paused' | 'inactive' | 'gone';
-
-  // Message Archive ID (XEP-0313)
-  mam?: {
-    id: string;
-    queryid?: string;
-  };
-
-  // Receipts (XEP-0184)
-  receipt?: {
-    request?: boolean;
-    received?: string; // ID of received message
-  };
-
-  // Custom extensions
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  x?: any; // Data forms or custom namespaces
-}
-
-// ============================================================================
-// Message Archive Management (MAM) Types (XEP-0313)
-// ============================================================================
-
-export interface MAMQuery {
-  before?: string; // Message ID or timestamp
-  after?: string; // Message ID or timestamp
-  start?: string; // ISO 8601 timestamp
-  end?: string; // ISO 8601 timestamp
-  with?: string; // JID filter
-  limit?: number; // Max results
-}
-
-export interface MAMResult {
-  messages: XMPPMessage[];
-  complete: boolean;
-  first?: string; // First message ID in result
-  last?: string; // Last message ID in result
-  count?: number; // Total count if available
-}
-
-// ============================================================================
-// Error Types
-// ============================================================================
-
-export interface XMPPError {
-  type: 'auth' | 'cancel' | 'continue' | 'modify' | 'wait';
-  condition: string;
-  text?: string;
-  application?: unknown;
-}
-
-// ============================================================================
-// Stanza Base Types
+// Re-export common stanza base types
 // ============================================================================
 
 export type StanzaType = 'iq' | 'message' | 'presence';
@@ -188,4 +244,33 @@ export interface Stanza {
   from?: string;
   to?: string;
   lang?: string;
+}
+
+// Note: Delay is already exported from stanza/protocol
+
+/**
+ * Discovery feature
+ */
+export interface DiscoFeature {
+  var: string;
+}
+
+/**
+ * Data form types (XEP-0004)
+ */
+export interface DataForm {
+  type?: 'form' | 'submit' | 'cancel' | 'result';
+  title?: string;
+  instructions?: string;
+  fields?: DataFormField[];
+}
+
+export interface DataFormField {
+  var?: string;
+  type?: 'boolean' | 'fixed' | 'hidden' | 'jid-multi' | 'jid-single' | 'list-multi' | 'list-single' | 'text-multi' | 'text-private' | 'text-single';
+  label?: string;
+  value?: string | string[];
+  required?: boolean;
+  desc?: string;
+  options?: Array<{ label?: string; value: string }>;
 }

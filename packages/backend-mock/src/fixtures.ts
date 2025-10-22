@@ -4,14 +4,14 @@
  */
 
 import type {
-  XMPPUser,
-  XMPPRoom,
-  XMPPMessage,
+  Message,
+  DiscoInfo,
   GameMetadata,
   GameTheme,
   ForceMetadata,
   RoomExtension,
   FormSchema,
+  UserInfo,
 } from '@war-rooms/backend-interface';
 
 import { buildJid, generateMessageId } from './helpers';
@@ -25,74 +25,34 @@ export const MOCK_CONFERENCE = `conference.${MOCK_DOMAIN}`;
 export const MOCK_PUBSUB = `pubsub.${MOCK_DOMAIN}`;
 
 // ============================================================================
-// Users (Roster)
+// Users - Using UserInfo (no longer XMPP rosters)
 // ============================================================================
 
-export const MOCK_USERS: XMPPUser[] = [
+export const MOCK_USERS: UserInfo[] = [
   {
     jid: buildJid('commander.red', MOCK_DOMAIN),
-    bare_jid: buildJid('commander.red', MOCK_DOMAIN),
-    name: 'Red Force Commander',
-    subscription: 'both',
+    displayName: 'Red Force Commander',
     groups: ['force-red', 'Commanders'],
-    vcard: {
-      fn: 'Commander Red',
-      nickname: 'RedCmd',
-      org: 'Red Force',
-      title: 'Force Commander',
-    },
   },
   {
     jid: buildJid('commander.blue', MOCK_DOMAIN),
-    bare_jid: buildJid('commander.blue', MOCK_DOMAIN),
-    name: 'Blue Force Commander',
-    subscription: 'both',
+    displayName: 'Blue Force Commander',
     groups: ['force-blue', 'Commanders'],
-    vcard: {
-      fn: 'Commander Blue',
-      nickname: 'BlueCmd',
-      org: 'Blue Force',
-      title: 'Force Commander',
-    },
   },
   {
     jid: buildJid('analyst.red1', MOCK_DOMAIN),
-    bare_jid: buildJid('analyst.red1', MOCK_DOMAIN),
-    name: 'Red Analyst 1',
-    subscription: 'both',
+    displayName: 'Red Analyst 1',
     groups: ['force-red', 'Analysts'],
-    vcard: {
-      fn: 'Analyst Red 1',
-      nickname: 'RedA1',
-      org: 'Red Force',
-      title: 'Intelligence Analyst',
-    },
   },
   {
     jid: buildJid('analyst.blue1', MOCK_DOMAIN),
-    bare_jid: buildJid('analyst.blue1', MOCK_DOMAIN),
-    name: 'Blue Analyst 1',
-    subscription: 'both',
+    displayName: 'Blue Analyst 1',
     groups: ['force-blue', 'Analysts'],
-    vcard: {
-      fn: 'Analyst Blue 1',
-      nickname: 'BlueA1',
-      org: 'Blue Force',
-      title: 'Intelligence Analyst',
-    },
   },
   {
     jid: buildJid('gamemaster', MOCK_DOMAIN),
-    bare_jid: buildJid('gamemaster', MOCK_DOMAIN),
-    name: 'Game Master',
-    subscription: 'both',
+    displayName: 'Game Master',
     groups: ['Control', 'Game Masters'],
-    vcard: {
-      fn: 'Game Master',
-      nickname: 'GM',
-      org: 'Control',
-      title: 'Senior Game Master',
-    },
   },
 ];
 
@@ -181,7 +141,7 @@ export const MOCK_GAME_THEME: GameTheme = {
 // ============================================================================
 
 export const MOCK_ROOMS: Array<{
-  info: XMPPRoom['info'];
+  info: DiscoInfo;
   jid: string;
   extension?: RoomExtension;
 }> = [
@@ -393,7 +353,7 @@ export const MOCK_ROOMS: Array<{
 // Sample Messages
 // ============================================================================
 
-export const MOCK_MESSAGES: XMPPMessage[] = [
+export const MOCK_MESSAGES: Message[] = [
   // All-Hands messages
   {
     id: generateMessageId(),
@@ -402,7 +362,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Welcome to Winter Exercise 2025. Exercise start time is 0900Z.',
     delay: {
-      stamp: '2025-01-20T08:55:00.000Z',
+      timestamp: '2025-01-20T08:55:00.000Z',
     },
   },
   {
@@ -412,7 +372,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Red Force standing by.',
     delay: {
-      stamp: '2025-01-20T08:56:00.000Z',
+      timestamp: '2025-01-20T08:56:00.000Z',
     },
   },
   {
@@ -422,7 +382,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Blue Force ready.',
     delay: {
-      stamp: '2025-01-20T08:57:00.000Z',
+      timestamp: '2025-01-20T08:57:00.000Z',
     },
   },
   {
@@ -432,7 +392,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Exercise is now LIVE. All forces proceed with initial objectives.',
     delay: {
-      stamp: '2025-01-20T09:00:00.000Z',
+      timestamp: '2025-01-20T09:00:00.000Z',
     },
   },
   {
@@ -442,7 +402,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Roger that. Beginning reconnaissance operations.',
     delay: {
-      stamp: '2025-01-20T09:01:00.000Z',
+      timestamp: '2025-01-20T09:01:00.000Z',
     },
   },
   {
@@ -452,7 +412,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Blue analyst standing by for intelligence updates.',
     delay: {
-      stamp: '2025-01-20T09:02:00.000Z',
+      timestamp: '2025-01-20T09:02:00.000Z',
     },
   },
   // Red Command messages
@@ -463,7 +423,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'RedA1, prepare initial SITREP for T+30 minutes.',
     delay: {
-      stamp: '2025-01-20T09:05:00.000Z',
+      timestamp: '2025-01-20T09:05:00.000Z',
     },
   },
   {
@@ -473,7 +433,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Understood, Commander. Working on initial assessment now.',
     delay: {
-      stamp: '2025-01-20T09:06:00.000Z',
+      timestamp: '2025-01-20T09:06:00.000Z',
     },
   },
   {
@@ -483,7 +443,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Priority is to establish situational awareness before H+1.',
     delay: {
-      stamp: '2025-01-20T09:10:00.000Z',
+      timestamp: '2025-01-20T09:10:00.000Z',
     },
   },
   {
@@ -493,7 +453,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'SITREP: All units in position. No hostile contact yet.',
     delay: {
-      stamp: '2025-01-20T09:30:00.000Z',
+      timestamp: '2025-01-20T09:30:00.000Z',
     },
   },
   // Red Media messages
@@ -504,7 +464,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Media team, prepare for initial press release at H+2.',
     delay: {
-      stamp: '2025-01-20T09:15:00.000Z',
+      timestamp: '2025-01-20T09:15:00.000Z',
     },
   },
   {
@@ -514,7 +474,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Monitoring social media channels. No significant activity detected.',
     delay: {
-      stamp: '2025-01-20T09:20:00.000Z',
+      timestamp: '2025-01-20T09:20:00.000Z',
     },
   },
   {
@@ -524,7 +484,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Good. Keep tracking Blue Force information operations.',
     delay: {
-      stamp: '2025-01-20T09:21:00.000Z',
+      timestamp: '2025-01-20T09:21:00.000Z',
     },
   },
   // Red Logistics messages
@@ -535,7 +495,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Supply status: All units at 100% fuel and ammunition.',
     delay: {
-      stamp: '2025-01-20T09:08:00.000Z',
+      timestamp: '2025-01-20T09:08:00.000Z',
     },
   },
   {
@@ -545,7 +505,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Excellent. Maintain readiness for extended operations.',
     delay: {
-      stamp: '2025-01-20T09:09:00.000Z',
+      timestamp: '2025-01-20T09:09:00.000Z',
     },
   },
   {
@@ -555,7 +515,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Medical supplies confirmed available at all forward positions.',
     delay: {
-      stamp: '2025-01-20T09:25:00.000Z',
+      timestamp: '2025-01-20T09:25:00.000Z',
     },
   },
   // Red HQ messages
@@ -566,7 +526,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'HQ team, I need eyes on all operational channels.',
     delay: {
-      stamp: '2025-01-20T09:03:00.000Z',
+      timestamp: '2025-01-20T09:03:00.000Z',
     },
   },
   {
@@ -576,7 +536,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Monitoring command, media, and logistics channels now.',
     delay: {
-      stamp: '2025-01-20T09:04:00.000Z',
+      timestamp: '2025-01-20T09:04:00.000Z',
     },
   },
   {
@@ -586,7 +546,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Report any anomalies immediately.',
     delay: {
-      stamp: '2025-01-20T09:12:00.000Z',
+      timestamp: '2025-01-20T09:12:00.000Z',
     },
   },
   {
@@ -596,7 +556,7 @@ export const MOCK_MESSAGES: XMPPMessage[] = [
     type: 'groupchat',
     body: 'Understood. All channels nominal so far.',
     delay: {
-      stamp: '2025-01-20T09:13:00.000Z',
+      timestamp: '2025-01-20T09:13:00.000Z',
     },
   },
 ];
