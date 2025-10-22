@@ -5,10 +5,10 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import type {
-  XMPPMessage,
-  XMPPPresence,
+  Message,
+  Presence,
+  MUCUserItem,
   XMPPUser,
-  XMPPOccupant,
 } from '@war-rooms/backend-interface';
 
 // ============================================================================
@@ -71,13 +71,13 @@ export function getISOTimestamp(): string {
 export function createPresenceStanza(
   from: string,
   options?: {
-    type?: XMPPPresence['type'];
-    show?: XMPPPresence['show'];
+    type?: Presence['type'];
+    show?: Presence['show'];
     status?: string;
     priority?: number;
   }
-): XMPPPresence {
-  const presence: XMPPPresence = { from };
+): Presence {
+  const presence: Presence = { from };
 
   if (options?.type !== undefined) presence.type = options.type;
   if (options?.show !== undefined) presence.show = options.show;
@@ -90,19 +90,19 @@ export function createPresenceStanza(
 export function createMessageStanza(options: {
   from: string;
   to: string;
-  type: XMPPMessage['type'];
+  type?: Message['type'];
   body?: string;
   subject?: string;
   thread?: string;
   id?: string;
-}): XMPPMessage {
-  const message: XMPPMessage = {
+}): Message {
+  const message: Message = {
     id: options.id || generateMessageId(),
     from: options.from,
     to: options.to,
-    type: options.type,
   };
 
+  if (options.type !== undefined) message.type = options.type;
   if (options.body !== undefined) message.body = options.body;
   if (options.subject !== undefined) message.subject = options.subject;
   if (options.thread !== undefined) message.thread = options.thread;
@@ -136,22 +136,17 @@ export function createOccupant(
   nick: string,
   options?: {
     jid?: string;
-    affiliation?: XMPPOccupant['affiliation'];
-    role?: XMPPOccupant['role'];
-    show?: XMPPOccupant['presence']['show'];
-    status?: string;
+    affiliation?: MUCUserItem['affiliation'];
+    role?: MUCUserItem['role'];
   }
-): XMPPOccupant {
-  const occupant: XMPPOccupant = {
+): MUCUserItem {
+  const occupant: MUCUserItem = {
     nick,
     affiliation: options?.affiliation || 'none',
     role: options?.role || 'participant',
-    presence: {},
   };
 
   if (options?.jid !== undefined) occupant.jid = options.jid;
-  if (options?.show !== undefined) occupant.presence.show = options.show;
-  if (options?.status !== undefined) occupant.presence.status = options.status;
 
   return occupant;
 }

@@ -224,8 +224,15 @@ export type XMPPOccupant = MUCUserItem;
 /**
  * @deprecated Use DiscoInfo from 'stanza/protocol' directly
  * Room info is now a combination of DiscoInfo + RoomExtension
+ *
+ * NOTE: This type represents the wrapper structure used in fixtures/storage.
+ * For new code, pass JID and DiscoInfo separately rather than wrapping them.
  */
-export type XMPPRoom = DiscoInfo;
+export interface XMPPRoom {
+  jid: string;
+  info: DiscoInfo;
+  extension?: RoomExtension;
+}
 
 /**
  * @deprecated XMPP Rosters are no longer used

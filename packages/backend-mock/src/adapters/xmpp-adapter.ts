@@ -142,43 +142,28 @@ export class XMPPAdapter {
    * Project UnifiedRoom to XMPPRoom
    */
   private projectRoomToXMPP(room: UnifiedRoom): XMPPRoom {
-    // Convert individual members to JIDs
-    const memberJids =
-      room.wargaming.individualMembers?.map((username) => `${username}@${this.domain}`) || [];
-
     return {
       jid: room.jid,
       info: {
-        identity: {
-          category: 'conference',
-          type: 'text',
-          name: room.name,
-        },
+        type: 'info',
+        identities: [
+          {
+            category: 'conference',
+            type: 'text',
+            name: room.name,
+          },
+        ],
         features: this.getRoomFeatures(room),
-        x: {
-          ...(room.description ? { description: room.description } : {}),
-          ...(room.xmpp.subject ? { subject: room.xmpp.subject } : {}),
-          'muc#roomconfig_roomname': room.name,
-          ...(room.description ? { 'muc#roomconfig_roomdesc': room.description } : {}),
-          'muc#roomconfig_persistentroom': room.xmpp.persistent,
-          'muc#roomconfig_publicroom': room.xmpp.publicRoom,
-          'muc#roomconfig_membersonly': room.xmpp.membersOnly,
-          'muc#roomconfig_moderatedroom': room.xmpp.moderated,
-          ...(room.xmpp.maxUsers ? { 'muc#roomconfig_maxusers': room.xmpp.maxUsers } : {}),
-          'muc#roomconfig_members': memberJids,
-          ...(room.xmpp.changeSubject !== undefined
-            ? { 'muc#roomconfig_changesubject': room.xmpp.changeSubject }
-            : {}),
-          ...(room.xmpp.password
-            ? {
-                'muc#roomconfig_passwordprotectedroom': true,
-                'muc#roomconfig_roomsecret': room.xmpp.password,
-              }
-            : {}),
-        },
+        // NOTE: Room configuration (maxUsers, password, etc.) would typically
+        // be in a DataForm extension or queried separately via owner IQ.
+        // For the mock, we omit these details from disco#info.
       },
-      // Occupants are handled separately (runtime state)
-      occupants: [],
+      extension: {
+        type: room.wargaming.type,
+        forceRestrictions: room.wargaming.groupMembers,
+        iconUrl: room.wargaming.theme?.palette?.primary?.main as string | undefined,
+        color: room.wargaming.theme?.palette?.primary?.main as string | undefined,
+      },
     };
   }
 
