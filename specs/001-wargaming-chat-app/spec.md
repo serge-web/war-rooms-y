@@ -184,7 +184,7 @@ Trainers and demonstrators need to run a fully functional instance of the applic
 - **SC-001**: Users can join a room and start participating in conversations within 30 seconds of login
 - **SC-002**: System supports at least 100 concurrent users distributed across multiple rooms
 - **SC-003**: 95% of messages are delivered to all room participants within 2 seconds
-- **SC-004**: Administrators can provision a complete wargame setup (users, groups, rooms) for 50 participants in under 15 minutes
+- **SC-004**: Administrators can provision a complete wargame setup (users, groups, rooms) for 5 participants in under 15 minutes
 - **SC-005**: System maintains 99.9% uptime during active wargame exercises
 - **SC-006**: Users can access and search through all historical messages (permanent retention)
 - **SC-007**: 90% of users successfully submit structured forms without validation errors on first attempt
