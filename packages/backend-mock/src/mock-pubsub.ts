@@ -22,6 +22,7 @@ import type { XMPPBackend } from '@war-rooms/backend-interface';
 // ============================================================================
 
 export class MockPubSubMetadata implements PubSubMetadata {
+  // @ts-expect-error - Unused but kept for future implementation
   private _backend: XMPPBackend;
 
   constructor(backend: XMPPBackend) {
@@ -96,25 +97,29 @@ export class MockPubSubMetadata implements PubSubMetadata {
     // Stubbed
   }
 
-  // ===== Form Template Operations =====
+  async archiveRoomExtension(_roomJid: string): Promise<void> {
+    // Stubbed
+  }
 
-  async getFormTemplates(): Promise<FormSchema[]> {
+  // ===== Form Schema Operations =====
+
+  async getFormSchemas(): Promise<FormSchema[]> {
     return [];
   }
 
-  async getFormTemplate(_templateId: string): Promise<FormSchema | null> {
+  async getFormSchema(_schemaId: string): Promise<FormSchema | null> {
     return null;
   }
 
-  async setFormTemplate(_template: FormSchema): Promise<void> {
+  async setFormSchema(_schema: FormSchema): Promise<void> {
     // Stubbed
   }
 
-  async deleteFormTemplate(_templateId: string): Promise<void> {
+  async deleteFormSchema(_schemaId: string): Promise<void> {
     // Stubbed
   }
 
-  async subscribeFormTemplates(
+  async subscribeFormSchemas(
     _callback: (update: PubSubUpdate<FormSchema>) => void
   ): Promise<void> {
     // Stubbed

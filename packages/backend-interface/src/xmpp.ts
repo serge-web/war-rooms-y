@@ -11,7 +11,6 @@ import type {
   Presence,
   MUCUserItem,
   MAMQuery,
-  MAMResult,
   StanzaError,
   DiscoInfo,
 } from './types';

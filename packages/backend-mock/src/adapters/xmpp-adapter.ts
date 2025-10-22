@@ -4,6 +4,7 @@
  */
 
 import type { UnifiedRoom, UnifiedUser, XMPPRoom, XMPPUser } from '@war-rooms/backend-interface';
+import type { RoomExtension } from '@war-rooms/backend-interface/src/types';
 
 import type { Storage } from '../storage';
 
@@ -142,6 +143,20 @@ export class XMPPAdapter {
    * Project UnifiedRoom to XMPPRoom
    */
   private projectRoomToXMPP(room: UnifiedRoom): XMPPRoom {
+    const extension: RoomExtension = {
+      type: room.wargaming.type,
+    };
+
+    // Only add optional fields if they have values (exactOptionalPropertyTypes)
+    if (room.wargaming.groupMembers) {
+      extension.forceRestrictions = room.wargaming.groupMembers;
+    }
+    const primaryColor = room.wargaming.theme?.palette?.primary?.main as string | undefined;
+    if (primaryColor) {
+      extension.iconUrl = primaryColor;
+      extension.color = primaryColor;
+    }
+
     return {
       jid: room.jid,
       info: {
@@ -158,12 +173,7 @@ export class XMPPAdapter {
         // be in a DataForm extension or queried separately via owner IQ.
         // For the mock, we omit these details from disco#info.
       },
-      extension: {
-        type: room.wargaming.type,
-        forceRestrictions: room.wargaming.groupMembers,
-        iconUrl: room.wargaming.theme?.palette?.primary?.main as string | undefined,
-        color: room.wargaming.theme?.palette?.primary?.main as string | undefined,
-      },
+      extension,
     };
   }
 

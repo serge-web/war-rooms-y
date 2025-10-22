@@ -5,7 +5,6 @@
 
 import type { AgentConfig } from 'stanza';
 import type {
-  XMPPBackend,
   XMPPConfig,
   ConnectionInfo,
   ConnectionState,
@@ -72,7 +71,8 @@ export class MockXMPPBackend {
   connect(opts?: AgentConfig): void {
     // Extract credentials from opts or config
     const username = opts?.jid?.split('@')[0] || this.config.username;
-    const _password = opts?.password || this.config.password; // Not used in mock
+    // @ts-expect-error - _password extracted but not used in mock implementation
+    const _password = opts?.password || this.config.password;
 
     if (!username) {
       throw new Error('Username required for connection');
@@ -151,12 +151,15 @@ export class MockXMPPBackend {
     const users = await this.adapter.getAllUsers();
 
     // Convert XMPPUser[] to RosterResult format
-    const items: RosterItem[] = users.map((user) => ({
-      jid: user.jid,
-      name: user.name,
-      subscription: 'both' as const, // Mock: all users have mutual subscription
-      groups: user.groups,
-    }));
+    const items: RosterItem[] = users.map((user) => {
+      const item: RosterItem = {
+        jid: user.jid,
+        subscription: 'both' as const, // Mock: all users have mutual subscription
+        groups: user.groups,
+      };
+      if (user.name) item.name = user.name;
+      return item;
+    });
 
     return { items };
   }
@@ -310,7 +313,7 @@ export class MockXMPPBackend {
       this.handlers.onMessage?.(message);
     });
 
-    return message.id;
+    return message.id!; // Guaranteed to be set above
   }
 
   // ===== Multi-User Chat Operations =====
@@ -344,6 +347,7 @@ export class MockXMPPBackend {
       to: this.currentJid!,
       type: undefined, // available presence
       muc: {
+        type: 'info', // MUC info type
         statusCodes: ['110'], // self-presence code (string in Stanza)
         affiliation: 'member',
         role: 'participant',
@@ -518,15 +522,18 @@ export class MockXMPPBackend {
     messages = messages.slice(0, limit);
 
     // Convert messages to MAMResult format (simplified for mock)
-    const results: import('@war-rooms/backend-interface').MAMResult[] = messages.map((msg) => ({
-      version: '2',
-      queryId: query.queryId || 'query1',
-      id: msg.id!,
-      item: {
-        delay: msg.delay,
-        message: msg,
-      },
-    }));
+    // Only include messages with delay timestamps (required for MAM)
+    const results: import('@war-rooms/backend-interface').MAMResult[] = messages
+      .filter((msg) => msg.delay !== undefined)
+      .map((msg) => ({
+        version: '2',
+        queryId: query.queryId || 'query1',
+        id: msg.id!,
+        item: {
+          delay: msg.delay!,
+          message: msg,
+        },
+      }));
 
     // Return MAMFin with results
     const fin: MAMFin = {
