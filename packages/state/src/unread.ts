@@ -54,8 +54,7 @@ export const unreadCountAtomFamily = atomFamily((roomJid: string) =>
         return true; // No timestamp = treat as new
       }
       // Handle both Date objects and ISO string timestamps
-      const msgTime =
-        timestamp instanceof Date ? timestamp.toISOString() : timestamp;
+      const msgTime = timestamp instanceof Date ? timestamp.toISOString() : timestamp;
       return msgTime > lastRead;
     }).length;
   })
