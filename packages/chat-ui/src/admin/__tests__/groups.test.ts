@@ -291,6 +291,7 @@ describe('Group Membership Management', () => {
 
     it('should maintain metadata when adding members', async () => {
       await pubsub.setForceMetadata('ColoredForce', {
+        description: 'Test force',
         color: '#4CAF50',
         icon: 'shield',
         objectives: ['Hold position'],
@@ -298,7 +299,7 @@ describe('Group Membership Management', () => {
 
       const group = await api.getGroup('ColoredForce');
       await api.updateGroup('ColoredForce', {
-        members: [...group.members, 'user2'],
+        members: [...group!.members, 'user2'],
       });
 
       const metadata = await pubsub.getForceMetadata('ColoredForce');
@@ -309,6 +310,7 @@ describe('Group Membership Management', () => {
 
     it('should maintain metadata when removing members', async () => {
       await pubsub.setForceMetadata('ColoredForce', {
+        description: 'Test force',
         color: '#2196F3',
         icon: 'groups',
         objectives: ['Advance', 'Secure area'],

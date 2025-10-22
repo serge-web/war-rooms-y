@@ -74,7 +74,7 @@ describe('Admin User CRUD Operations', () => {
       await api.createUser(user);
 
       const retrievedUser = await api.getUser('groupuser');
-      expect(retrievedUser.properties?.sharedGroups).toContain('TestForce');
+      expect(retrievedUser!.properties?.sharedGroups).toContain('TestForce');
 
       // Verify bidirectional relationship
       const group = await api.getGroup('TestForce');
@@ -226,23 +226,23 @@ describe('Admin User CRUD Operations', () => {
   describe('Seeded Test Users', () => {
     it('should have gamemaster user', async () => {
       const gm = await api.getUser('gamemaster');
-      expect(gm.username).toBe('gamemaster');
-      expect(gm.name).toBe('Game Master');
-      expect(gm.properties?.sharedGroups).toContain('Game Masters');
+      expect(gm!.username).toBe('gamemaster');
+      expect(gm!.name).toBe('Game Master');
+      expect(gm!.properties?.sharedGroups).toContain('Game Masters');
     });
 
     it('should have commander.red user', async () => {
       const cmd = await api.getUser('commander.red');
-      expect(cmd.username).toBe('commander.red');
-      expect(cmd.name).toBe('Red Commander');
-      expect(cmd.properties?.sharedGroups).toContain('force-red');
+      expect(cmd!.username).toBe('commander.red');
+      expect(cmd!.name).toBe('Red Commander');
+      expect(cmd!.properties?.sharedGroups).toContain('force-red');
     });
 
     it('should have force groups created', async () => {
       const redForce = await api.getGroup('force-red');
-      expect(redForce.name).toBe('force-red');
-      expect(redForce.members).toContain('commander.red');
-      expect(redForce.members).toContain('analyst.red1');
+      expect(redForce!.name).toBe('force-red');
+      expect(redForce!.members).toContain('commander.red');
+      expect(redForce!.members).toContain('analyst.red1');
     });
   });
 });

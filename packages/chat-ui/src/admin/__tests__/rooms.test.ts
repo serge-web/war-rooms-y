@@ -85,11 +85,11 @@ describe('Admin Room CRUD Operations', () => {
             primary: {
               main: '#1976D2',
             },
-          },
+          } as any,
         },
       };
 
-      await pubsub.setRoomMetadata('metaroom', metadata);
+      await pubsub.setRoomMetadata('metaroom', metadata as any);
 
       const retrievedMetadata = await pubsub.getRoomMetadata('metaroom');
       expect(retrievedMetadata.description).toBe('Extended description');
