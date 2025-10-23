@@ -25,6 +25,7 @@ test.describe('Chat Functionality', () => {
   });
 
   test.skip('should display assigned rooms', async ({ page }) => {
+    // SKIPPED: Flaky in headless - rooms load in manual testing but async timing issues in CI
     // Commander.red should see Red Command tab label and All Hands messages
     await expect(page.getByText('Red Force Command')).toBeVisible();
     await expect(page.getByText('Welcome to Winter Exercise 2025')).toBeVisible();
@@ -34,6 +35,7 @@ test.describe('Chat Functionality', () => {
   });
 
   test.skip('should verify commander.red sees all 5 assigned rooms', async ({ page }) => {
+    // SKIPPED: Flaky in headless - rooms load in manual testing but async timing issues in CI
     // Commander.red should see exactly 5 rooms:
     // 1. All Hands (public) - appears in OutOfGamePanel, not as tab
     // 2-5. Four Red Force rooms (force-red restricted) - appear as tabs

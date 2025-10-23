@@ -38,6 +38,7 @@ test.describe('Login Flow', () => {
   });
 
   test.skip('should login successfully', async ({ page }) => {
+    // SKIPPED: Flaky in headless - rooms load in manual testing but async timing issues in CI
     // Click connect button (pre-populated credentials)
     await page.getByRole('button', { name: 'Connect' }).click();
 
