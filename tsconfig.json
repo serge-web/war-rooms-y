@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "jsx": "react-jsx",
+    "types": ["node", "jest"],
+    "paths": {
+      "@war-rooms/backend-interface": ["./packages/backend-interface/src"],
+      "@war-rooms/backend-mock": ["./packages/backend-mock/src"],
+      "@war-rooms/state": ["./packages/state/src"],
+      "@war-rooms/chat-ui": ["./packages/chat-ui/src"]
+    }
+  },
+  "include": [],
+  "references": [
+    { "path": "./packages/backend-interface" },
+    { "path": "./packages/backend-mock" },
+    { "path": "./packages/state" },
+    { "path": "./packages/chat-ui" }
+  ]
+}
